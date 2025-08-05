@@ -23,6 +23,13 @@ export default appSchema({
                 { name: 'created_at', type: 'number' },
                 { name: 'updated_at', type: 'number' },
             ],
+        }),
+        tableSchema({
+            name: 'config',
+            columns: [
+                { name: 'work_hours', type: 'number' },
+                { name: 'tolerance', type: 'number', isOptional: true },
+            ],
         })
     ],
 });
