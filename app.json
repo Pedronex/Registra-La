@@ -42,6 +42,13 @@
             "usesCleartextTraffic": true
           }
         }
+      ],
+      [
+        "expo-secure-store",
+        {
+          "configureAndroidBackup": true,
+          "faceIDPermission": "Permitir $(PRODUCT_NAME) a acessar sua biometria facial."
+        }
       ]
     ],
     "experiments": {
