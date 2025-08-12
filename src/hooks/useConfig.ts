@@ -3,14 +3,16 @@
  * Centraliza a lógica de acesso e manipulação das configurações.
  */
 
-import { useState, useEffect, useCallback } from 'react';
-import { storageService, ConfigData } from '@/services/StorageService';
+import { database } from '@/db';
+import { ConfigInsert, configTable } from '@/db/schema';
+import { useCallback, useEffect, useState } from 'react';
 
 /**
  * Hook para gerenciar configurações do aplicativo
  */
 export function useConfig() {
-  const [config, setConfig] = useState<ConfigData | null>(null);
+  const [config, setConfig] = useState<ConfigInsert | null>(null);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -21,11 +23,11 @@ export function useConfig() {
     try {
       setLoading(true);
       setError(null);
-      
-      const appConfig = await storageService.getConfig();
-      setConfig(appConfig);
-      
-      return appConfig;
+
+      const [config] = await database.select().from(configTable);
+      setConfig(config);
+
+      return config;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro ao carregar configurações';
       setError(errorMessage);
@@ -38,14 +40,17 @@ export function useConfig() {
   /**
    * Salva as configurações do aplicativo
    */
-  const saveConfig = useCallback(async (configData: ConfigData) => {
+  const saveConfig = useCallback(async (configData: ConfigInsert) => {
     try {
       setLoading(true);
       setError(null);
-      
-      await storageService.saveConfig(configData);
+
+      await database.insert(configTable).values(configData).onConflictDoUpdate({
+        target: configTable.id,
+        set: configData,
+      });
       setConfig(configData);
-      
+
       return true;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro ao salvar configurações';
