@@ -10,9 +10,18 @@ import { useThemeColor } from "@/hooks/useThemeColor";
  */
 export default function InitialPage() {
   // Obtém cores do tema atual
-  const backgroundColor = useThemeColor({ light: "#F5F5F5", dark: "#1F2937" }, "background");
-  const textColor = useThemeColor({ light: "#000000", dark: "#FFFFFF" }, "text");
-  const buttonColor = useThemeColor({ light: "#60A5FA", dark: "#2563EB" }, "primary");
+  const backgroundColor = useThemeColor(
+    { light: "#F5F5F5", dark: "#1F2937" },
+    "background"
+  );
+  const textColor = useThemeColor(
+    { light: "#000000", dark: "#FFFFFF" },
+    "text"
+  );
+  const buttonColor = useThemeColor(
+    { light: "#60A5FA", dark: "#2563EB" },
+    "primary"
+  );
 
   /**
    * Renderiza o cabeçalho da página
@@ -28,7 +37,7 @@ export default function InitialPage() {
    */
   const renderSlogan = () => (
     <View>
-      <Text 
+      <Text
         className="text-3xl text-black dark:text-white text-start"
         style={{ color: textColor }}
         accessibilityRole="text"
@@ -42,14 +51,14 @@ export default function InitialPage() {
    * Renderiza o botão de entrada
    */
   const renderEnterButton = () => (
-    <Link 
-      href="/config" 
+    <Link
+      href="/config"
       className="p-2 mt-5 w-full bg-blue-400 rounded-3xl dark:bg-blue-600"
       style={{ backgroundColor: buttonColor }}
       accessibilityRole="button"
       accessibilityLabel="Entrar no aplicativo"
     >
-      <Text 
+      <Text
         className="text-3xl font-bold text-center text-black dark:text-white"
         style={{ color: textColor }}
       >
@@ -59,9 +68,8 @@ export default function InitialPage() {
   );
 
   return (
-    <View 
-      className="justify-between items-center p-10 w-screen h-screen bg-neutral-100 dark:bg-gray-800"
-      style={{ backgroundColor }}
+    <View
+      className={`justify-between items-center p-10 w-screen h-screen bg-[${backgroundColor}]`}
     >
       {renderHeader()}
       {renderSlogan()}
