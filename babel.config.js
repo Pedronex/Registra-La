@@ -1,6 +1,8 @@
 module.exports = function (api) {
   api.cache(true);
-  let plugins = [];
+  let plugins = [
+    ["inline-import", { "extensions": [".sql"] }]
+  ];
 
   return {
     presets: [

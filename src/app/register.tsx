@@ -48,7 +48,6 @@ export default function RegisterPage() {
       } as unknown as File);
 
       setLoading(true);
-      console.log();
       const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/ocr`, {
         method: "POST",
         headers: { "Content-Type": "multipart/form-data" },

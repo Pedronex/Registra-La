@@ -1,34 +1,35 @@
 import "expo-dev-client";
 import "../../global.css";
 
+import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
 import { Slot } from "expo-router";
 import * as Updates from "expo-updates";
 import { useEffect } from "react";
+import migrations from "../../drizzle/migrations";
 
-import { useConfig } from "@/hooks/useConfig";
-import { Alert } from "@/lib/Alert";
 import { Messages } from "@/constants/Messages";
+import { database } from "@/db";
+import { Alert } from "@/lib/Alert";
+import { Text, View } from "react-native";
 
 /**
  * Layout principal da aplicação
  * Gerencia atualizações e inicialização do aplicativo
  */
 export default function Layout() {
-  // Carrega as configurações do aplicativo
-  const { loadConfig } = useConfig();
+  const { success, error } = useMigrations(database, migrations);
 
   useEffect(() => {
+    /**
+     * Inicializa o aplicativo verificando atualizações e carregando configurações
+     */
+    const initializeApp = async () => {
+      checkForUpdates();
+    };
+
     // Inicializa o aplicativo
     initializeApp();
   }, []);
-
-  /**
-   * Inicializa o aplicativo verificando atualizações e carregando configurações
-   */
-  const initializeApp = async () => {
-    await loadConfig();
-    checkForUpdates();
-  };
 
   /**
    * Verifica se há atualizações disponíveis
@@ -49,6 +50,7 @@ export default function Layout() {
               await Updates.fetchUpdateAsync();
               await Updates.reloadAsync();
             } catch (error) {
+              console.error(Messages.errors.update.install, error);
               Alert.error(Messages.errors.update.install);
             }
           }
@@ -58,6 +60,21 @@ export default function Layout() {
       console.error(Messages.errors.update.check, error);
     }
   };
+
+  if (error) {
+    return (
+      <View>
+        <Text>Migration error: {error.message}</Text>
+      </View>
+    );
+  }
+  if (!success) {
+    return (
+      <View>
+        <Text>Migration is in progress...</Text>
+      </View>
+    );
+  }
 
   return <Slot />;
 }

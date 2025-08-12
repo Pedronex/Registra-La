@@ -1,11 +1,17 @@
 import { useRouter } from "expo-router";
-import React, { useState, useEffect } from "react";
-import { ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import React, { useState } from "react";
+import {
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { Messages } from "@/constants/Messages";
 import { useConfig } from "@/hooks/useConfig";
 import { Alert } from "@/lib/Alert";
-import { Messages } from "@/constants/Messages";
 
 /**
  * Página de configuração do aplicativo
@@ -15,37 +21,31 @@ export default function ConfigPage() {
   // Estados locais para os campos do formulário
   const [workHours, setWorkHours] = useState<number>(0);
   const [tolerance, setTolerance] = useState<number>(0);
-  
+  const { loading, saveConfig } = useConfig();
+
   // Hooks
   const router = useRouter();
-  const { config, loading, error, saveConfig: persistConfig, loadConfig } = useConfig();
-
-  // Carrega configurações existentes quando o componente é montado
-  useEffect(() => {
-    if (config) {
-      setWorkHours(config.workHours);
-      setTolerance(config.tolerance || 0);
-    }
-  }, [config]);
 
   /**
    * Salva as configurações e navega para a página inicial
    */
   const handleSaveConfig = async () => {
     try {
-      await persistConfig({
+      await saveConfig({
+        id: 1,
         workHours,
         tolerance,
       });
-      
+
+
       Alert.success(Messages.success.config.save);
       router.push("/home");
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : Messages.errors.config.save;
+      const errorMessage =
+        error instanceof Error ? error.message : Messages.errors.config.save;
       Alert.error(errorMessage);
     }
-  }
-
+  };
 
   /**
    * Renderiza o campo de entrada para horas de trabalho
@@ -97,7 +97,8 @@ export default function ConfigPage() {
               Configuração de Horas de Trabalho
             </Text>
             <Text className="mb-4 text-sm text-gray-600 dark:text-gray-200">
-              Por favor, insira suas horas de trabalho diárias e tempo de tolerância
+              Por favor, insira suas horas de trabalho diárias e tempo de
+              tolerância
             </Text>
           </View>
 

@@ -1,65 +1,62 @@
 /**
- * Definição do esquema do banco de dados WatermelonDB
+ * Definição do esquema do banco de dados Drizzle ORM
  */
-import { appSchema, tableSchema } from "@nozbe/watermelondb";
-
-/**
- * Versão atual do esquema do banco de dados
- */
-const SCHEMA_VERSION = 1;
+import { sql } from 'drizzle-orm';
+import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
 /**
  * Esquema da tabela de registros
  */
-const registersSchema = tableSchema({
-  name: 'registers',
-  columns: [
-    // Informações básicas do registro
-    { name: 'type', type: 'string' },
-    { name: 'time', type: 'string', isOptional: true },
-    { name: 'date', type: 'string' },
-    { name: 'is_full_day', type: 'boolean' },
-    
-    // Informações adicionais
-    { name: 'photo', type: 'string', isOptional: true },
-    { name: 'location', type: 'string', isOptional: true },
-    { name: 'description', type: 'string', isOptional: true },
-    { name: 'nsr', type: 'string', isOptional: true },
+export const registersTable = sqliteTable('registers', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
 
-    // Campos para cálculo de duração
-    { name: 'start_time', type: 'string', isOptional: true },
-    { name: 'end_time', type: 'string', isOptional: true },
-    { name: 'duration', type: 'number', isOptional: true },
-    { name: 'operation', type: 'string', isOptional: true },
+  // Informações básicas do registro
+  type: text('type').notNull(),
+  time: text('time'),
+  date: text('date').notNull(),
+  isFullDay: integer('is_full_day', { mode: 'boolean' }).notNull().default(false),
 
-    // Metadados
-    { name: 'created_at', type: 'number' },
-    { name: 'updated_at', type: 'number' },
-  ],
+  // Informações adicionais
+  photo: text('photo'),
+  location: text('location'),
+  description: text('description'),
+  nsr: text('nsr'),
+
+  // Campos para cálculo de duração
+  startTime: text('start_time'),
+  endTime: text('end_time'),
+  duration: integer('duration'),
+  operation: text('operation'),
+
+  // Metadados
+  createdAt: integer('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: integer('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
 });
 
 /**
  * Esquema da tabela de configurações
  */
-const configSchema = tableSchema({
-  name: 'config',
-  columns: [
-    { name: 'work_hours', type: 'number' },
-    { name: 'tolerance', type: 'number', isOptional: true },
-    
-    // Metadados
-    { name: 'created_at', type: 'number' },
-    { name: 'updated_at', type: 'number' },
-  ],
+export const configTable = sqliteTable('config', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  workHours: integer('work_hours').notNull(),
+  tolerance: integer('tolerance'),
+
+  // Metadados
+  createdAt: integer('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: integer('updated_at').notNull().default(sql`CURRENT_TIMESTAMP`),
 });
 
 /**
- * Esquema completo do aplicativo
+ * Tipos para configurações
  */
-export default appSchema({
-  version: SCHEMA_VERSION,
-  tables: [
-    registersSchema,
-    configSchema,
-  ],
-});
+export type ConfigData = typeof configTable.$inferSelect;
+export type ConfigInsert = typeof configTable.$inferInsert;
+
+/**
+ * Tipos para registros
+ */
+
+export type RegisterData = typeof registersTable.$inferSelect;
+export type RegisterInsert = typeof registersTable.$inferInsert;
+
+
