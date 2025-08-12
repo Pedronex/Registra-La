@@ -2,6 +2,7 @@
   "expo": {
     "name": "Registra Lá",
     "slug": "registra-la",
+    "owner": "nexcorp",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -16,7 +17,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.pedronex.registrala",
+      "package": "com.nexcorp.registrala",
       "edgeToEdgeEnabled": true
     },
     "web": {
@@ -48,6 +49,12 @@
         {
           "configureAndroidBackup": true,
           "faceIDPermission": "Permitir $(PRODUCT_NAME) a acessar sua biometria facial."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "The app accesses your photos to let you share them with your friends."
         }
       ]
     ],

@@ -12,7 +12,7 @@ export type RegisterOperationType = 'add' | 'sub';
 /**
  * Tipos de registro
  */
-export type RegisterType = 'entrada' | 'saída' | 'folga' | 'férias' | 'outro';
+export type RegisterType = 'trabalho' | 'atestado' | 'folga' | 'férias' | 'feriado' | 'outros';
 
 /**
  * Modelo de Registro para armazenamento de pontos, folgas e outros eventos
