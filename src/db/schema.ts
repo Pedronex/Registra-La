@@ -40,6 +40,9 @@ export const configTable = sqliteTable('config', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   workHours: integer('work_hours').notNull(),
   tolerance: integer('tolerance'),
+  breakTime: integer('break_time'),
+  workDays: text('work_days', {mode:'json'}),
+  companyName: text('company_name'),
 
   // Metadados
   createdAt: integer('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
