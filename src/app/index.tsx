@@ -52,7 +52,7 @@ export default function InitialPage() {
    */
   const renderEnterButton = () => (
     <Link
-      href="/config"
+      href="/register"
       className="p-2 mt-5 w-full bg-blue-400 rounded-3xl dark:bg-blue-600"
       style={{ backgroundColor: buttonColor }}
       accessibilityRole="button"
