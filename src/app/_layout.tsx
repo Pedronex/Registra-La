@@ -1,22 +1,25 @@
 import "expo-dev-client";
 import "../../global.css";
 
+import { Messages } from "@/constants/Messages";
+import { database, expo } from "@/db";
+import { Alert } from "@/lib/Alert";
 import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
+import { useDrizzleStudio } from "expo-drizzle-studio-plugin";
 import { Slot } from "expo-router";
 import * as Updates from "expo-updates";
 import { useEffect } from "react";
-import migrations from "../../drizzle/migrations";
-
-import { Messages } from "@/constants/Messages";
-import { database } from "@/db";
-import { Alert } from "@/lib/Alert";
 import { Text, View } from "react-native";
+import migrations from "../../drizzle/migrations";
 
 /**
  * Layout principal da aplicação
  * Gerencia atualizações e inicialização do aplicativo
  */
+
 export default function Layout() {
+    useDrizzleStudio(expo);
+
   const { success, error } = useMigrations(database, migrations);
 
   useEffect(() => {

@@ -1,17 +1,11 @@
-import { useRouter } from "expo-router";
-import React, { useState } from "react";
-import {
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-
 import { Messages } from "@/constants/Messages";
 import { useConfig } from "@/hooks/useConfig";
 import { Alert } from "@/lib/Alert";
+import { useRouter } from "expo-router";
+import { useEffect, useState, } from "react";
+import { ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { CheckBox } from "react-native-elements";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 /**
  * Página de configuração do aplicativo
@@ -21,31 +15,47 @@ export default function ConfigPage() {
   // Estados locais para os campos do formulário
   const [workHours, setWorkHours] = useState<number>(0);
   const [tolerance, setTolerance] = useState<number>(0);
-  const { loading, saveConfig } = useConfig();
-
+  const [companyName, setCompanyName] = useState<string>('');
+  const [breakTime, setBreakTime] = useState<number>(0);
+  const [workDays, setWorkDays] = useState<string[]>([]);
+  
   // Hooks
   const router = useRouter();
+  const { config, loading, saveConfig: persistConfig } = useConfig();
+
+  // Carrega configurações existentes quando o componente é montado
+  useEffect(() => {
+    if (config) {
+      setWorkHours(config.workHours);
+      setTolerance(config.tolerance || 0);
+      setCompanyName(config.companyName || '');
+      setBreakTime(config.breakTime || 0);
+      setWorkDays(Array.isArray(config.workDays) ? config.workDays : []);
+
+    }
+  }, [config]);
 
   /**
    * Salva as configurações e navega para a página inicial
    */
   const handleSaveConfig = async () => {
     try {
-      await saveConfig({
-        id: 1,
+      await persistConfig({
         workHours,
         tolerance,
+        companyName,
+        breakTime,
+        workDays,
       });
-
-
+      
       Alert.success(Messages.success.config.save);
       router.push("/home");
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : Messages.errors.config.save;
+      const errorMessage = error instanceof Error ? error.message : Messages.errors.config.save;
       Alert.error(errorMessage);
     }
-  };
+  }
+
 
   /**
    * Renderiza o campo de entrada para horas de trabalho
@@ -87,6 +97,75 @@ export default function ConfigPage() {
     </View>
   );
 
+  /**
+   * Renderiza o campo de entrada para nome da empresa
+   */
+  const renderCompanyNameInput = () => (
+    <View>
+      <Text className="mb-1 text-sm font-medium text-gray-700 dark:text-white">
+        Nome da Empresa
+      </Text>
+      <TextInput
+        className="px-4 py-3 w-full bg-white rounded-lg border border-gray-300 dark:bg-gray-700 dark:border-gray-600"
+        placeholder="Ex: Empresa XYZ"
+        value={companyName}
+        onChangeText={setCompanyName}
+        accessibilityLabel="Nome da empresa"
+        accessibilityHint="Digite o nome da empresa"
+      />
+    </View>
+  );
+
+  /**
+   * Renderiza o campo de entrada para intervalo de trabalho
+   */
+  const renderBreakTimeInput = () => (
+    <View>
+      <Text className="mb-1 text-sm font-medium text-gray-700 dark:text-white">
+        Intervalo de Trabalho (em minutos)
+      </Text>
+      <TextInput
+        className="px-4 py-3 w-full bg-white rounded-lg border border-gray-300 dark:bg-gray-700 dark:border-gray-600"
+        keyboardType="numeric"
+        placeholder="Ex: 15"
+        value={breakTime.toString()}
+        onChangeText={(text) => setBreakTime(Number(text))}
+        accessibilityLabel="Intervalo de trabalho em minutos"
+      />
+    </View>
+  );
+
+  /**
+   * Renderiza o campo de entrada para dias da semana trabalhados
+   */
+  const renderWorkDaysInput = () => (
+    <View>
+      <Text className="mb-1 text-sm font-medium text-gray-700 dark:text-white">
+        Dias da Semana Trabalhados
+      </Text>
+      <View className="flex flex-row flex-wrap gap-2">
+        {[
+          'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado', 'domingo'
+        ].map((day) => (
+          <CheckBox
+            key={day}
+            title={day}
+            checked={workDays.includes(day)}
+            onPress={() => setWorkDays(prev => 
+              prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]
+            )}
+            containerStyle={{
+              backgroundColor: 'transparent',
+              borderWidth: 0,
+            }}
+            checkedColor="green"
+            uncheckedColor="gray"
+          />
+        ))}
+      </View>
+    </View>
+  )
+
   return (
     <SafeAreaView className="flex-1 bg-neutral-100 dark:bg-gray-800">
       <ScrollView className="flex-1 px-4 py-6">
@@ -97,8 +176,7 @@ export default function ConfigPage() {
               Configuração de Horas de Trabalho
             </Text>
             <Text className="mb-4 text-sm text-gray-600 dark:text-gray-200">
-              Por favor, insira suas horas de trabalho diárias e tempo de
-              tolerância
+              Por favor, insira suas horas de trabalho diárias e tempo de tolerância
             </Text>
           </View>
 
@@ -106,6 +184,10 @@ export default function ConfigPage() {
           <View className="flex flex-col gap-y-4">
             {renderWorkHoursInput()}
             {renderToleranceInput()}
+            {renderCompanyNameInput()}
+            {renderBreakTimeInput()}
+            {renderWorkDaysInput()}
+
 
             {/* Botão de salvar */}
             <TouchableOpacity
