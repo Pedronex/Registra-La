@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "56bcd2e1-7a28-42dd-a747-d5aa228e01eb",
-  "prevId": "2ef8218f-592b-41dc-8eca-b114f0fb4345",
+  "id": "c9aa73ad-f537-411a-b1ca-d3748881ab9a",
+  "prevId": "56bcd2e1-7a28-42dd-a747-d5aa228e01eb",
   "tables": {
     "config": {
       "name": "config",
@@ -113,34 +113,6 @@
         },
         "nsr": {
           "name": "nsr",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "start_time": {
-          "name": "start_time",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "end_time": {
-          "name": "end_time",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "duration": {
-          "name": "duration",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "operation": {
-          "name": "operation",
           "type": "text",
           "primaryKey": false,
           "notNull": false,

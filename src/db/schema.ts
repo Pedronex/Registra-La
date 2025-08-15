@@ -11,8 +11,8 @@ export const registersTable = sqliteTable('registers', {
   id: integer('id').primaryKey({ autoIncrement: true }),
 
   // Informações básicas do registro
-  type: text('type').notNull(),
-  time: text('time'),
+  type: text('type', {enum: ['folga', 'trabalho', 'atestado']}).notNull(),
+  time: text('time').notNull(),
   date: text('date').notNull(),
   isFullDay: integer('is_full_day', { mode: 'boolean' }).notNull().default(false),
 
@@ -21,12 +21,6 @@ export const registersTable = sqliteTable('registers', {
   location: text('location'),
   description: text('description'),
   nsr: text('nsr'),
-
-  // Campos para cálculo de duração
-  startTime: text('start_time'),
-  endTime: text('end_time'),
-  duration: integer('duration'),
-  operation: text('operation'),
 
   // Metadados
   createdAt: integer('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
