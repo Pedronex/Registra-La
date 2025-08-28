@@ -1,9 +1,10 @@
 import { Messages } from "@/constants/Messages";
 import { useConfig } from "@/hooks/useConfig";
 import { Alert } from "@/lib/Alert";
-import { useRouter } from "expo-router";
-import { useEffect, useState, } from "react";
-import { ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import * as Clipboard from 'expo-clipboard';
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
+import { Linking, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { CheckBox } from "react-native-elements";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -18,6 +19,8 @@ export default function ConfigPage() {
   const [companyName, setCompanyName] = useState<string>('');
   const [breakTime, setBreakTime] = useState<number>(0);
   const [workDays, setWorkDays] = useState<string[]>([]);
+  const [geminiApiKey, setGeminiApiKey] = useState<string>('');
+  const [isPasteAvailable, setIsPasteAvailable] = useState(false);
   
   // Hooks
   const router = useRouter();
@@ -31,9 +34,19 @@ export default function ConfigPage() {
       setCompanyName(config.companyName || '');
       setBreakTime(config.breakTime || 0);
       setWorkDays(Array.isArray(config.workDays) ? config.workDays : []);
-
+      setGeminiApiKey(config.geminiApiKey || '');
     }
   }, [config]);
+
+  useFocusEffect(
+    useCallback(() => {
+      const checkClipboard = async () => {
+        const hasString = await Clipboard.hasStringAsync();
+        setIsPasteAvailable(hasString);
+      };
+      checkClipboard();
+    }, [])
+  );
 
   /**
    * Salva as configurações e navega para a página inicial
@@ -46,6 +59,7 @@ export default function ConfigPage() {
         companyName,
         breakTime,
         workDays,
+        geminiApiKey,
       });
       
       Alert.success(Messages.success.config.save);
@@ -166,6 +180,39 @@ export default function ConfigPage() {
     </View>
   )
 
+  const handlePasteApiKey = async () => {
+    const text = await Clipboard.getStringAsync();
+    setGeminiApiKey(text);
+  };
+
+  const renderGeminiApiKeyInput = () => (
+    <View>
+      <Text className="mb-1 text-sm font-medium text-gray-700 dark:text-white">
+        Gemini API Key
+      </Text>
+      <View className="flex-row items-center">
+        <TextInput
+          className="flex-1 px-4 py-3 w-full bg-white rounded-lg border border-gray-300 dark:bg-gray-700 dark:border-gray-600"
+          placeholder="Insira sua API Key do Gemini"
+          value={geminiApiKey}
+          onChangeText={setGeminiApiKey}
+          accessibilityLabel="Gemini API Key"
+          accessibilityHint="Insira sua API Key do Gemini"
+        />
+        {isPasteAvailable && (
+          <TouchableOpacity onPress={handlePasteApiKey} className="p-2 ml-2 bg-gray-200 dark:bg-gray-600 rounded-lg">
+            <Text className="text-sm text-gray-700 dark:text-white">Colar</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+      <TouchableOpacity onPress={() => Linking.openURL('https://aistudio.google.com/app/apikey')}>
+        <Text className="mt-1 text-sm text-blue-500 dark:text-blue-400">
+          Obtenha sua chave de API aqui
+        </Text>
+      </TouchableOpacity>
+    </View>
+  )
+
   return (
     <SafeAreaView className="flex-1 bg-neutral-100 dark:bg-gray-800">
       <ScrollView className="flex-1 px-4 py-6">
@@ -187,6 +234,7 @@ export default function ConfigPage() {
             {renderCompanyNameInput()}
             {renderBreakTimeInput()}
             {renderWorkDaysInput()}
+            {renderGeminiApiKeyInput()}
 
 
             {/* Botão de salvar */}
