@@ -14,6 +14,7 @@ import { Header } from "@/components/Header";
 import { HourInput } from "@/components/HourInput";
 import { database } from "@/db";
 import { RegisterInsert, registersTable } from "@/db/schema";
+import { useConfig } from "@/hooks/useConfig";
 import { useThemeColor } from "@/hooks/useThemeColor";
 
 /**
@@ -43,7 +44,12 @@ export default function RegisterPage() {
   });
   const [loading, setLoading] = useState(false);
 
+  const { config } = useConfig();
+
   const handleTakePhoto = async () => {
+    if (!config) {
+      return;
+    }
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== "granted") {
       alert("Permissão de câmera negada!");
@@ -71,70 +77,71 @@ export default function RegisterPage() {
         photo: result.assets[0].uri,
       });
 
-      setLoading(true);
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${"google_api_key"}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            contents: [
-              {
-                role: "user",
-                parts: [
-                  {
-                    inlineData: {
-                      mimeType: "image/jpeg",
-                      data: result.assets[0].base64,
-                    },
-                  },
-                ],
-              },
-            ],
-            generationConfig: {
-              temperature: 0.1,
-              maxOutputTokens: 1024,
-              thinkingConfig: {
-                thinkingBudget: 0,
-              },
-              responseMimeType: "application/json",
-              responseSchema: {
-                type: "object",
-                properties: {
-                  date: { type: "string" },
-                  time: { type: "string" },
-                  nsr: { type: "string" },
-                },
-                required: ["date", "time", "nsr"],
-                propertyOrdering: ["date", "time", "nsr"],
-              },
+      if (config.geminiApiKey) {
+        setLoading(true);
+        const response = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${config.geminiApiKey}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
             },
-          }),
-        }
-      );
-      console.log(response);
+            body: JSON.stringify({
+              contents: [
+                {
+                  role: "user",
+                  parts: [
+                    {
+                      inlineData: {
+                        mimeType: "image/jpeg",
+                        data: result.assets[0].base64,
+                      },
+                    },
+                  ],
+                },
+              ],
+              generationConfig: {
+                temperature: 0.1,
+                maxOutputTokens: 1024,
+                thinkingConfig: {
+                  thinkingBudget: 0,
+                },
+                responseMimeType: "application/json",
+                responseSchema: {
+                  type: "object",
+                  properties: {
+                    date: { type: "string" },
+                    time: { type: "string" },
+                    nsr: { type: "string" },
+                  },
+                  required: ["date", "time", "nsr"],
+                  propertyOrdering: ["date", "time", "nsr"],
+                },
+              },
+            }),
+          }
+        );
+        console.log(response);
 
-      const data = await response.json();
-      const { date, time, nsr } = JSON.parse(
-        data.candidates[0].content.parts[0].text
-      ) as {
-        date: string;
-        time: string;
-        nsr: string;
-      };
+        const data = await response.json();
+        const { date, time, nsr } = JSON.parse(
+          data.candidates[0].content.parts[0].text
+        ) as {
+          date: string;
+          time: string;
+          nsr: string;
+        };
 
-      setRegister((prev) => ({
-        ...prev,
-        date: date,
-        time: time,
-        nsr: nsr,
-      }));
-      setLoading(false);
-
-      return;
+        setRegister((prev) => ({
+          ...prev,
+          date: date,
+          time: time,
+          nsr: nsr,
+        }));
+        setLoading(false);
+      }
     }
+    return;
   };
 
   const handleInputChange = (
@@ -152,7 +159,7 @@ export default function RegisterPage() {
       .insert(registersTable)
       .values(register)
       .returning();
-    console.log(result)
+    console.log(result);
     return result;
   }
 

@@ -2,6 +2,7 @@ import { Link } from "expo-router";
 import { Text, View } from "react-native";
 
 import { Header } from "@/components/Header";
+import { useConfig } from "@/hooks/useConfig";
 import { useThemeColor } from "@/hooks/useThemeColor";
 
 /**
@@ -9,6 +10,9 @@ import { useThemeColor } from "@/hooks/useThemeColor";
  * Apresenta o aplicativo e fornece acesso à configuração
  */
 export default function InitialPage() {
+  const {config} = useConfig();
+
+
   // Obtém cores do tema atual
   const backgroundColor = useThemeColor(
     { light: "#F5F5F5", dark: "#1F2937" },
@@ -52,7 +56,7 @@ export default function InitialPage() {
    */
   const renderEnterButton = () => (
     <Link
-      href="/register"
+      href={config?.id ? `/home` : `/config`}
       className="p-2 mt-5 w-full bg-blue-400 rounded-3xl dark:bg-blue-600"
       style={{ backgroundColor: buttonColor }}
       accessibilityRole="button"

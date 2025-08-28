@@ -37,6 +37,7 @@ export const configTable = sqliteTable('config', {
   breakTime: integer('break_time'),
   workDays: text('work_days', {mode:'json'}),
   companyName: text('company_name'),
+  geminiApiKey: text('gemini_api_key'),
 
   // Metadados
   createdAt: integer('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),

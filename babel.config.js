@@ -1,7 +1,7 @@
 module.exports = function (api) {
   api.cache(true);
   let plugins = [
-    ["inline-import", { "extensions": [".sql"] }]
+    ["inline-import", { extensions: [".sql"] }],
   ];
 
   return {
