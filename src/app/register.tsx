@@ -6,7 +6,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 
 import { DateInput } from "@/components/DateInput";
@@ -15,6 +15,7 @@ import { HourInput } from "@/components/HourInput";
 import { database } from "@/db";
 import { RegisterInsert, registersTable } from "@/db/schema";
 import { useConfig } from "@/hooks/useConfig";
+import { useTheme } from "@/providers/ThemeProvider";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 /**
@@ -37,6 +38,7 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
 
   const { config } = useConfig();
+  const { theme } = useTheme();
 
   const handleTakePhoto = async () => {
     if (!config) {
@@ -68,7 +70,7 @@ export default function RegisterPage() {
         photo: result.assets[0].uri,
       });
 
-      if (config.geminiApiKey) {
+      if (config.geminiApiKey && config.geminiApiKey.length > 0) {
         setLoading(true);
         const response = await fetch(
           `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${config.geminiApiKey}`,
@@ -188,7 +190,9 @@ export default function RegisterPage() {
         </View>
 
         <View className="w-full">
-          <Text className="mb-1 text-lg font-medium text-background-content">Hora</Text>
+          <Text className="mb-1 text-lg font-medium text-background-content">
+            Hora
+          </Text>
           <HourInput
             onChange={(value) => handleInputChange("time", value)}
             value={register.time}
@@ -213,17 +217,22 @@ export default function RegisterPage() {
             onPress={handleTakePhoto}
             className="justify-center items-center p-3 w-full h-48 rounded-lg bg-tertiary"
           >
-            <Text className="text-lg font-medium text-tertiary-content">Foto do Ponto</Text>
+            <Text className="text-lg font-medium text-tertiary-content">
+              Foto do Ponto
+            </Text>
           </TouchableOpacity>
         )}
 
         <View className="w-full">
-          <Text className="mb-1 text-lg font-medium text-background-content">NSR</Text>
+          <Text className="mb-1 text-lg font-medium text-background-content">
+            NSR
+          </Text>
           <TextInput
             value={register.nsr || ""}
             onChangeText={(value) => handleInputChange("nsr", value)}
             className="p-2 rounded-md bg-tertiary text-tertiary-content"
             placeholder="Digite o NSR"
+            placeholderTextColor={theme === 'light'? '#FFFFFF' : '#492532'}
           />
         </View>
       </View>
@@ -232,7 +241,9 @@ export default function RegisterPage() {
         className="items-center p-4 mt-6 w-full rounded-lg bg-success"
         onPress={handleRegister}
       >
-        <Text className="text-lg font-bold text-success-content">Registrar</Text>
+        <Text className="text-lg font-bold text-success-content">
+          Registrar
+        </Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
