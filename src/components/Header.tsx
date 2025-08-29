@@ -1,6 +1,5 @@
 import { useTheme } from "@/providers/ThemeProvider";
 import { Image, Text, View } from "react-native";
-import ThemeToggle from "./ToggleTheme";
 
 /**
  * Interface de propriedades do componente Header
@@ -22,9 +21,9 @@ export function Header({ title = "Registra lá" }: HeaderProps) {
   const { theme } = useTheme();
 
   return (
-    <View className="flex-row justify-between items-center px-4 w-screen">
+    <View className="flex-row justify-center items-center px-4 w-screen">
       <View
-        className={`p-2 w-14 h-14 rounded-2xl ${
+        className={`p-2 w-14 h-14 mr-4 rounded-2xl ${
           theme === "light" ? "bg-primary" : ''
         }`}
       >
@@ -39,7 +38,6 @@ export function Header({ title = "Registra lá" }: HeaderProps) {
       <Text className="text-4xl text-primary" accessibilityRole="header">
         {title}
       </Text>
-      <ThemeToggle />
     </View>
   );
 }

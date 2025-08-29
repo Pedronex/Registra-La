@@ -1,4 +1,5 @@
-import ToggleTheme from "@/components/ToggleTheme";
+import { Header } from "@/components/Header";
+import ThemeToggle from "@/components/ToggleTheme";
 import { Messages } from "@/constants/Messages";
 import { useConfig } from "@/hooks/useConfig";
 import { Alert } from "@/lib/Alert";
@@ -91,11 +92,11 @@ export default function ConfigPage() {
    */
   const renderWorkHoursInput = () => (
     <View>
-      <Text className="text-sm font-medium text-background-content mb-1">
+      <Text className="mb-1 text-sm font-medium text-background-content">
         Horas de Trabalho Diárias
       </Text>
       <TextInput
-        className="px-4 py-3 w-full bg-surface rounded-lg border border-surface-content"
+        className="px-4 py-3 w-full rounded-lg border bg-surface border-surface-content"
         keyboardType="numeric"
         placeholder="Ex: 8"
         value={workHours.toString()}
@@ -111,11 +112,11 @@ export default function ConfigPage() {
    */
   const renderToleranceInput = () => (
     <View>
-      <Text className="text-sm font-medium text-background-content mb-1">
+      <Text className="mb-1 text-sm font-medium text-background-content">
         Tolerância (em minutos)
       </Text>
       <TextInput
-        className="px-4 py-3 w-full bg-surface rounded-lg border border-surface-content"
+        className="px-4 py-3 w-full rounded-lg border bg-surface border-surface-content"
         keyboardType="numeric"
         placeholder="Ex: 15"
         value={tolerance.toString()}
@@ -131,11 +132,11 @@ export default function ConfigPage() {
    */
   const renderCompanyNameInput = () => (
     <View>
-      <Text className="text-sm font-medium text-background-content mb-1">
+      <Text className="mb-1 text-sm font-medium text-background-content">
         Nome da Empresa
       </Text>
       <TextInput
-        className="px-4 py-3 w-full bg-surface rounded-lg border border-surface-content"
+        className="px-4 py-3 w-full rounded-lg border bg-surface border-surface-content"
         placeholder="Ex: Empresa XYZ"
         value={companyName}
         onChangeText={setCompanyName}
@@ -150,11 +151,11 @@ export default function ConfigPage() {
    */
   const renderBreakTimeInput = () => (
     <View>
-      <Text className="text-sm font-medium text-background-content mb-1">
+      <Text className="mb-1 text-sm font-medium text-background-content">
         Intervalo de Trabalho (em minutos)
       </Text>
       <TextInput
-        className="px-4 py-3 w-full bg-surface rounded-lg border border-surface-content"
+        className="px-4 py-3 w-full rounded-lg border bg-surface border-surface-content"
         keyboardType="numeric"
         placeholder="Ex: 15"
         value={breakTime.toString()}
@@ -169,7 +170,7 @@ export default function ConfigPage() {
    */
   const renderWorkDaysInput = () => (
     <View>
-      <Text className="text-sm font-medium text-background-content mb-1">
+      <Text className="mb-1 text-sm font-medium text-background-content">
         Dias da Semana Trabalhados
       </Text>
       <View className="flex flex-row flex-wrap gap-2">
@@ -210,14 +211,23 @@ export default function ConfigPage() {
     setGeminiApiKey(text);
   };
 
+  const renderToggleTheme = () => (
+    <View>
+      <Text className="mb-1 text-sm font-medium text-background-content">
+        Tema do Aplicativo
+      </Text>
+      <ThemeToggle />
+    </View>
+  );
+
   const renderGeminiApiKeyInput = () => (
     <View>
-      <Text className="text-sm font-medium text-background-content mb-1">
+      <Text className="mb-1 text-sm font-medium text-background-content">
         Gemini API Key
       </Text>
       <View className="flex-row items-center">
         <TextInput
-          className="flex-1 px-4 py-3 w-full bg-surface rounded-lg border border-surface-content"
+          className="flex-1 px-4 py-3 w-full rounded-lg border bg-surface border-surface-content"
           placeholder="Insira sua API Key do Gemini"
           value={geminiApiKey}
           onChangeText={setGeminiApiKey}
@@ -227,7 +237,7 @@ export default function ConfigPage() {
         {isPasteAvailable && (
           <TouchableOpacity
             onPress={handlePasteApiKey}
-            className="p-2 ml-2 bg-surface rounded-lg"
+            className="p-2 ml-2 rounded-lg bg-surface"
           >
             <Text className="text-sm text-background-content">Colar</Text>
           </TouchableOpacity>
@@ -247,16 +257,14 @@ export default function ConfigPage() {
 
   return (
     <SafeAreaView className="flex-1 bg-background">
-      <View className="flex-row justify-end p-4">
-        <ToggleTheme />
-      </View>
+      <Header />
       <ScrollView className="flex-1 px-4 py-6">
         <View className="space-y-6">
           <View>
-            <Text className="text-lg font-semibold text-background-content mb-2">
+            <Text className="mb-2 text-lg font-semibold text-background-content">
               Configuração de Horas de Trabalho
             </Text>
-            <Text className="text-sm text-secondary-content mb-4">
+            <Text className="mb-4 text-sm text-secondary-content">
               {currentStep === 1 && "Passo 1: Horas de Trabalho"}
               {currentStep === 2 && "Passo 2: Detalhes da Empresa"}
               {currentStep === 3 && "Passo 3: Integrações"}
@@ -266,6 +274,7 @@ export default function ConfigPage() {
           <View className="flex flex-col gap-y-4">
             {currentStep === 1 && (
               <>
+                {renderToggleTheme()}
                 {renderWorkHoursInput()}
                 {renderWorkDaysInput()}
                 {renderBreakTimeInput()}
@@ -284,29 +293,33 @@ export default function ConfigPage() {
             <View className="flex flex-row justify-between mt-6">
               {currentStep > 1 && (
                 <TouchableOpacity
-                  className="p-3 w-1/3 bg-secondary rounded-lg"
+                  className="p-3 w-1/3 rounded-lg bg-secondary"
                   onPress={prevStep}
                   accessibilityLabel="Voltar"
                   accessibilityRole="button"
                 >
-                  <Text className="text-center text-secondary-content">Voltar</Text>
+                  <Text className="text-center text-secondary-content">
+                    Voltar
+                  </Text>
                 </TouchableOpacity>
               )}
 
               {currentStep < 3 && (
                 <TouchableOpacity
-                  className="p-3 w-1/3 bg-primary rounded-lg"
+                  className="p-3 w-1/3 rounded-lg bg-primary"
                   onPress={nextStep}
                   accessibilityLabel="Próximo"
                   accessibilityRole="button"
                 >
-                  <Text className="text-center text-primary-content">Próximo</Text>
+                  <Text className="text-center text-primary-content">
+                    Próximo
+                  </Text>
                 </TouchableOpacity>
               )}
 
               {currentStep === 3 && (
                 <TouchableOpacity
-                  className="p-3 w-1/3 bg-primary rounded-lg"
+                  className="p-3 w-1/3 rounded-lg bg-primary"
                   onPress={handleSaveConfig}
                   accessibilityLabel="Salvar configurações"
                   accessibilityRole="button"
@@ -319,7 +332,7 @@ export default function ConfigPage() {
               )}
               {config && (
                 <TouchableOpacity
-                  className="p-3 w-1/3 bg-error rounded-lg"
+                  className="p-3 w-1/3 rounded-lg bg-error"
                   onPress={() => router.back()}
                   accessibilityLabel="Voltar para a tela anterior"
                   accessibilityRole="button"
