@@ -11,20 +11,31 @@ interface HeaderProps {
    * Título opcional para o cabeçalho
    */
   title?: string;
+  /**
+   *
+   */
+  showConfig?: boolean;
 }
 
 /**
  * Componente de cabeçalho do aplicativo
  * Exibe o logo e o título do aplicativo
  */
-export function Header({ title = "Registra lá" }: HeaderProps) {
+export function Header({
+  title = "Registra lá",
+  showConfig = true,
+}: HeaderProps) {
   const logoDark = require("@/assets/Relogio.png");
 
   const { theme } = useTheme();
   const isDark = theme === "dark";
 
   return (
-    <View className="flex-row justify-center items-center px-4 w-screen">
+    <View
+      className={`flex-row ${
+        showConfig ? "justify-between" : "justify-center"
+      } items-center px-4 w-screen`}
+    >
       <View
         className={`p-2 w-14 h-14 rounded-2xl ${isDark ? "":"bg-primary"}`}
       >
@@ -39,15 +50,21 @@ export function Header({ title = "Registra lá" }: HeaderProps) {
       <Text className="text-4xl text-primary" accessibilityRole="header">
         {title}
       </Text>
-      <Link href="/config" asChild>
-        <TouchableOpacity
-          className="rounded-lg"
-          accessibilityRole="button"
-          accessibilityLabel="Configurar aplicativo"
-        >
-          <Entypo name="cog" size={35} color={isDark? '#6750A4': '#D0BCFF'} />
-        </TouchableOpacity>
-      </Link>
+      {showConfig && (
+        <Link href="/config" asChild>
+          <TouchableOpacity
+            className="rounded-lg"
+            accessibilityRole="button"
+            accessibilityLabel="Configurar aplicativo"
+          >
+            <Entypo
+              name="cog"
+              size={35}
+              color={isDark ? "#6750A4" : "#D0BCFF"}
+            />
+          </TouchableOpacity>
+        </Link>
+      )}
     </View>
   );
 }

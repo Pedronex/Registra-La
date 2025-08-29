@@ -15,7 +15,7 @@ export default function InitialPage() {
   /**
    * Renderiza o cabeçalho da página
    */
-  const renderHeader = () => <Header />;
+  const renderHeader = () => <Header showConfig={false} />;
 
   /**
    * Renderiza o slogan do aplicativo
