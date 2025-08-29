@@ -15,21 +15,14 @@ import { HourInput } from "@/components/HourInput";
 import { database } from "@/db";
 import { RegisterInsert, registersTable } from "@/db/schema";
 import { useConfig } from "@/hooks/useConfig";
-import { useThemeColor } from "@/hooks/useThemeColor";
+import { useTheme } from "@/providers/ThemeProvider";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 /**
  * Página de registro de ponto
  * Permite o usuário registrar o seu ponto
  */
 export default function RegisterPage() {
-  const backgroundColor = useThemeColor(
-    { light: "#F5F5F5", dark: "#1F2937" },
-    "background"
-  );
-  const textColor = useThemeColor(
-    { light: "#1F2937", dark: "#F5F5F5" },
-    "text"
-  );
   const [register, setRegister] = useState<RegisterInsert>({
     date: new Date().toLocaleDateString("pt-BR"),
     time: new Date().toLocaleTimeString("pt-BR", {
@@ -45,6 +38,7 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
 
   const { config } = useConfig();
+  const { theme } = useTheme();
 
   const handleTakePhoto = async () => {
     if (!config) {
@@ -61,7 +55,6 @@ export default function RegisterPage() {
       allowsEditing: false,
       aspect: [4, 3],
       quality: 1,
-
       base64: true,
     });
 
@@ -77,7 +70,7 @@ export default function RegisterPage() {
         photo: result.assets[0].uri,
       });
 
-      if (config.geminiApiKey) {
+      if (config.geminiApiKey && config.geminiApiKey.length > 0) {
         setLoading(true);
         const response = await fetch(
           `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${config.geminiApiKey}`,
@@ -165,12 +158,9 @@ export default function RegisterPage() {
 
   if (loading) {
     return (
-      <View
-        className="justify-center items-center p-6 w-screen h-screen bg-neutral-100 dark:bg-gray-800"
-        style={{ backgroundColor }}
-      >
-        <ActivityIndicator size="large" color={textColor} className="mb-3" />
-        <Text style={{ color: textColor }} className="text-lg font-medium">
+      <View className="flex-1 justify-center items-center p-6 bg-background">
+        <ActivityIndicator size="large" className="mb-3" color="#000" />
+        <Text className="text-lg font-medium text-background-content">
           Processando dados da foto...
         </Text>
       </View>
@@ -178,18 +168,12 @@ export default function RegisterPage() {
   }
 
   return (
-    <View
-      className="justify-between items-center p-6 w-screen h-screen bg-neutral-100 dark:bg-gray-800"
-      style={{ backgroundColor }}
-    >
+    <SafeAreaView className="flex-1 justify-between items-center px-3 pb-5 bg-background">
       <Header />
 
-      <View className="flex flex-col justify-between items-center space-y-4 w-full h-3/4">
+      <View className="flex-1 gap-y-5 mt-4 space-y-4 w-full">
         <View className="w-full">
-          <Text
-            style={{ color: textColor }}
-            className="mb-1 text-lg font-medium"
-          >
+          <Text className="mb-1 text-lg font-medium text-background-content">
             Data
           </Text>
           <DateInput
@@ -206,10 +190,7 @@ export default function RegisterPage() {
         </View>
 
         <View className="w-full">
-          <Text
-            style={{ color: textColor }}
-            className="mb-1 text-lg font-medium"
-          >
+          <Text className="mb-1 text-lg font-medium text-background-content">
             Hora
           </Text>
           <HourInput
@@ -220,7 +201,7 @@ export default function RegisterPage() {
 
         {register.photo ? (
           <TouchableOpacity
-            className="items-center p-3 w-full h-1/2 rounded-lg"
+            className="items-center p-3 w-full h-48 rounded-lg"
             onPress={handleTakePhoto}
           >
             <Image
@@ -234,36 +215,36 @@ export default function RegisterPage() {
         ) : (
           <TouchableOpacity
             onPress={handleTakePhoto}
-            className="items-center p-3 w-full h-1/2 bg-blue-500 rounded-lg"
+            className="justify-center items-center p-3 w-full h-48 rounded-lg bg-tertiary"
           >
-            <Text style={{ color: textColor }} className="text-lg font-medium">
+            <Text className="text-lg font-medium text-tertiary-content">
               Foto do Ponto
             </Text>
           </TouchableOpacity>
         )}
 
         <View className="w-full">
-          <Text
-            style={{ color: textColor }}
-            className="mb-1 text-lg font-medium"
-          >
+          <Text className="mb-1 text-lg font-medium text-background-content">
             NSR
           </Text>
           <TextInput
             value={register.nsr || ""}
             onChangeText={(value) => handleInputChange("nsr", value)}
-            className="p-2 text-black bg-gray-200 rounded-md"
+            className="p-2 rounded-md bg-tertiary text-tertiary-content"
             placeholder="Digite o NSR"
+            placeholderTextColor={theme === 'light'? '#FFFFFF' : '#492532'}
           />
         </View>
       </View>
 
       <TouchableOpacity
-        className="items-center p-4 mt-6 w-full bg-green-500 rounded-lg"
+        className="items-center p-4 mt-6 w-full rounded-lg bg-success"
         onPress={handleRegister}
       >
-        <Text className="text-lg font-bold text-white">Registrar</Text>
+        <Text className="text-lg font-bold text-success-content">
+          Registrar
+        </Text>
       </TouchableOpacity>
-    </View>
+    </SafeAreaView>
   );
 }

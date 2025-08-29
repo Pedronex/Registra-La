@@ -4,6 +4,7 @@ import "../../global.css";
 import { Messages } from "@/constants/Messages";
 import { database, expo } from "@/db";
 import { Alert } from "@/lib/Alert";
+import { ThemeProvider } from "@/providers/ThemeProvider";
 import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
 import { useDrizzleStudio } from "expo-drizzle-studio-plugin";
 import { Slot } from "expo-router";
@@ -18,7 +19,7 @@ import migrations from "../../drizzle/migrations";
  */
 
 export default function Layout() {
-    useDrizzleStudio(expo);
+  useDrizzleStudio(expo);
 
   const { success, error } = useMigrations(database, migrations);
 
@@ -79,5 +80,9 @@ export default function Layout() {
     );
   }
 
-  return <Slot />;
+  return (
+    <ThemeProvider>
+      <Slot />
+    </ThemeProvider>
+  );
 }

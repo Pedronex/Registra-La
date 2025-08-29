@@ -1,5 +1,6 @@
+import { useTheme } from "@/providers/ThemeProvider";
 import { Image, Text, View } from "react-native";
-import { useThemeColor } from "@/hooks/useThemeColor";
+import ThemeToggle from "./ToggleTheme";
 
 /**
  * Interface de propriedades do componente Header
@@ -16,24 +17,29 @@ interface HeaderProps {
  * Exibe o logo e o título do aplicativo
  */
 export function Header({ title = "Registra lá" }: HeaderProps) {
-  const textColor = useThemeColor({ light: "#000000", dark: "#FFFFFF" }, "text");
-  
+  const logoDark = require("@/assets/Relogio.png");
+
+  const { theme } = useTheme();
+
   return (
-    <View className="flex-row justify-center items-center">
-      <Image 
-        source={require("@/assets/Relogio.png")} 
-        width={50} 
-        height={50} 
-        className="mr-2"
-        accessibilityLabel="Logo do aplicativo"
-      />
-      <Text 
-        className="text-4xl dark:text-white"
-        style={{ color: textColor }}
-        accessibilityRole="header"
+    <View className="flex-row justify-between items-center px-4 w-screen">
+      <View
+        className={`p-2 w-14 h-14 rounded-2xl ${
+          theme === "light" ? "bg-primary" : ''
+        }`}
       >
+        <Image
+          source={logoDark}
+          width={50}
+          height={50}
+          className="mr-2 w-full h-full"
+          accessibilityLabel="Logo do aplicativo"
+        />
+      </View>
+      <Text className="text-4xl text-primary" accessibilityRole="header">
         {title}
       </Text>
+      <ThemeToggle />
     </View>
   );
 }
