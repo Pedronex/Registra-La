@@ -1,59 +1,32 @@
 /**
- * Hook personalizado para gerenciar as configurações do aplicativo.
- * Centraliza a lógica de acesso e manipulação das configurações.
+ * Hook personalizado para gerenciar o registro de ponto.
+ * Centraliza a lógica de acesso e manipulação dos registros.
  */
 
 import { database } from '@/db';
-import { RegisterData, RegisterInsert, registersTable } from '@/db/schema';
-import { useCallback, useEffect, useState } from 'react';
+import { RegisterInsert, registersTable } from '@/db/schema';
+import { useCallback, useState } from 'react';
 
 /**
- * Hook para gerenciar configurações do aplicativo
+ * Hook para gerenciar o registro de ponto
  */
-export function useConfig() {
-    const [registers, setRegisters] = useState<RegisterData[]>([]);
-
-    const [loading, setLoading] = useState(true);
+export function useRegister() {
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     /**
-     * Carrega as configurações do aplicativo
+     * Salva um novo registro de ponto
      */
-    const loadRegisters = useCallback(async () => {
+    const saveRegister = useCallback(async (data: RegisterInsert) => {
         try {
             setLoading(true);
             setError(null);
 
-            const registers = await database.select().from(registersTable);
-            setRegisters(registers);
-
-
-            return registers;
-        } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : 'Erro ao carregar configurações';
-            setError(errorMessage);
-            return null;
-        } finally {
-            setLoading(false);
-        }
-    }, []);
-
-    /**
-     * Salva as configurações do aplicativo
-     */
-    const saveConfig = useCallback(async (data: RegisterInsert) => {
-        try {
-            setLoading(true);
-            setError(null);
-
-            await database.insert(registersTable).values(data).onConflictDoUpdate({
-                target: registersTable.id,
-                set: data,
-            })
+            await database.insert(registersTable).values(data);
 
             return true;
         } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : 'Erro ao salvar configurações';
+            const errorMessage = err instanceof Error ? err.message : 'Erro ao salvar registro';
             setError(errorMessage);
             throw err;
         } finally {
@@ -61,16 +34,9 @@ export function useConfig() {
         }
     }, []);
 
-    // Carrega as configurações ao montar o componente
-    useEffect(() => {
-        loadRegisters();
-    }, [loadRegisters]);
-
     return {
-        registers,
         loading,
         error,
-        loadRegisters,
-        saveConfig,
+        saveRegister,
     };
 }
