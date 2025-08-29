@@ -16,6 +16,7 @@ import { database } from "@/db";
 import { RegisterInsert, registersTable } from "@/db/schema";
 import { useConfig } from "@/hooks/useConfig";
 import { useTheme } from "@/providers/ThemeProvider";
+import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 /**
@@ -153,6 +154,7 @@ export default function RegisterPage() {
       .values(register)
       .returning();
     console.log(result);
+    router.back();
     return result;
   }
 

@@ -1,9 +1,10 @@
-import { Link } from "expo-router";
-import { Text, TouchableOpacity, View } from "react-native";
 import { Header } from "@/components/Header";
-import { useConfig } from "@/hooks/useConfig";
-import { useEffect, useState } from "react";
 import { History } from "@/components/History";
+import { useConfig } from "@/hooks/useConfig";
+import { Link } from "expo-router";
+import { useEffect, useState } from "react";
+import { Text, TouchableOpacity, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 /**
  * Página principal do aplicativo após login
@@ -28,7 +29,7 @@ export default function HomePage() {
   }
 
   return (
-    <View className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background">
       <Header title="Página Inicial" />
       <View className="flex-1 p-4">
         <History />
@@ -55,6 +56,6 @@ export default function HomePage() {
           </Link>
         )}
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
