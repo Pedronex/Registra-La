@@ -1,4 +1,5 @@
 import { useTheme } from "@/providers/ThemeProvider";
+import { colors } from "@/utils/colorThemes";
 import { Entypo } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import { Text, TextInput, TouchableOpacity, View } from "react-native";
@@ -11,6 +12,9 @@ interface HourInputProps {
 export function HourInput({ onChange, value }: HourInputProps) {
   const [minutes, setMinutes] = useState("");
   const [hours, setHours] = useState("");
+  const { theme } = useTheme();
+
+  const isDark = theme === "dark";
 
   useEffect(() => {
     const [hour, minute] = value.split(":");
@@ -25,6 +29,7 @@ export function HourInput({ onChange, value }: HourInputProps) {
       onChange(`${val}:${minutes}`);
     }
   };
+
   const handleMinuteChange = (text: string) => {
     const val = text.replace(/[^0-9]/g, "");
     if (val.length <= 2) {
@@ -91,46 +96,41 @@ export function HourInput({ onChange, value }: HourInputProps) {
 
     setHours(formattedHours);
     setMinutes(formattedMinutes);
-    onChange(`${formattedHours}:${formattedMinutes}`);
+    onChange(`${formattedHours || "00"}:${formattedMinutes || "00"}`);
   };
 
-  const { theme } = useTheme();
-
   return (
-    <View className="flex-row gap-x-4 justify-between items-center w-full rounded-lg">
+    <View className="flex-row gap-x-4 justify-between items-center p-4 w-full rounded-2xl bg-surface elevation">
       <TouchableOpacity
-        className="justify-center items-center mr-2 rounded-full border border-tertiary"
+        className="justify-center items-center w-14 h-14 rounded-full border bg-tertiary border-primary"
         onPress={handleAddMinutes}
       >
-        <Entypo
-          name="plus"
-          size={50}
-          color={theme === "light" ? "#7D5260" : "#EFB8C8"}
-        />
+        <Entypo name="plus" size={32} color={colors[theme].surfaceContent}/>
       </TouchableOpacity>
-      <TextInput
-        className="text-4xl text-tertiary"
-        value={hours}
-        onChangeText={handleHourChange}
-        onBlur={handleHourBlur}
-      />
-      <Text className="text-4xl font-bold text-tertiary">:</Text>
 
-      <TextInput
-        className="text-4xl text-tertiary"
-        value={minutes}
-        onChangeText={handleMinuteChange}
-        onBlur={handleMinuteBlur}
-      />
+      <View className="flex-row items-center px-4 py-2 rounded-xl bg-surface/10">
+        <TextInput
+          className="text-5xl font-semibold min-w-[60px] text-center text-surface-content"
+          value={hours}
+          keyboardType="number-pad"
+          onChangeText={handleHourChange}
+          onBlur={handleHourBlur}
+        />
+        <Text className="mx-1 text-5xl font-bold text-surface-content">:</Text>
+        <TextInput
+          className="text-5xl font-semibold min-w-[60px] text-center text-surface-content"
+          value={minutes}
+          keyboardType="number-pad"
+          onChangeText={handleMinuteChange}
+          onBlur={handleMinuteBlur}
+        />
+      </View>
+
       <TouchableOpacity
-        className="justify-center items-center mr-2 rounded-full border border-tertiary"
+        className="justify-center items-center w-14 h-14 rounded-full border bg-tertiary border-primary"
         onPress={handleRemoveMinute}
       >
-        <Entypo
-          name="minus"
-          size={50}
-          color={theme === "light" ? "#7D5260" : "#EFB8C8"}
-        />
+        <Entypo name="minus" size={32} color={colors[theme].surfaceContent} />
       </TouchableOpacity>
     </View>
   );

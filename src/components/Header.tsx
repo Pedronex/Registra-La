@@ -1,4 +1,5 @@
 import { useTheme } from "@/providers/ThemeProvider";
+import { colors } from "@/utils/colorThemes";
 import { Entypo } from "@expo/vector-icons";
 import { Link } from "expo-router";
 import { Image, Text, TouchableOpacity, View } from "react-native";
@@ -28,7 +29,6 @@ export function Header({
   const logoDark = require("@/assets/Relogio.png");
 
   const { theme } = useTheme();
-  const isDark = theme === "dark";
 
   return (
     <View
@@ -37,7 +37,9 @@ export function Header({
       } items-center px-4 w-screen`}
     >
       <View
-        className={`p-2 w-14 h-14 rounded-2xl ${isDark ? "":"bg-primary"}`}
+        className={`p-2 w-14 h-14 rounded-2xl mr-2 ${
+          theme === "dark" ? "" : "bg-primary"
+        }`}
       >
         <Image
           source={logoDark}
@@ -47,7 +49,10 @@ export function Header({
           accessibilityLabel="Logo do aplicativo"
         />
       </View>
-      <Text className="text-4xl text-primary" accessibilityRole="header">
+      <Text
+        className="text-4xl text-surface-content"
+        accessibilityRole="header"
+      >
         {title}
       </Text>
       {showConfig && (
@@ -57,11 +62,7 @@ export function Header({
             accessibilityRole="button"
             accessibilityLabel="Configurar aplicativo"
           >
-            <Entypo
-              name="cog"
-              size={35}
-              color={isDark ? "#6750A4" : "#D0BCFF"}
-            />
+            <Entypo name="cog" size={35} color={colors[theme].primary} />
           </TouchableOpacity>
         </Link>
       )}

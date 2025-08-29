@@ -1,11 +1,13 @@
 import { RegisterData } from "@/db/schema";
 import { useTimeRecords } from "@/hooks/useTimeRecords";
 import { useTheme } from "@/providers/ThemeProvider";
-import { Entypo } from "@expo/vector-icons";
+import { colors } from "@/utils/colorThemes";
+import { Entypo, MaterialIcons } from "@expo/vector-icons";
 import { addDays, format, parse, subDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { router } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import { Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
 
 /**
  * Componente que exibe o histórico de registros de ponto
@@ -46,39 +48,33 @@ export function History() {
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
 
-    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
-      2,
-      "0"
-    )}`;
+    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
   }, [records]);
 
   /**
    * Renderiza o cabeçalho com a data e os botões de navegação
    */
   const renderHeader = () => (
-    <View className="flex-row justify-between items-center p-2 mb-4 rounded-lg bg-primary">
+    <View className="flex-row justify-between items-center p-4 mb-4 rounded-lg shadow-lg bg-primary">
       <TouchableOpacity
         onPress={() => setDate(subDays(date, 1))}
-        className="p-2 rounded-full border border-primary-content"
+        className="p-3 rounded-full bg-primary-focus"
       >
-        <Entypo
-          name="arrow-left"
-          size={30}
-          color={isDark ? "#332D41" : "#FFFFFF"}
-        />
+        <Entypo name="chevron-left" size={24} color={colors[theme].primaryContent} />
       </TouchableOpacity>
-      <Text className="text-3xl text-secondary-content">
-        {format(date, "dd/MM/yyyy", { locale: ptBR })}
-      </Text>
+      <View className="items-center">
+        <Text className="text-2xl font-bold text-primary-content">
+          {format(date, "dd 'de' MMMM", { locale: ptBR })}
+        </Text>
+        <Text className="text-sm opacity-80 text-primary-content">
+          {format(date, "yyyy", { locale: ptBR })}
+        </Text>
+      </View>
       <TouchableOpacity
         onPress={() => setDate(addDays(date, 1))}
-        className="p-2 rounded-full border border-primary-content"
+        className="p-3 rounded-full bg-primary-focus"
       >
-        <Entypo
-          name="arrow-right"
-          size={30}
-          color={isDark ? "#332D41" : "#FFFFFF"}
-        />
+        <Entypo name="chevron-right" size={24} color={colors[theme].primaryContent} />
       </TouchableOpacity>
     </View>
   );
@@ -88,12 +84,16 @@ export function History() {
    */
   const displayItems = useMemo(() => {
     type HistoryItem =
-      | { type: "record"; data: RegisterData }
+      | { type: "record"; data: RegisterData; isEntry: boolean }
       | { type: "break"; data: { formatted: string } };
 
     const items: HistoryItem[] = [];
     for (let i = 0; i < records.length; i++) {
-      items.push({ type: "record", data: records[i] });
+      items.push({ 
+        type: "record", 
+        data: records[i],
+        isEntry: i % 2 === 0
+      });
 
       if (i % 2 !== 0 && records[i + 1]) {
         const exitTime = parse(records[i].time, "HH:mm", new Date());
@@ -121,28 +121,46 @@ export function History() {
    * Renderiza a lista de registros e intervalos
    */
   const renderHistoryItems = () => (
-    <View className="flex-col p-4 rounded bg-secondary">
+    <View className="flex-1 justify-between p-4 rounded-lg bg-secondary">
       {displayItems.map((item, index) => {
         if (item.type === "record") {
           return (
-            <View
+            <TouchableOpacity
               key={`record-${item.data.id}`}
-              className="flex-row justify-between items-center py-2 border-b border-secondary-content"
+              className="flex-row items-center p-3 mb-4 rounded-lg bg-secondary-focus active:opacity-80"
+              onPress={() => router.push(`/${item.data.id}`)}
             >
-              <Text className="w-full text-2xl text-center text-secondary-content">
-                {item.data.time}
-              </Text>
-              <Text className="text-lg text-secondary-content">
-                {item.data.description}
-              </Text>
-            </View>
+              <View className="justify-center items-center w-12 h-12 rounded-full">
+                <MaterialIcons 
+                  name={item.isEntry ? "login" : "logout"} 
+                  size={24} 
+                  color={colors[theme].surfaceContent}
+                />
+              </View>
+              <View className="flex-1 ml-4">
+                <Text className="text-xl font-bold text-surface-content">
+                  {item.data.time}
+                </Text>
+                <Text className="text-sm opacity-80 text-surface-content">
+                  {item.data.description || (item.isEntry ? "Entrada" : "Saída")}
+                </Text>
+              </View>
+              <MaterialIcons 
+                name="edit" 
+                size={20} 
+                color={colors[theme].surfaceContent} 
+                style={{ opacity: 0.6 }}
+              />
+            </TouchableOpacity>
           );
         } else if (item.type === "break") {
           return (
-            <View key={`break-${index}`} className="items-center py-2">
-              <Text className="text-base text-secondary-content">
+            <View key={`break-${index}`} className="flex-row justify-center items-center my-2">
+              <View className="flex-1 h-[1px] bg-surface-content opacity-20" />
+              <Text className="mx-4 text-sm text-surface-content">
                 {item.data.formatted}
               </Text>
+              <View className="flex-1 h-[1px] bg-surface-content opacity-20" />
             </View>
           );
         }
@@ -152,13 +170,20 @@ export function History() {
   );
 
   return (
-    <View className="justify-between w-full h-full rounded-lg shadow-md">
+    <View className="flex-1 w-full rounded-lg shadow-lg">
       {renderHeader()}
-      {loading ? <Text>Carregando...</Text> : renderHistoryItems()}
-      <View className="p-2 mt-4 rounded-lg bg-tertiary">
-        <View className="flex-col justify-between items-center">
-          <Text className="text-lg font-bold text-tertiary-content">
-            Total trabalhado: {totalHoursWorked}
+      {loading ? (
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color={colors[theme].surfaceContent} />
+        </View>
+      ) : (
+        renderHistoryItems()
+      )}
+      <View className="p-4 mt-4 rounded-lg shadow-md bg-tertiary">
+        <View className="flex-row justify-between items-center">
+          <Text className="text-lg text-tertiary-content">Total trabalhado:</Text>
+          <Text className="text-2xl font-bold text-tertiary-content">
+            {totalHoursWorked}
           </Text>
         </View>
       </View>

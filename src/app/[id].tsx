@@ -1,31 +1,32 @@
 import * as ImagePicker from "expo-image-picker";
-import { router } from "expo-router";
-import { useState } from "react";
+import { router, useLocalSearchParams } from "expo-router";
+import { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
-  Image,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Image,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
 import { DateInput } from "@/components/DateInput";
 import { Header } from "@/components/Header";
 import { HourInput } from "@/components/HourInput";
-import { database } from "@/db";
-import { RegisterInsert, registersTable } from "@/db/schema";
+import { RegisterInsert } from "@/db/schema";
 import { useConfig } from "@/hooks/useConfig";
+import { useRegister } from "@/hooks/useRegister";
 import { useTheme } from "@/providers/ThemeProvider";
 import { colors } from "@/utils/colorThemes";
-import { Entypo } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 /**
  * Página de registro de ponto
  * Permite o usuário registrar o seu ponto
  */
-export default function RegisterPage() {
+export default function RegisterEdit() {
+  const { id } = useLocalSearchParams();
+
   const [register, setRegister] = useState<RegisterInsert>({
     date: new Date().toLocaleDateString("pt-BR"),
     time: new Date().toLocaleTimeString("pt-BR", {
@@ -38,10 +39,22 @@ export default function RegisterPage() {
     photo: "",
     isFullDay: false,
   });
-  const [loading, setLoading] = useState(false);
 
   const { config } = useConfig();
+  const { editRegister, findById, deleteRegister, extractDataPhoto, loading } =
+    useRegister();
   const { theme } = useTheme();
+
+  useEffect(() => {
+    async function fetchData() {
+      const data = await findById(Number(id));
+      setRegister(data);
+    }
+
+    if (!Array.isArray(id)) {
+      fetchData();
+    }
+  }, [findById, id]);
 
   const handleTakePhoto = async () => {
     if (!config) {
@@ -73,60 +86,15 @@ export default function RegisterPage() {
         photo: result.assets[0].uri,
       });
 
-      if (config.geminiApiKey && config.geminiApiKey.length > 0) {
-        setLoading(true);
-        const response = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${config.geminiApiKey}`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              contents: [
-                {
-                  role: "user",
-                  parts: [
-                    {
-                      inlineData: {
-                        mimeType: "image/jpeg",
-                        data: result.assets[0].base64,
-                      },
-                    },
-                  ],
-                },
-              ],
-              generationConfig: {
-                temperature: 0.1,
-                maxOutputTokens: 1024,
-                thinkingConfig: {
-                  thinkingBudget: 0,
-                },
-                responseMimeType: "application/json",
-                responseSchema: {
-                  type: "object",
-                  properties: {
-                    date: { type: "string" },
-                    time: { type: "string" },
-                    nsr: { type: "string" },
-                  },
-                  required: ["date", "time", "nsr"],
-                  propertyOrdering: ["date", "time", "nsr"],
-                },
-              },
-            }),
-          }
+      if (
+        config.geminiApiKey &&
+        config.geminiApiKey.length > 0 &&
+        result.assets[0].base64
+      ) {
+        const { date, nsr, time } = await extractDataPhoto(
+          result.assets[0].base64,
+          config.geminiApiKey
         );
-        console.log(response);
-
-        const data = await response.json();
-        const { date, time, nsr } = JSON.parse(
-          data.candidates[0].content.parts[0].text
-        ) as {
-          date: string;
-          time: string;
-          nsr: string;
-        };
 
         setRegister((prev) => ({
           ...prev,
@@ -134,7 +102,6 @@ export default function RegisterPage() {
           time: time,
           nsr: nsr,
         }));
-        setLoading(false);
       }
     }
     return;
@@ -150,33 +117,38 @@ export default function RegisterPage() {
     }));
   };
 
-  async function handleRegister() {
+  async function handleUpdateRegister() {
     try {
-      setLoading(true);
-      const [result] = await database
-        .insert(registersTable)
-        .values(register)
-        .returning();
+      const result = await editRegister(Number(id), register);
       console.log(result);
-      alert("Registro salvo com sucesso!");
-      router.back();
-      return result;
+      if (result) {
+        alert("Registro atualizado com sucesso!");
+        router.back();
+        return;
+      }
+      console.error(register);
+      alert("Não foi possível atualizar o registro!");
+      return;
     } catch (error) {
       console.error(error);
-      alert("Erro ao salvar registro!");
-    } finally {
-      setLoading(false);
+      alert("Erro ao atualizar registro!");
     }
+  }
+
+  async function handleDeleteRegister() {
+    const result = await deleteRegister(Number(id));
+    if (result) {
+      alert("Registro deletado com sucesso!");
+      router.back();
+      return;
+    }
+    alert("Não foi possível deletar o registro!");
   }
 
   if (loading) {
     return (
       <View className="flex-1 justify-center items-center p-6 bg-background">
-        <ActivityIndicator
-          size="large"
-          className="mb-3"
-          color={colors[theme].backgroundColor}
-        />
+        <ActivityIndicator size="large" className="mb-3" color="#000" />
         <Text className="text-lg font-medium text-background-content">
           Processando dados da foto...
         </Text>
@@ -186,7 +158,7 @@ export default function RegisterPage() {
 
   return (
     <SafeAreaView className="flex-1 justify-between items-center px-3 pb-5 bg-background">
-      <Header />
+      <Header title="Editar" />
 
       <View className="flex-1 gap-y-5 mt-4 space-y-4 w-full">
         <View className="w-full">
@@ -216,32 +188,29 @@ export default function RegisterPage() {
           />
         </View>
 
-        <View className="w-full elevation">
-          <Text className="mb-1 text-lg font-medium text-background-content">
-            Foto do Ponto
-          </Text>
-          {register.photo ? (
-            <TouchableOpacity
-              className="items-center p-3 w-full h-48 rounded-lg"
-              onPress={handleTakePhoto}
-            >
-              <Image
-                source={{ uri: `${register.photo}` }}
-                className="w-full h-full rounded-lg bg-surface"
-                resizeMode="contain"
-                width={500}
-                height={500}
-              />
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity
-              onPress={handleTakePhoto}
-              className="justify-center items-center p-3 w-full h-48 rounded-lg bg-surface"
-            >
-              <Entypo name="camera" size={50} color={colors[theme].surfaceContent} />
-            </TouchableOpacity>
-          )}
-        </View>
+        {register.photo ? (
+          <TouchableOpacity
+            className="items-center p-3 w-full h-48 rounded-lg"
+            onPress={handleTakePhoto}
+          >
+            <Image
+              source={{ uri: `${register.photo}` }}
+              className="w-full h-full rounded-lg bg-secondary"
+              resizeMode="contain"
+              width={500}
+              height={500}
+            />
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            onPress={handleTakePhoto}
+            className="justify-center items-center p-3 w-full h-48 rounded-lg bg-tertiary"
+          >
+            <Text className="text-lg font-medium text-tertiary-content">
+              Foto do Ponto
+            </Text>
+          </TouchableOpacity>
+        )}
 
         <View className="w-full">
           <Text className="mb-1 text-lg font-medium text-background-content">
@@ -259,19 +228,26 @@ export default function RegisterPage() {
 
       <View className="flex-row gap-x-2 w-full">
         <TouchableOpacity
-          className="flex-1 items-center p-4 mt-6 rounded-lg bg-error"
+          className="flex-1 items-center p-4 mt-6 rounded-lg bg-secondary"
           onPress={() => router.back()}
         >
-          <Text className="text-lg font-bold text-error-content">Voltar</Text>
+          <Text className="text-lg font-bold text-secondary-content">Voltar</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          className="flex-1 items-center p-4 mt-6 rounded-lg bg-error"
+          onPress={handleDeleteRegister}
+        >
+          <Text className="text-lg font-bold text-error-content">Deletar</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           className="flex-1 items-center p-4 mt-6 rounded-lg bg-success"
-          onPress={handleRegister}
+          onPress={handleUpdateRegister}
           disabled={loading}
         >
           <Text className="text-lg font-bold text-success-content">
-            {loading ? "Salvando..." : "Registrar"}
+            {loading ? "Atualizando..." : "Atualizar"}
           </Text>
         </TouchableOpacity>
       </View>

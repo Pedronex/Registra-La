@@ -1,11 +1,12 @@
 import { useTheme } from "@/providers/ThemeProvider";
+import { colors } from "@/utils/colorThemes";
 import Feather from "@expo/vector-icons/Feather";
 import { useEffect } from "react";
 import { Pressable, View } from "react-native";
 import Animated, {
-    useAnimatedStyle,
-    useSharedValue,
-    withSpring,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
 } from "react-native-reanimated";
 
 const ThemeToggle = () => {
@@ -43,14 +44,13 @@ const ThemeToggle = () => {
 
 const Icon = (props: any) => {
   const { theme } = useTheme();
-  const isDark = theme === "dark";
 
   return (
     <View className="flex relative z-50 flex-row justify-center items-center w-10 h-10 rounded-full">
       <Feather
         name={props.icon}
         size={20}
-        color={`${isDark ? "white" : "black"}`}
+        color={colors[theme].backgroundColor}
       />
     </View>
   );

@@ -2,6 +2,7 @@ import { Header } from "@/components/Header";
 import { History } from "@/components/History";
 import { useConfig } from "@/hooks/useConfig";
 import { useTheme } from "@/providers/ThemeProvider";
+import { colors } from "@/utils/colorThemes";
 import { Entypo } from "@expo/vector-icons";
 import { Link } from "expo-router";
 import { useEffect, useState } from "react";
@@ -49,7 +50,7 @@ export default function HomePage() {
               <Entypo
                 name="plus"
                 size={50}
-                color={theme === "dark" ? "#6750A4" : "#D0BCFF"}
+                color={colors[theme].secondary}
               />
             </TouchableOpacity>
           </Link>

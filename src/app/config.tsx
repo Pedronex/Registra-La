@@ -4,7 +4,7 @@ import { Messages } from "@/constants/Messages";
 import { useConfig } from "@/hooks/useConfig";
 import { Alert } from "@/lib/Alert";
 import { useTheme } from "@/providers/ThemeProvider";
-import { themes } from "@/utils/colorThemes";
+import { colors } from "@/utils/colorThemes";
 import * as Clipboard from "expo-clipboard";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
@@ -198,8 +198,8 @@ export default function ConfigPage() {
               backgroundColor: "transparent",
               borderWidth: 0,
             }}
-            checkedColor={themes[theme]["--color-success"]}
-            uncheckedColor={themes[theme]["--color-secondary"]}
+            checkedColor={colors[theme].primary}
+            uncheckedColor={colors[theme].primary}
           />
         ))}
       </View>

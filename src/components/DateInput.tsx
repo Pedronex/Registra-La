@@ -15,9 +15,9 @@ export function DateInput({ mode, onChange, value }: Props) {
     <View>
       <TouchableOpacity
         onPress={() => setShowDatePicker(true)}
-        className="p-2 rounded-md bg-tertiary"
+        className="p-2 rounded-md bg-surface"
       >
-        <Text className="text-tertiary-content">
+        <Text className="text-surface-content">
           {mode === "date"
             ? value.toLocaleDateString("pt-BR")
             : value.toLocaleTimeString("pt-BR", {
