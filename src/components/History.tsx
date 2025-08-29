@@ -12,7 +12,7 @@ export function History() {
   const [date, setDate] = useState(new Date());
 
   // Hooks
-  const { records, loading } = useTimeRecords(format(date, 'yyyy-MM-dd'));
+  const { records, loading } = useTimeRecords(format(date, 'dd/MM/yyyy'));
 
   // Efeito para atualizar a data para o dia atual
   useEffect(() => {
