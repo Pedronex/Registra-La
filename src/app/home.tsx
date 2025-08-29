@@ -3,7 +3,6 @@ import { Text, TouchableOpacity, View } from "react-native";
 
 import { Header } from "@/components/Header";
 import { useConfig } from "@/hooks/useConfig";
-import { useThemeColor } from "@/hooks/useThemeColor";
 import { useEffect, useState } from "react";
 
 /**
@@ -16,18 +15,6 @@ export default function HomePage() {
 
   // Hooks
   const { config, loading } = useConfig();
-  const backgroundColor = useThemeColor(
-    { light: "#F5F5F5", dark: "#1F2937" },
-    "background"
-  );
-  const primaryColor = useThemeColor(
-    { light: "#3B82F6", dark: "#3B82F6" },
-    "primary"
-  );
-  const textColor = useThemeColor(
-    { light: "#FFFFFF", dark: "#FFFFFF" },
-    "text"
-  );
 
   // Verifica se o aplicativo está configurado
   useEffect(() => {
@@ -39,11 +26,7 @@ export default function HomePage() {
   /**
    * Renderiza o cabeçalho da página
    */
-  const renderHeader = () => (
-    <View className="justify-center content-center items-center mt-10">
-      <Header title="Página Inicial" />
-    </View>
-  );
+  const renderHeader = () => <Header title="Página Inicial" />;
 
   /**
    * Renderiza o botão de configuração
@@ -52,14 +35,11 @@ export default function HomePage() {
     <View className="justify-center content-center items-center">
       <Link href="/config" asChild>
         <TouchableOpacity
-          style={{ backgroundColor: primaryColor }}
-          className="px-4 py-3 bg-blue-500 rounded-lg"
+          className="px-4 py-3 rounded-lg bg-primary"
           accessibilityRole="button"
           accessibilityLabel="Configurar aplicativo"
         >
-          <Text style={{ color: textColor }} className="text-center text-white">
-            Configurar
-          </Text>
+          <Text className="text-center text-primary-content">Configurar</Text>
         </TouchableOpacity>
       </Link>
     </View>
@@ -73,17 +53,11 @@ export default function HomePage() {
       {isConfigured && (
         <Link href="/register" asChild>
           <TouchableOpacity
-            style={{ backgroundColor: primaryColor }}
-            className="px-4 py-3 bg-blue-500 rounded-lg"
+            className="px-4 py-3 rounded-lg bg-primary"
             accessibilityRole="button"
             accessibilityLabel="Registrar ponto"
           >
-            <Text
-              style={{ color: textColor }}
-              className="text-center text-white"
-            >
-              Registrar
-            </Text>
+            <Text className="text-center text-primary-content">Registrar</Text>
           </TouchableOpacity>
         </Link>
       )}
@@ -93,17 +67,14 @@ export default function HomePage() {
   // Exibe mensagem de carregamento enquanto busca configurações
   if (loading) {
     return (
-      <View className="justify-center items-center w-screen h-screen bg-neutral-100 dark:bg-gray-800">
+      <View className="justify-center items-center w-screen h-screen bg-background">
         <Text>Carregando...</Text>
       </View>
     );
   }
 
   return (
-    <View
-      className="justify-between items-center p-10 w-screen h-screen bg-neutral-100 dark:bg-gray-800"
-      style={{ backgroundColor }}
-    >
+    <View className="justify-between items-center p-10 w-screen h-screen bg-background">
       {renderHeader()}
       {renderConfigButton()}
       {renderRegisterButton()}

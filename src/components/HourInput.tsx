@@ -1,3 +1,4 @@
+import { useTheme } from "@/providers/ThemeProvider";
 import { Entypo } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import { Text, TextInput, TouchableOpacity, View } from "react-native";
@@ -93,34 +94,43 @@ export function HourInput({ onChange, value }: HourInputProps) {
     onChange(`${formattedHours}:${formattedMinutes}`);
   };
 
+  const { theme } = useTheme();
+
   return (
     <View className="flex-row gap-x-4 justify-between items-center w-full rounded-lg">
       <TouchableOpacity
-        className="justify-center items-center mr-2 rounded-full border border-gray-300"
+        className="justify-center items-center mr-2 rounded-full border border-tertiary"
         onPress={handleAddMinutes}
       >
-        <Entypo name="plus" size={50} color="white" />
+        <Entypo
+          name="plus"
+          size={50}
+          color={theme === "light" ? "#7D5260" : "#EFB8C8"}
+        />
       </TouchableOpacity>
       <TextInput
-        className="text-4xl text-center dark:text-white"
+        className="text-4xl text-tertiary"
         value={hours}
         onChangeText={handleHourChange}
         onBlur={handleHourBlur}
       />
-      <Text className="text-4xl font-bold text-gray-900 dark:text-white">:</Text>
+      <Text className="text-4xl font-bold text-tertiary">:</Text>
 
       <TextInput
-        className="text-4xl text-center dark:text-white"
+        className="text-4xl text-tertiary"
         value={minutes}
         onChangeText={handleMinuteChange}
         onBlur={handleMinuteBlur}
       />
       <TouchableOpacity
-        className="justify-center items-center mr-2 rounded-full border border-gray-300"
-
+        className="justify-center items-center mr-2 rounded-full border border-tertiary"
         onPress={handleRemoveMinute}
       >
-        <Entypo name="minus" size={50} color="white" />
+        <Entypo
+          name="minus"
+          size={50}
+          color={theme === "light" ? "#7D5260" : "#EFB8C8"}
+        />
       </TouchableOpacity>
     </View>
   );

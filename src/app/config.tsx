@@ -1,10 +1,17 @@
 import { Messages } from "@/constants/Messages";
 import { useConfig } from "@/hooks/useConfig";
 import { Alert } from "@/lib/Alert";
-import * as Clipboard from 'expo-clipboard';
+import * as Clipboard from "expo-clipboard";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { Linking, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import {
+  Linking,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { CheckBox } from "react-native-elements";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -16,12 +23,13 @@ export default function ConfigPage() {
   // Estados locais para os campos do formulário
   const [workHours, setWorkHours] = useState<number>(0);
   const [tolerance, setTolerance] = useState<number>(0);
-  const [companyName, setCompanyName] = useState<string>('');
+  const [companyName, setCompanyName] = useState<string>("");
   const [breakTime, setBreakTime] = useState<number>(0);
   const [workDays, setWorkDays] = useState<string[]>([]);
-  const [geminiApiKey, setGeminiApiKey] = useState<string>('');
+  const [geminiApiKey, setGeminiApiKey] = useState<string>("");
   const [isPasteAvailable, setIsPasteAvailable] = useState(false);
-  
+  const [currentStep, setCurrentStep] = useState(1);
+
   // Hooks
   const router = useRouter();
   const { config, loading, saveConfig: persistConfig } = useConfig();
@@ -31,10 +39,10 @@ export default function ConfigPage() {
     if (config) {
       setWorkHours(config.workHours);
       setTolerance(config.tolerance || 0);
-      setCompanyName(config.companyName || '');
+      setCompanyName(config.companyName || "");
       setBreakTime(config.breakTime || 0);
       setWorkDays(Array.isArray(config.workDays) ? config.workDays : []);
-      setGeminiApiKey(config.geminiApiKey || '');
+      setGeminiApiKey(config.geminiApiKey || "");
     }
   }, [config]);
 
@@ -47,6 +55,9 @@ export default function ConfigPage() {
       checkClipboard();
     }, [])
   );
+
+  const nextStep = () => setCurrentStep(currentStep + 1);
+  const prevStep = () => setCurrentStep(currentStep - 1);
 
   /**
    * Salva as configurações e navega para a página inicial
@@ -61,15 +72,15 @@ export default function ConfigPage() {
         workDays,
         geminiApiKey,
       });
-      
+
       Alert.success(Messages.success.config.save);
       router.push("/home");
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : Messages.errors.config.save;
+      const errorMessage =
+        error instanceof Error ? error.message : Messages.errors.config.save;
       Alert.error(errorMessage);
     }
-  }
-
+  };
 
   /**
    * Renderiza o campo de entrada para horas de trabalho
@@ -159,17 +170,27 @@ export default function ConfigPage() {
       </Text>
       <View className="flex flex-row flex-wrap gap-2">
         {[
-          'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado', 'domingo'
+          "segunda",
+          "terça",
+          "quarta",
+          "quinta",
+          "sexta",
+          "sábado",
+          "domingo",
         ].map((day) => (
           <CheckBox
             key={day}
             title={day}
             checked={workDays.includes(day)}
-            onPress={() => setWorkDays(prev => 
-              prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]
-            )}
+            onPress={() =>
+              setWorkDays((prev) =>
+                prev.includes(day)
+                  ? prev.filter((d) => d !== day)
+                  : [...prev, day]
+              )
+            }
             containerStyle={{
-              backgroundColor: 'transparent',
+              backgroundColor: "transparent",
               borderWidth: 0,
             }}
             checkedColor="green"
@@ -178,7 +199,7 @@ export default function ConfigPage() {
         ))}
       </View>
     </View>
-  )
+  );
 
   const handlePasteApiKey = async () => {
     const text = await Clipboard.getStringAsync();
@@ -200,55 +221,108 @@ export default function ConfigPage() {
           accessibilityHint="Insira sua API Key do Gemini"
         />
         {isPasteAvailable && (
-          <TouchableOpacity onPress={handlePasteApiKey} className="p-2 ml-2 bg-gray-200 dark:bg-gray-600 rounded-lg">
+          <TouchableOpacity
+            onPress={handlePasteApiKey}
+            className="p-2 ml-2 bg-gray-200 rounded-lg dark:bg-gray-600"
+          >
             <Text className="text-sm text-gray-700 dark:text-white">Colar</Text>
           </TouchableOpacity>
         )}
       </View>
-      <TouchableOpacity onPress={() => Linking.openURL('https://aistudio.google.com/app/apikey')}>
+      <TouchableOpacity
+        onPress={() =>
+          Linking.openURL("https://aistudio.google.com/app/apikey")
+        }
+      >
         <Text className="mt-1 text-sm text-blue-500 dark:text-blue-400">
           Obtenha sua chave de API aqui
         </Text>
       </TouchableOpacity>
     </View>
-  )
+  );
 
   return (
     <SafeAreaView className="flex-1 bg-neutral-100 dark:bg-gray-800">
       <ScrollView className="flex-1 px-4 py-6">
         <View className="space-y-6">
-          {/* Cabeçalho */}
           <View>
             <Text className="mb-2 text-lg font-semibold text-gray-800 dark:text-white">
               Configuração de Horas de Trabalho
             </Text>
             <Text className="mb-4 text-sm text-gray-600 dark:text-gray-200">
-              Por favor, insira suas horas de trabalho diárias e tempo de tolerância
+              {currentStep === 1 && "Passo 1: Horas de Trabalho"}
+              {currentStep === 2 && "Passo 2: Detalhes da Empresa"}
+              {currentStep === 3 && "Passo 3: Integrações"}
             </Text>
           </View>
 
-          {/* Formulário */}
           <View className="flex flex-col gap-y-4">
-            {renderWorkHoursInput()}
-            {renderToleranceInput()}
-            {renderCompanyNameInput()}
-            {renderBreakTimeInput()}
-            {renderWorkDaysInput()}
-            {renderGeminiApiKeyInput()}
+            {currentStep === 1 && (
+              <>
+                {renderWorkHoursInput()}
+                {renderWorkDaysInput()}
+                {renderBreakTimeInput()}
+              </>
+            )}
 
+            {currentStep === 2 && (
+              <>
+                {renderCompanyNameInput()}
+                {renderToleranceInput()}
+              </>
+            )}
 
-            {/* Botão de salvar */}
-            <TouchableOpacity
-              className="p-3 w-full bg-blue-500 rounded-lg"
-              onPress={handleSaveConfig}
-              accessibilityLabel="Salvar configurações"
-              accessibilityRole="button"
-              disabled={loading}
-            >
-              <Text className="text-center text-white">
-                {loading ? "Salvando..." : "Salvar"}
-              </Text>
-            </TouchableOpacity>
+            {currentStep === 3 && <>{renderGeminiApiKeyInput()}</>}
+
+            <View className="flex flex-row justify-between mt-6">
+              {currentStep > 1 && (
+                <TouchableOpacity
+                  className="p-3 w-1/3 bg-gray-500 rounded-lg"
+                  onPress={prevStep}
+                  accessibilityLabel="Voltar"
+                  accessibilityRole="button"
+                >
+                  <Text className="text-center text-white">Voltar</Text>
+                </TouchableOpacity>
+              )}
+
+              {currentStep < 3 && (
+                <TouchableOpacity
+                  className="p-3 w-1/3 bg-blue-500 rounded-lg"
+                  onPress={nextStep}
+                  accessibilityLabel="Próximo"
+                  accessibilityRole="button"
+                >
+                  <Text className="text-center text-white">Próximo</Text>
+                </TouchableOpacity>
+              )}
+
+              {currentStep === 3 && (
+                <TouchableOpacity
+                  className="p-3 w-1/3 bg-blue-500 rounded-lg"
+                  onPress={handleSaveConfig}
+                  accessibilityLabel="Salvar configurações"
+                  accessibilityRole="button"
+                  disabled={loading}
+                >
+                  <Text className="text-center text-white">
+                    {loading ? "Salvando..." : "Salvar"}
+                  </Text>
+                </TouchableOpacity>
+              )}
+              {config && (
+                <TouchableOpacity
+                  className="p-3 w-1/3 bg-red-500 rounded-lg"
+                  onPress={() => router.back()}
+                  accessibilityLabel="Voltar para a tela anterior"
+                  accessibilityRole="button"
+                >
+                  <Text className="text-center text-white">
+                    Cancelar
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
           </View>
         </View>
       </ScrollView>
