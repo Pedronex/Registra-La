@@ -1,6 +1,9 @@
+import ToggleTheme from "@/components/ToggleTheme";
 import { Messages } from "@/constants/Messages";
 import { useConfig } from "@/hooks/useConfig";
 import { Alert } from "@/lib/Alert";
+import { useTheme } from "@/providers/ThemeProvider";
+import { themes } from "@/utils/colorThemes";
 import * as Clipboard from "expo-clipboard";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
@@ -33,6 +36,7 @@ export default function ConfigPage() {
   // Hooks
   const router = useRouter();
   const { config, loading, saveConfig: persistConfig } = useConfig();
+  const { theme } = useTheme();
 
   // Carrega configurações existentes quando o componente é montado
   useEffect(() => {
@@ -87,13 +91,14 @@ export default function ConfigPage() {
    */
   const renderWorkHoursInput = () => (
     <View>
-      <Text className="mb-1 text-sm font-medium text-gray-700 dark:text-white">
+      <Text className="text-sm font-medium text-background-content mb-1">
         Horas de Trabalho Diárias
       </Text>
       <TextInput
-        className="px-4 py-3 w-full bg-white rounded-lg border border-gray-300 dark:bg-gray-700 dark:border-gray-600"
+        className="px-4 py-3 w-full bg-surface rounded-lg border border-surface-content text-surface-content"
         keyboardType="numeric"
         placeholder="Ex: 8"
+        placeholderTextColor={themes[theme]["--color-secondary"]}
         value={workHours.toString()}
         onChangeText={(text) => setWorkHours(Number(text))}
         accessibilityLabel="Horas de trabalho diárias"
@@ -107,13 +112,14 @@ export default function ConfigPage() {
    */
   const renderToleranceInput = () => (
     <View>
-      <Text className="mb-1 text-sm font-medium text-gray-700 dark:text-white">
+      <Text className="text-sm font-medium text-background-content mb-1">
         Tolerância (em minutos)
       </Text>
       <TextInput
-        className="px-4 py-3 w-full bg-white rounded-lg border border-gray-300 dark:bg-gray-700 dark:border-gray-600"
+        className="px-4 py-3 w-full bg-surface rounded-lg border border-surface-content text-surface-content"
         keyboardType="numeric"
         placeholder="Ex: 15"
+        placeholderTextColor={themes[theme]["--color-secondary"]}
         value={tolerance.toString()}
         onChangeText={(text) => setTolerance(Number(text))}
         accessibilityLabel="Tolerância em minutos"
@@ -127,12 +133,13 @@ export default function ConfigPage() {
    */
   const renderCompanyNameInput = () => (
     <View>
-      <Text className="mb-1 text-sm font-medium text-gray-700 dark:text-white">
+      <Text className="text-sm font-medium text-background-content mb-1">
         Nome da Empresa
       </Text>
       <TextInput
-        className="px-4 py-3 w-full bg-white rounded-lg border border-gray-300 dark:bg-gray-700 dark:border-gray-600"
+        className="px-4 py-3 w-full bg-surface rounded-lg border border-surface-content text-surface-content"
         placeholder="Ex: Empresa XYZ"
+        placeholderTextColor={themes[theme]["--color-secondary"]}
         value={companyName}
         onChangeText={setCompanyName}
         accessibilityLabel="Nome da empresa"
@@ -146,13 +153,14 @@ export default function ConfigPage() {
    */
   const renderBreakTimeInput = () => (
     <View>
-      <Text className="mb-1 text-sm font-medium text-gray-700 dark:text-white">
+      <Text className="text-sm font-medium text-background-content mb-1">
         Intervalo de Trabalho (em minutos)
       </Text>
       <TextInput
-        className="px-4 py-3 w-full bg-white rounded-lg border border-gray-300 dark:bg-gray-700 dark:border-gray-600"
+        className="px-4 py-3 w-full bg-surface rounded-lg border border-surface-content text-surface-content"
         keyboardType="numeric"
         placeholder="Ex: 15"
+        placeholderTextColor={themes[theme]["--color-secondary"]}
         value={breakTime.toString()}
         onChangeText={(text) => setBreakTime(Number(text))}
         accessibilityLabel="Intervalo de trabalho em minutos"
@@ -165,7 +173,7 @@ export default function ConfigPage() {
    */
   const renderWorkDaysInput = () => (
     <View>
-      <Text className="mb-1 text-sm font-medium text-gray-700 dark:text-white">
+      <Text className="text-sm font-medium text-background-content mb-1">
         Dias da Semana Trabalhados
       </Text>
       <View className="flex flex-row flex-wrap gap-2">
@@ -179,7 +187,7 @@ export default function ConfigPage() {
           "domingo",
         ].map((day) => (
           <CheckBox
-            key={day}
+            key={`${day}-${theme}`}
             title={day}
             checked={workDays.includes(day)}
             onPress={() =>
@@ -193,8 +201,9 @@ export default function ConfigPage() {
               backgroundColor: "transparent",
               borderWidth: 0,
             }}
-            checkedColor="green"
-            uncheckedColor="gray"
+            textStyle={{ color: themes[theme]["--color-background-content"] }}
+            checkedColor={themes[theme]["--color-success"]}
+            uncheckedColor={themes[theme]["--color-secondary"]}
           />
         ))}
       </View>
@@ -208,13 +217,14 @@ export default function ConfigPage() {
 
   const renderGeminiApiKeyInput = () => (
     <View>
-      <Text className="mb-1 text-sm font-medium text-gray-700 dark:text-white">
+      <Text className="text-sm font-medium text-background-content mb-1">
         Gemini API Key
       </Text>
       <View className="flex-row items-center">
         <TextInput
-          className="flex-1 px-4 py-3 w-full bg-white rounded-lg border border-gray-300 dark:bg-gray-700 dark:border-gray-600"
+          className="flex-1 px-4 py-3 w-full bg-surface rounded-lg border border-surface-content text-surface-content"
           placeholder="Insira sua API Key do Gemini"
+          placeholderTextColor={themes[theme]["--color-secondary"]}
           value={geminiApiKey}
           onChangeText={setGeminiApiKey}
           accessibilityLabel="Gemini API Key"
@@ -223,9 +233,9 @@ export default function ConfigPage() {
         {isPasteAvailable && (
           <TouchableOpacity
             onPress={handlePasteApiKey}
-            className="p-2 ml-2 bg-gray-200 rounded-lg dark:bg-gray-600"
+            className="p-2 ml-2 bg-surface rounded-lg"
           >
-            <Text className="text-sm text-gray-700 dark:text-white">Colar</Text>
+            <Text className="text-sm text-background-content">Colar</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -234,7 +244,7 @@ export default function ConfigPage() {
           Linking.openURL("https://aistudio.google.com/app/apikey")
         }
       >
-        <Text className="mt-1 text-sm text-blue-500 dark:text-blue-400">
+        <Text className="mt-1 text-sm text-primary">
           Obtenha sua chave de API aqui
         </Text>
       </TouchableOpacity>
@@ -242,14 +252,17 @@ export default function ConfigPage() {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-neutral-100 dark:bg-gray-800">
+    <SafeAreaView className="flex-1 bg-background">
+      <View className="flex-row justify-end p-4">
+        <ToggleTheme />
+      </View>
       <ScrollView className="flex-1 px-4 py-6">
         <View className="space-y-6">
           <View>
-            <Text className="mb-2 text-lg font-semibold text-gray-800 dark:text-white">
+            <Text className="text-lg font-semibold text-background-content mb-2">
               Configuração de Horas de Trabalho
             </Text>
-            <Text className="mb-4 text-sm text-gray-600 dark:text-gray-200">
+            <Text className="text-sm text-background-content mb-4">
               {currentStep === 1 && "Passo 1: Horas de Trabalho"}
               {currentStep === 2 && "Passo 2: Detalhes da Empresa"}
               {currentStep === 3 && "Passo 3: Integrações"}
@@ -277,47 +290,47 @@ export default function ConfigPage() {
             <View className="flex flex-row justify-between mt-6">
               {currentStep > 1 && (
                 <TouchableOpacity
-                  className="p-3 w-1/3 bg-gray-500 rounded-lg"
+                  className="p-3 w-1/3 bg-secondary rounded-lg"
                   onPress={prevStep}
                   accessibilityLabel="Voltar"
                   accessibilityRole="button"
                 >
-                  <Text className="text-center text-white">Voltar</Text>
+                  <Text className="text-center text-secondary-content">Voltar</Text>
                 </TouchableOpacity>
               )}
 
               {currentStep < 3 && (
                 <TouchableOpacity
-                  className="p-3 w-1/3 bg-blue-500 rounded-lg"
+                  className="p-3 w-1/3 bg-primary rounded-lg"
                   onPress={nextStep}
                   accessibilityLabel="Próximo"
                   accessibilityRole="button"
                 >
-                  <Text className="text-center text-white">Próximo</Text>
+                  <Text className="text-center text-primary-content">Próximo</Text>
                 </TouchableOpacity>
               )}
 
               {currentStep === 3 && (
                 <TouchableOpacity
-                  className="p-3 w-1/3 bg-blue-500 rounded-lg"
+                  className="p-3 w-1/3 bg-primary rounded-lg"
                   onPress={handleSaveConfig}
                   accessibilityLabel="Salvar configurações"
                   accessibilityRole="button"
                   disabled={loading}
                 >
-                  <Text className="text-center text-white">
+                  <Text className="text-center text-primary-content">
                     {loading ? "Salvando..." : "Salvar"}
                   </Text>
                 </TouchableOpacity>
               )}
               {config && (
                 <TouchableOpacity
-                  className="p-3 w-1/3 bg-red-500 rounded-lg"
+                  className="p-3 w-1/3 bg-error rounded-lg"
                   onPress={() => router.back()}
                   accessibilityLabel="Voltar para a tela anterior"
                   accessibilityRole="button"
                 >
-                  <Text className="text-center text-white">
+                  <Text className="text-center text-error-content">
                     Cancelar
                   </Text>
                 </TouchableOpacity>
