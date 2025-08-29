@@ -24,7 +24,7 @@ export function Header({ title = "Registra lá" }: HeaderProps) {
   const isDark = theme === "dark";
 
   return (
-    <View className="flex-row justify-between items-center px-4 w-screen">
+    <View className="flex-row justify-center items-center px-4 w-screen">
       <View
         className={`p-2 w-14 h-14 rounded-2xl ${isDark ? "":"bg-primary"}`}
       >
