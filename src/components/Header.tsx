@@ -1,6 +1,7 @@
 import { useTheme } from "@/providers/ThemeProvider";
-import { Image, Text, View } from "react-native";
-import ThemeToggle from "./ToggleTheme";
+import { Entypo } from "@expo/vector-icons";
+import { Link } from "expo-router";
+import { Image, Text, TouchableOpacity, View } from "react-native";
 
 /**
  * Interface de propriedades do componente Header
@@ -20,13 +21,12 @@ export function Header({ title = "Registra lá" }: HeaderProps) {
   const logoDark = require("@/assets/Relogio.png");
 
   const { theme } = useTheme();
+  const isDark = theme === "dark";
 
   return (
     <View className="flex-row justify-between items-center px-4 w-screen">
       <View
-        className={`p-2 w-14 h-14 rounded-2xl ${
-          theme === "light" ? "bg-primary" : ''
-        }`}
+        className={`p-2 w-14 h-14 rounded-2xl ${isDark ? "":"bg-primary"}`}
       >
         <Image
           source={logoDark}
@@ -39,7 +39,15 @@ export function Header({ title = "Registra lá" }: HeaderProps) {
       <Text className="text-4xl text-primary" accessibilityRole="header">
         {title}
       </Text>
-      <ThemeToggle />
+      <Link href="/config" asChild>
+        <TouchableOpacity
+          className="rounded-lg"
+          accessibilityRole="button"
+          accessibilityLabel="Configurar aplicativo"
+        >
+          <Entypo name="cog" size={35} color={isDark? '#6750A4': '#D0BCFF'} />
+        </TouchableOpacity>
+      </Link>
     </View>
   );
 }
