@@ -2,8 +2,6 @@
  * Utilitário para exibir alertas e diálogos no aplicativo.
  * Encapsula a API de Alert do React Native com funções mais específicas.
  */
-
-import * as Sentry from "@sentry/react-native";
 import { AlertButton, Alert as RNAlert } from 'react-native';
 
 /**
@@ -38,8 +36,6 @@ class AlertUtil {
    * @param onOk Callback opcional ao pressionar OK
    */
   error(message: string, onOk?: () => void): void {
-
-    Sentry.captureException(new Error(message));
     RNAlert.alert(
       'Erro',
       message,
