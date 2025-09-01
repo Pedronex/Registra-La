@@ -1,6 +1,7 @@
 import "expo-dev-client";
 import "../../global.css";
 
+import LogRocket from "@logrocket/react-native";
 import * as Sentry from "@sentry/react-native";
 import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
 import { isRunningInExpoGo } from "expo";
@@ -53,6 +54,10 @@ function Layout() {
      */
     const initializeApp = async () => {
       checkForUpdates();
+      LogRocket.init("gcrcj1/registra-la", {
+        updateId: Updates.isEmbeddedLaunch ? null : Updates.updateId,
+        expoChannel: Updates.channel,
+      });
     };
 
     // Inicializa o aplicativo
