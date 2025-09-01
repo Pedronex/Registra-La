@@ -1,4 +1,5 @@
 import { RegisterData } from "@/db/schema";
+import { useConfig } from "@/hooks/useConfig";
 import { useTimeRecords } from "@/hooks/useTimeRecords";
 import { useTheme } from "@/providers/ThemeProvider";
 import { colors } from "@/utils/colorThemes";
@@ -18,9 +19,8 @@ export function History() {
 
   // Hooks
   const { records, loading } = useTimeRecords(format(date, "dd/MM/yyyy"));
+  const { config } = useConfig();
   const { theme } = useTheme();
-
-  const isDark = theme === "dark";
 
   // Efeito para atualizar a data para o dia atual
   useEffect(() => {
@@ -48,8 +48,51 @@ export function History() {
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
 
-    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
+      2,
+      "0"
+    )}`;
   }, [records]);
+
+  /**
+   * Calcula o saldo de horas do dia
+   */
+  const hourBalance = useMemo(() => {
+    if (!config?.workHours || records.length < 2) {
+      return "00:00";
+    }
+
+    const targetMilliseconds = config.workHours * 3600 * 1000;
+
+    let totalMilliseconds = 0;
+    for (let i = 0; i < records.length; i += 2) {
+      if (records[i + 1]) {
+        const startTime = parse(records[i].time, "HH:mm", new Date());
+        const endTime = parse(records[i + 1].time, "HH:mm", new Date());
+        totalMilliseconds += endTime.getTime() - startTime.getTime();
+      }
+    }
+
+    const diffMilliseconds = totalMilliseconds - targetMilliseconds;
+    const toleranceMilliseconds = (config.tolerance || 10) * 60 * 1000;
+
+    if (
+      config.tolerance &&
+      Math.abs(diffMilliseconds) <= toleranceMilliseconds
+    ) {
+      return "00:00";
+    }
+
+    const totalSeconds = Math.abs(diffMilliseconds) / 1000;
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+
+    const sign = diffMilliseconds >= 0 ? "+" : "-";
+    return `${sign}${String(hours).padStart(2, "0")}:${String(minutes).padStart(
+      2,
+      "0"
+    )}`;
+  }, [records, config]);
 
   /**
    * Renderiza o cabeçalho com a data e os botões de navegação
@@ -60,7 +103,11 @@ export function History() {
         onPress={() => setDate(subDays(date, 1))}
         className="p-3 rounded-full bg-primary-focus"
       >
-        <Entypo name="chevron-left" size={24} color={colors[theme].primaryContent} />
+        <Entypo
+          name="chevron-left"
+          size={24}
+          color={colors[theme].primaryContent}
+        />
       </TouchableOpacity>
       <View className="items-center">
         <Text className="text-2xl font-bold text-primary-content">
@@ -74,7 +121,11 @@ export function History() {
         onPress={() => setDate(addDays(date, 1))}
         className="p-3 rounded-full bg-primary-focus"
       >
-        <Entypo name="chevron-right" size={24} color={colors[theme].primaryContent} />
+        <Entypo
+          name="chevron-right"
+          size={24}
+          color={colors[theme].primaryContent}
+        />
       </TouchableOpacity>
     </View>
   );
@@ -89,10 +140,10 @@ export function History() {
 
     const items: HistoryItem[] = [];
     for (let i = 0; i < records.length; i++) {
-      items.push({ 
-        type: "record", 
+      items.push({
+        type: "record",
         data: records[i],
-        isEntry: i % 2 === 0
+        isEntry: i % 2 === 0,
       });
 
       if (i % 2 !== 0 && records[i + 1]) {
@@ -131,9 +182,9 @@ export function History() {
               onPress={() => router.push(`/${item.data.id}`)}
             >
               <View className="justify-center items-center w-12 h-12 rounded-full">
-                <MaterialIcons 
-                  name={item.isEntry ? "login" : "logout"} 
-                  size={24} 
+                <MaterialIcons
+                  name={item.isEntry ? "login" : "logout"}
+                  size={24}
                   color={colors[theme].surfaceContent}
                 />
               </View>
@@ -142,20 +193,24 @@ export function History() {
                   {item.data.time}
                 </Text>
                 <Text className="text-sm opacity-80 text-surface-content">
-                  {item.data.description || (item.isEntry ? "Entrada" : "Saída")}
+                  {item.data.description ||
+                    (item.isEntry ? "Entrada" : "Saída")}
                 </Text>
               </View>
-              <MaterialIcons 
-                name="edit" 
-                size={20} 
-                color={colors[theme].surfaceContent} 
+              <MaterialIcons
+                name="edit"
+                size={20}
+                color={colors[theme].surfaceContent}
                 style={{ opacity: 0.6 }}
               />
             </TouchableOpacity>
           );
         } else if (item.type === "break") {
           return (
-            <View key={`break-${index}`} className="flex-row justify-center items-center my-2">
+            <View
+              key={`break-${index}`}
+              className="flex-row justify-center items-center my-2"
+            >
               <View className="flex-1 h-[1px] bg-surface-content opacity-20" />
               <Text className="mx-4 text-sm text-surface-content">
                 {item.data.formatted}
@@ -174,16 +229,37 @@ export function History() {
       {renderHeader()}
       {loading ? (
         <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color={colors[theme].surfaceContent} />
+          <ActivityIndicator
+            size="large"
+            color={colors[theme].surfaceContent}
+          />
         </View>
       ) : (
         renderHistoryItems()
       )}
       <View className="p-4 mt-4 rounded-lg shadow-md bg-tertiary">
         <View className="flex-row justify-between items-center">
-          <Text className="text-lg text-tertiary-content">Total trabalhado:</Text>
+          <Text className="text-lg text-tertiary-content">
+            Total trabalhado:
+          </Text>
           <Text className="text-2xl font-bold text-tertiary-content">
             {totalHoursWorked}
+          </Text>
+        </View>
+        <View className="flex-row justify-between items-center">
+          <Text
+            className={`text-lg ${
+              hourBalance.includes("-") ? "text-red-500" : "text-green-500"
+            }`}
+          >
+            Banco de Horas:
+          </Text>
+          <Text
+            className={`text-lg font-bold ${
+              hourBalance.includes("-") ? "text-red-500" : "text-green-500"
+            }`}
+          >
+            {hourBalance}
           </Text>
         </View>
       </View>
