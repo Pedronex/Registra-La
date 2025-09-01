@@ -2,12 +2,12 @@ import * as ImagePicker from "expo-image-picker";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    Image,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Image,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 import { DateInput } from "@/components/DateInput";
@@ -120,7 +120,6 @@ export default function RegisterEdit() {
   async function handleUpdateRegister() {
     try {
       const result = await editRegister(Number(id), register);
-      console.log(result);
       if (result) {
         alert("Registro atualizado com sucesso!");
         router.back();

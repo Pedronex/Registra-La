@@ -76,6 +76,14 @@
             ]
           }
         }
+      ],
+      [
+        "@sentry/react-native/expo",
+        {
+          "url": "https://sentry.io/",
+          "project": "registra-la",
+          "organization": "nexcorp"
+        }
       ]
     ],
     "experiments": {

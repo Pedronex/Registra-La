@@ -1,3 +1,4 @@
+import { Alert } from "@/lib/Alert";
 import { themes } from "@/utils/colorThemes";
 import { StatusBar } from "expo-status-bar";
 import { colorScheme } from "nativewind";
@@ -44,7 +45,7 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
 export const useTheme = () => {
   const context = useContext(ThemeContext);
   if (!context) {
-    throw new Error("useTheme must be used within a ThemeProvider");
+    Alert.error("useTheme deve ser informado para o ThemeProvider");
   }
   return context;
 };

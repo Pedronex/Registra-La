@@ -13,9 +13,9 @@ import {
 import { DateInput } from "@/components/DateInput";
 import { Header } from "@/components/Header";
 import { HourInput } from "@/components/HourInput";
-import { database } from "@/db";
-import { RegisterInsert, registersTable } from "@/db/schema";
+import { RegisterInsert } from "@/db/schema";
 import { useConfig } from "@/hooks/useConfig";
+import { useRegister } from "@/hooks/useRegister";
 import { useTheme } from "@/providers/ThemeProvider";
 import { colors } from "@/utils/colorThemes";
 import { Entypo } from "@expo/vector-icons";
@@ -38,10 +38,10 @@ export default function RegisterPage() {
     photo: "",
     isFullDay: false,
   });
-  const [loading, setLoading] = useState(false);
 
   const { config } = useConfig();
   const { theme } = useTheme();
+  const { saveRegister, extractDataPhoto, loading } = useRegister();
 
   const handleTakePhoto = async () => {
     if (!config) {
@@ -74,59 +74,10 @@ export default function RegisterPage() {
       });
 
       if (config.geminiApiKey && config.geminiApiKey.length > 0) {
-        setLoading(true);
-        const response = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${config.geminiApiKey}`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              contents: [
-                {
-                  role: "user",
-                  parts: [
-                    {
-                      inlineData: {
-                        mimeType: "image/jpeg",
-                        data: result.assets[0].base64,
-                      },
-                    },
-                  ],
-                },
-              ],
-              generationConfig: {
-                temperature: 0.1,
-                maxOutputTokens: 1024,
-                thinkingConfig: {
-                  thinkingBudget: 0,
-                },
-                responseMimeType: "application/json",
-                responseSchema: {
-                  type: "object",
-                  properties: {
-                    date: { type: "string" },
-                    time: { type: "string" },
-                    nsr: { type: "string" },
-                  },
-                  required: ["date", "time", "nsr"],
-                  propertyOrdering: ["date", "time", "nsr"],
-                },
-              },
-            }),
-          }
+        const { date, time, nsr } = await extractDataPhoto(
+          result.assets[0].base64 || "",
+          config.geminiApiKey
         );
-        console.log(response);
-
-        const data = await response.json();
-        const { date, time, nsr } = JSON.parse(
-          data.candidates[0].content.parts[0].text
-        ) as {
-          date: string;
-          time: string;
-          nsr: string;
-        };
 
         setRegister((prev) => ({
           ...prev,
@@ -134,7 +85,6 @@ export default function RegisterPage() {
           time: time,
           nsr: nsr,
         }));
-        setLoading(false);
       }
     }
     return;
@@ -151,21 +101,9 @@ export default function RegisterPage() {
   };
 
   async function handleRegister() {
-    try {
-      setLoading(true);
-      const [result] = await database
-        .insert(registersTable)
-        .values(register)
-        .returning();
-      console.log(result);
-      alert("Registro salvo com sucesso!");
+    const result = await saveRegister(register);
+    if (result) {
       router.back();
-      return result;
-    } catch (error) {
-      console.error(error);
-      alert("Erro ao salvar registro!");
-    } finally {
-      setLoading(false);
     }
   }
 
@@ -238,7 +176,11 @@ export default function RegisterPage() {
               onPress={handleTakePhoto}
               className="justify-center items-center p-3 w-full h-48 rounded-lg bg-surface"
             >
-              <Entypo name="camera" size={50} color={colors[theme].surfaceContent} />
+              <Entypo
+                name="camera"
+                size={50}
+                color={colors[theme].surfaceContent}
+              />
             </TouchableOpacity>
           )}
         </View>
@@ -252,7 +194,7 @@ export default function RegisterPage() {
             onChangeText={(value) => handleInputChange("nsr", value)}
             className="p-2 rounded-md bg-surface text-surface-content"
             placeholder="Digite o NSR (Opcional)"
-            placeholderTextColor={colors[theme].surfaceContent + '60'}
+            placeholderTextColor={colors[theme].surfaceContent + "60"}
           />
         </View>
       </View>
