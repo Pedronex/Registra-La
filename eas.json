@@ -26,9 +26,9 @@
       "channel": "preview"
     },
     "production": {
+      "node": "22.17.1",
       "android": {
-        "buildType": "app-bundle",
-        "ndk": ""
+        "buildType": "app-bundle"
       },
       "autoIncrement": true,
       "channel": "production"
