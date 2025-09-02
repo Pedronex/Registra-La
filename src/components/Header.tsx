@@ -16,6 +16,7 @@ interface HeaderProps {
    *
    */
   showConfig?: boolean;
+  back?: () => React.ReactNode;
 }
 
 /**
@@ -25,15 +26,43 @@ interface HeaderProps {
 export function Header({
   title = "Registra lá",
   showConfig = true,
+  back,
 }: HeaderProps) {
   const logoDark = require("@/assets/Relogio.png");
 
   const { theme } = useTheme();
 
+  if (back) {
+    return (
+      <View className={"flex-row justify-between items-center px-4 w-screen"}>
+        {back()}
+        <Text
+          className="text-4xl text-surface-content"
+          accessibilityRole="header"
+        >
+          {title}
+        </Text>
+        <View
+          className={`p-2 w-14 h-14 rounded-2xl mr-2 ${
+            theme === "dark" ? "" : "bg-primary"
+          }`}
+        >
+          <Image
+            source={logoDark}
+            width={50}
+            height={50}
+            className="mr-2 w-full h-full"
+            accessibilityLabel="Logo do aplicativo"
+          />
+        </View>
+      </View>
+    );
+  }
+
   return (
     <View
-      className={`flex-row ${
-        showConfig ? "justify-between" : "justify-center"
+      className={`flex-row  ${
+        showConfig || back ? "justify-between" : "justify-center"
       } items-center px-4 w-screen`}
     >
       <View
@@ -49,6 +78,7 @@ export function Header({
           accessibilityLabel="Logo do aplicativo"
         />
       </View>
+
       <Text
         className="text-4xl text-surface-content"
         accessibilityRole="header"

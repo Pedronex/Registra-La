@@ -5,6 +5,7 @@ import { useConfig } from "@/hooks/useConfig";
 import { Alert } from "@/lib/Alert";
 import { useTheme } from "@/providers/ThemeProvider";
 import { colors } from "@/utils/colorThemes";
+import { Entypo } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
@@ -96,11 +97,15 @@ export default function ConfigPage() {
         Horas de Trabalho Diárias
       </Text>
       <TextInput
-        className="px-4 py-3 w-full rounded-lg border bg-surface border-surface-content"
+        className="px-4 py-3 w-full rounded-lg border bg-surface border-surface-content text-background-content"
         keyboardType="numeric"
         placeholder="Ex: 8"
-        value={workHours.toString()}
-        onChangeText={(text) => setWorkHours(Number(text))}
+        placeholderTextColor={colors[theme].surfaceContent + "80"}
+        value={isNaN(workHours) ? "" : workHours.toString()}
+        onChangeText={(text) => {
+          const numericValue = text.replace(/[^0-9]/g, "");
+          setWorkHours(numericValue === "" ? 0 : Number(numericValue));
+        }}
         accessibilityLabel="Horas de trabalho diárias"
         accessibilityHint="Digite o número de horas de trabalho por dia"
       />
@@ -116,11 +121,15 @@ export default function ConfigPage() {
         Tolerância (em minutos)
       </Text>
       <TextInput
-        className="px-4 py-3 w-full rounded-lg border bg-surface border-surface-content"
+        className="px-4 py-3 w-full rounded-lg border bg-surface border-surface-content text-background-content"
         keyboardType="numeric"
         placeholder="Ex: 15"
-        value={tolerance.toString()}
-        onChangeText={(text) => setTolerance(Number(text))}
+        placeholderTextColor={colors[theme].surfaceContent + "80"}
+        value={isNaN(tolerance) ? "" : tolerance.toString()}
+        onChangeText={(text) => {
+          const numericValue = text.replace(/[^0-9]/g, "");
+          setTolerance(numericValue === "" ? 0 : Number(numericValue));
+        }}
         accessibilityLabel="Tolerância em minutos"
         accessibilityHint="Digite o número de minutos de tolerância"
       />
@@ -136,8 +145,9 @@ export default function ConfigPage() {
         Nome da Empresa
       </Text>
       <TextInput
-        className="px-4 py-3 w-full rounded-lg border bg-surface border-surface-content"
+        className="px-4 py-3 w-full rounded-lg border bg-surface border-surface-content text-background-content"
         placeholder="Ex: Empresa XYZ"
+        placeholderTextColor={colors[theme].surfaceContent + "80"}
         value={companyName}
         onChangeText={setCompanyName}
         accessibilityLabel="Nome da empresa"
@@ -155,11 +165,15 @@ export default function ConfigPage() {
         Intervalo de Trabalho (em minutos)
       </Text>
       <TextInput
-        className="px-4 py-3 w-full rounded-lg border bg-surface border-surface-content"
+        className="px-4 py-3 w-full rounded-lg border bg-surface border-surface-content text-background-content"
         keyboardType="numeric"
         placeholder="Ex: 15"
-        value={breakTime.toString()}
-        onChangeText={(text) => setBreakTime(Number(text))}
+        placeholderTextColor={colors[theme].surfaceContent + "80"}
+        value={isNaN(breakTime) ? "" : breakTime.toString()}
+        onChangeText={(text) => {
+          const numericValue = text.replace(/[^0-9]/g, "");
+          setBreakTime(numericValue === "" ? 0 : Number(numericValue));
+        }}
         accessibilityLabel="Intervalo de trabalho em minutos"
       />
     </View>
@@ -173,7 +187,7 @@ export default function ConfigPage() {
       <Text className="mb-1 text-sm font-medium text-background-content">
         Dias da Semana Trabalhados
       </Text>
-      <View className="flex flex-row flex-wrap gap-2">
+      <View className="flex flex-row flex-wrap font-medium gap-2 text-background-content">
         {[
           "segunda",
           "terça",
@@ -197,9 +211,15 @@ export default function ConfigPage() {
             containerStyle={{
               backgroundColor: "transparent",
               borderWidth: 0,
+              padding: 8,
+              margin: 0,
+            }}
+            textStyle={{
+              color: colors[theme].backgroundColor,
+              fontWeight: "500",
             }}
             checkedColor={colors[theme].primary}
-            uncheckedColor={colors[theme].primary}
+            uncheckedColor={colors[theme].secondary}
           />
         ))}
       </View>
@@ -227,8 +247,9 @@ export default function ConfigPage() {
       </Text>
       <View className="flex-row items-center">
         <TextInput
-          className="flex-1 px-4 py-3 w-full rounded-lg border bg-surface border-surface-content"
+          className="flex-1 px-4 py-3 w-full rounded-lg border bg-surface border-surface-content text-background-content"
           placeholder="Insira sua API Key do Gemini"
+          placeholderTextColor={colors[theme].surfaceContent + "80"}
           value={geminiApiKey}
           onChangeText={setGeminiApiKey}
           accessibilityLabel="Gemini API Key"
@@ -237,9 +258,11 @@ export default function ConfigPage() {
         {isPasteAvailable && (
           <TouchableOpacity
             onPress={handlePasteApiKey}
-            className="p-2 ml-2 rounded-lg bg-surface"
+            className="p-2 ml-2 rounded-lg bg-primary"
           >
-            <Text className="text-sm text-background-content">Colar</Text>
+            <Text className="text-sm text-primary-content font-medium">
+              Colar
+            </Text>
           </TouchableOpacity>
         )}
       </View>
@@ -247,8 +270,9 @@ export default function ConfigPage() {
         onPress={() =>
           Linking.openURL("https://aistudio.google.com/app/apikey")
         }
+        className="mt-2"
       >
-        <Text className="mt-1 text-sm text-primary">
+        <Text className="text-sm text-primary font-medium underline">
           Obtenha sua chave de API aqui
         </Text>
       </TouchableOpacity>
@@ -257,14 +281,28 @@ export default function ConfigPage() {
 
   return (
     <SafeAreaView className="flex-1 bg-background">
-      <Header />
+      <Header showConfig={false}
+        back={config ? () => (
+          <TouchableOpacity onPress={() => router.back()}
+            className="rounded-lg"
+            accessibilityRole="button"
+            accessibilityLabel="Voltar"
+          >
+            <Entypo
+              name="chevron-left"
+              size={35}
+              color={colors[theme].primary}
+            />
+          </TouchableOpacity>
+        ) : undefined}
+      />
       <ScrollView className="flex-1 px-4 py-6">
         <View className="space-y-6">
           <View>
             <Text className="mb-2 text-lg font-semibold text-background-content">
               Configuração de Horas de Trabalho
             </Text>
-            <Text className="mb-4 text-sm text-secondary-content">
+            <Text className="mb-4 text-sm font-medium text-background-content">
               {currentStep === 1 && "Passo 1: Horas de Trabalho"}
               {currentStep === 2 && "Passo 2: Detalhes da Empresa"}
               {currentStep === 3 && "Passo 3: Integrações"}
@@ -290,15 +328,15 @@ export default function ConfigPage() {
 
             {currentStep === 3 && <>{renderGeminiApiKeyInput()}</>}
 
-            <View className="flex flex-row justify-between mt-6">
+            <View className="flex flex-row justify-center gap-x-4 mt-6">
               {currentStep > 1 && (
                 <TouchableOpacity
-                  className="p-3 w-1/3 rounded-lg bg-secondary"
+                  className="p-3 w-28 rounded-lg bg-tertiary border border-primary"
                   onPress={prevStep}
                   accessibilityLabel="Voltar"
                   accessibilityRole="button"
                 >
-                  <Text className="text-center text-secondary-content">
+                  <Text className="text-center text-background-content font-medium">
                     Voltar
                   </Text>
                 </TouchableOpacity>
@@ -306,7 +344,7 @@ export default function ConfigPage() {
 
               {currentStep < 3 && (
                 <TouchableOpacity
-                  className="p-3 w-1/3 rounded-lg bg-primary"
+                  className="p-3 w-28 rounded-lg bg-primary"
                   onPress={nextStep}
                   accessibilityLabel="Próximo"
                   accessibilityRole="button"
@@ -319,7 +357,7 @@ export default function ConfigPage() {
 
               {currentStep === 3 && (
                 <TouchableOpacity
-                  className="p-3 w-1/3 rounded-lg bg-primary"
+                  className="p-3 w-28 rounded-lg bg-primary"
                   onPress={handleSaveConfig}
                   accessibilityLabel="Salvar configurações"
                   accessibilityRole="button"
@@ -327,18 +365,6 @@ export default function ConfigPage() {
                 >
                   <Text className="text-center text-primary-content">
                     {loading ? "Salvando..." : "Salvar"}
-                  </Text>
-                </TouchableOpacity>
-              )}
-              {config && (
-                <TouchableOpacity
-                  className="p-3 w-1/3 rounded-lg bg-error"
-                  onPress={() => router.back()}
-                  accessibilityLabel="Voltar para a tela anterior"
-                  accessibilityRole="button"
-                >
-                  <Text className="text-center text-error-content">
-                    Cancelar
                   </Text>
                 </TouchableOpacity>
               )}

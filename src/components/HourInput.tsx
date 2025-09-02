@@ -14,8 +14,6 @@ export function HourInput({ onChange, value }: HourInputProps) {
   const [hours, setHours] = useState("");
   const { theme } = useTheme();
 
-  const isDark = theme === "dark";
-
   useEffect(() => {
     const [hour, minute] = value.split(":");
     setHours(hour);
@@ -103,11 +101,10 @@ export function HourInput({ onChange, value }: HourInputProps) {
     <View className="flex-row gap-x-4 justify-between items-center p-4 w-full rounded-2xl bg-surface elevation">
       <TouchableOpacity
         className="justify-center items-center w-14 h-14 rounded-full border bg-tertiary border-primary"
-        onPress={handleAddMinutes}
+        onPress={handleRemoveMinute}
       >
-        <Entypo name="plus" size={32} color={colors[theme].surfaceContent}/>
+        <Entypo name="minus" size={32} color={colors[theme].surfaceContent} />
       </TouchableOpacity>
-
       <View className="flex-row items-center px-4 py-2 rounded-xl bg-surface/10">
         <TextInput
           className="text-5xl font-semibold min-w-[60px] text-center text-surface-content"
@@ -125,12 +122,11 @@ export function HourInput({ onChange, value }: HourInputProps) {
           onBlur={handleMinuteBlur}
         />
       </View>
-
       <TouchableOpacity
         className="justify-center items-center w-14 h-14 rounded-full border bg-tertiary border-primary"
-        onPress={handleRemoveMinute}
+        onPress={handleAddMinutes}
       >
-        <Entypo name="minus" size={32} color={colors[theme].surfaceContent} />
+        <Entypo name="plus" size={32} color={colors[theme].surfaceContent} />
       </TouchableOpacity>
     </View>
   );
