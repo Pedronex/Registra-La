@@ -18,7 +18,7 @@ export default {
       foregroundImage: "./assets/images/adaptive-icon.png",
       backgroundColor: "#392840",
     },
-    package: "com.nexcorp.registrala",
+    package: `com.nexcorp${VARIANT_NAME}.registrala`,
     edgeToEdgeEnabled: true,
     permissions: ["android.permission.RECORD_AUDIO"],
   },
