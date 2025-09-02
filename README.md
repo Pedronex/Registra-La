@@ -1,50 +1,104 @@
-# Welcome to your Expo app 👋
+# Registra Lá - Aplicativo de Registro de Ponto
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+![Logo Registra Lá](./assets/images/icon.png)
 
-## Get started
+## Sobre o Aplicativo
 
-1. Install dependencies
+O **Registra Lá** é um aplicativo móvel desenvolvido com Expo/React Native para registro e controle de ponto eletrônico. Projetado para facilitar o registro de horas trabalhadas, o aplicativo oferece uma interface intuitiva e recursos avançados para gerenciamento de jornada de trabalho.
+
+## Principais Funcionalidades
+
+### Registro de Ponto
+
+- Registro de entrada e saída com captura de foto
+- Reconhecimento automático de data e hora através de IA (Gemini API)
+- Suporte a diferentes tipos de registro: trabalho, folga e atestado
+- Opção para registro de dia completo
+
+### Controle de Horas
+
+- Cálculo automático de horas trabalhadas
+- Visualização de saldo de horas (positivo ou negativo)
+- Configuração de jornada de trabalho e tolerância
+- Histórico completo de registros
+
+### Personalização
+
+- Configuração de horas de trabalho diárias
+- Definição de tolerância para saldo de horas
+- Configuração de tempo de intervalo
+- Seleção de dias de trabalho na semana
+- Suporte a tema claro e escuro
+
+### Tecnologia Avançada
+
+- Integração com IA para extração de dados de imagens (Google Gemini API)
+- Armazenamento local seguro com SQLite e Drizzle ORM
+- Interface responsiva e moderna
+
+## Tecnologias Utilizadas
+
+- **Frontend**: React Native, Expo, NativeWind (Tailwind CSS)
+- **Banco de Dados**: SQLite com Drizzle ORM
+- **Inteligência Artificial**: Google Gemini API para processamento de imagens
+- **Navegação**: Expo Router
+
+## Começando
+
+### Pré-requisitos
+
+- Node.js (versão 16 ou superior)
+- Expo CLI
+- Yarn ou NPM
+
+### Instalação
+
+1. Clone o repositório
+
+   ```bash
+   git clone https://github.com/seu-usuario/registra-la.git
+   cd registra-la
+   ```
+
+2. Instale as dependências
 
    ```bash
    npm install
+   # ou
+   yarn install
    ```
 
-2. Start the app
+3. Inicie o aplicativo
 
    ```bash
    npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+## Configuração Inicial
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+Ao iniciar o aplicativo pela primeira vez, você será direcionado para a tela de configuração onde poderá definir:
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+- Horas de trabalho diárias
+- Tolerância para saldo de horas
+- Nome da empresa
+- Tempo de intervalo
+- Dias de trabalho na semana
+- Chave da API Gemini (opcional, para reconhecimento automático de dados em fotos)
 
-## Get a fresh project
+## Uso do Aplicativo
 
-When you're ready, run:
+1. **Página Inicial**: Visualize o histórico de registros do dia e o saldo de horas
+2. **Registro de Ponto**: Toque no botão + para adicionar um novo registro
+3. **Configurações**: Acesse as configurações para personalizar o aplicativo
 
-```bash
-npm run reset-project
-```
+## Contribuição
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Contribuições são bem-vindas! Sinta-se à vontade para abrir issues ou enviar pull requests para melhorar o aplicativo.
 
-## Learn more
+## Licença
 
-To learn more about developing your project with Expo, look at the following resources:
+Este projeto está licenciado sob a licença MIT - veja o arquivo LICENSE para mais detalhes.
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+---
 
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Desenvolvido com ❤️ para facilitar o controle de ponto e registro de horas trabalhadas.

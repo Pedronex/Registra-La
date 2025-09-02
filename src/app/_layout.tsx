@@ -44,8 +44,10 @@ export default function Layout() {
    * Verifica se há atualizações disponíveis
    */
   const checkForUpdates = async () => {
-    // Não verifica atualizações em ambiente de desenvolvimento
-    if (__DEV__) return;
+    if (!Updates.isEmbeddedLaunch) {
+      console.info("Skipping update check in development mode.");
+      return;
+    }
 
     try {
       const update = await Updates.checkForUpdateAsync();
@@ -73,14 +75,14 @@ export default function Layout() {
   if (error) {
     return (
       <View>
-        <Text>Migration error: {error.message}</Text>
+        <Text>Erro na migração: {error.message}</Text>
       </View>
     );
   }
   if (!success) {
     return (
       <View>
-        <Text>Migration is in progress...</Text>
+        <Text>Rodando migrações...</Text>
       </View>
     );
   }

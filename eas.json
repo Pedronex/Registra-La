@@ -10,17 +10,26 @@
       "android": {
         "buildType": "apk"
       },
+      "env": {
+        "VARIANT_NAME": " Dev"
+      },
       "channel": "development"
     },
     "preview": {
       "android": {
         "buildType": "apk"
       },
+      "env": {
+        "VARIANT_NAME": " Prev"
+      },
       "distribution": "internal",
       "channel": "preview"
     },
     "production": {
-      "android": {},
+      "android": {
+        "buildType": "app-bundle",
+        "ndk": ""
+      },
       "autoIncrement": true,
       "channel": "production"
     }
