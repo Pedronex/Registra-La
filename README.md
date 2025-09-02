@@ -1,6 +1,10 @@
-# Registra Lá - Aplicativo de Registro de Ponto
+![Logo Registra Lá](./assets/card.png)
 
-![Logo Registra Lá](./assets/images/icon.png)
+<h1 align="center">Registra Lá</h1>
+
+<p align="center">
+    Aplicativo de Registro de Ponto Open-Source
+</p>
 
 ## Sobre o Aplicativo
 
