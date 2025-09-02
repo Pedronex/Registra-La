@@ -8,16 +8,6 @@ Atualmente, as seguintes versões do Registra Lá estão recebendo atualizaçõe
 | ------ | ------------------ |
 | 1.x.x  | :white_check_mark: |
 
-## Processo de Resposta
-
-Ao receber um relatório de vulnerabilidade, nossa equipe seguirá estes passos:
-
-1. Confirmaremos o recebimento do relatório em até 48 horas.
-2. Avaliaremos a vulnerabilidade e determinaremos sua gravidade.
-3. Desenvolveremos e testaremos uma correção.
-4. Lançaremos uma atualização que resolva o problema.
-5. Reconheceremos sua contribuição (se desejado) após a resolução.
-
 ## Práticas de Segurança
 
 O Registra Lá implementa as seguintes práticas de segurança:
