@@ -8,18 +8,6 @@ Atualmente, as seguintes versões do Registra Lá estão recebendo atualizaçõe
 | ------ | ------------------ |
 | 1.x.x  | :white_check_mark: |
 
-## Reportando uma Vulnerabilidade
-
-A segurança do Registra Lá é uma prioridade. Se você descobrir uma vulnerabilidade de segurança, por favor, siga estas diretrizes:
-
-1. **Não divulgue publicamente a vulnerabilidade** antes que ela tenha sido resolvida.
-2. Envie um relatório detalhado para [pedrosoares.nex@gmail.com].
-3. Inclua os seguintes detalhes no seu relatório:
-   - Descrição da vulnerabilidade
-   - Passos para reproduzir o problema
-   - Possível impacto
-   - Sugestões para mitigação (se houver)
-
 ## Processo de Resposta
 
 Ao receber um relatório de vulnerabilidade, nossa equipe seguirá estes passos:
