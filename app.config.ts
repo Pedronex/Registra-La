@@ -1,7 +1,31 @@
-const VARIANT_NAME = process.env.VARIANT_NAME || "";
+import { ConfigContext, ExpoConfig } from "expo/config";
 
-export default {
-  name: `Registra Lá${VARIANT_NAME}`,
+const IS_DEV = process.env.APP_VARIANT === 'development';
+const IS_PREVIEW = process.env.APP_VARIANT === 'preview';
+
+const getUniqueIdentifier = () => {
+  if (IS_DEV) {
+    return 'com.nexcorp.registrala.dev';
+  }
+  if (IS_PREVIEW) {
+    return 'com.nexcorp.registrala.preview';
+  }
+  return 'com.nexcorp.registrala';
+}
+
+const getAppName = () => {
+  if (IS_DEV) {
+    return 'Registra Lá (Dev)';
+  }
+  if (IS_PREVIEW) {
+    return 'Registra Lá (Preview)';
+  }
+  return 'Registra Lá';
+}
+
+export default ({ config }: ConfigContext): ExpoConfig => ({
+  ...config,
+  name: getAppName(),
   slug: `registra-la`,
   owner: "nexcorp",
   version: "1.0.0",
@@ -18,7 +42,7 @@ export default {
       foregroundImage: "./assets/images/adaptive-icon.png",
       backgroundColor: "#392840",
     },
-    package: `com.nexcorp${VARIANT_NAME}.registrala`,
+    package: getUniqueIdentifier(),
     edgeToEdgeEnabled: true,
     permissions: ["android.permission.RECORD_AUDIO"],
   },
@@ -95,4 +119,4 @@ export default {
   updates: {
     url: "https://u.expo.dev/0c422c0c-86f1-4951-8936-0b5ee55d06b4",
   },
-};
+});

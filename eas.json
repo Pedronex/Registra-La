@@ -11,7 +11,7 @@
         "buildType": "apk"
       },
       "env": {
-        "VARIANT_NAME": " Dev"
+        "VARIANT_NAME": "development"
       },
       "channel": "development"
     },
@@ -20,7 +20,7 @@
         "buildType": "apk"
       },
       "env": {
-        "VARIANT_NAME": " Prev"
+        "VARIANT_NAME": "preview"
       },
       "distribution": "internal",
       "channel": "preview"
