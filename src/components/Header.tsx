@@ -85,17 +85,28 @@ export function Header({
       >
         {title}
       </Text>
-      {showConfig && (
-        <Link href="/config" asChild>
+      <View className="flex-row justify-around">
+        {showConfig && (
+          <Link href="/config" asChild>
+            <TouchableOpacity
+              className="rounded-lg"
+              accessibilityRole="button"
+              accessibilityLabel="Configurar aplicativo"
+            >
+              <Entypo name="cog" size={35} color={colors[theme].primary} />
+            </TouchableOpacity>
+          </Link>
+        )}
+        <Link href="/calendar" asChild>
           <TouchableOpacity
             className="rounded-lg"
             accessibilityRole="button"
-            accessibilityLabel="Configurar aplicativo"
+            accessibilityLabel="Visualizar calendário"
           >
-            <Entypo name="cog" size={35} color={colors[theme].primary} />
+            <Entypo name="calendar" size={35} color={colors[theme].primary} />
           </TouchableOpacity>
         </Link>
-      )}
+      </View>
     </View>
   );
 }
