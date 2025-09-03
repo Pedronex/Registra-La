@@ -10,17 +10,11 @@
       "android": {
         "buildType": "apk"
       },
-      "env": {
-        "VARIANT_NAME": "development"
-      },
       "channel": "development"
     },
     "preview": {
       "android": {
         "buildType": "apk"
-      },
-      "env": {
-        "VARIANT_NAME": "preview"
       },
       "distribution": "internal",
       "channel": "preview"
