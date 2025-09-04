@@ -1,14 +1,19 @@
 import { Header } from "@/components/Header";
+import { RegisterData } from "@/db/schema";
 import { useCalendar } from "@/hooks/useCalendar";
 import { useTheme } from "@/providers/ThemeProvider";
 import { colors } from "@/utils/colorThemes";
 import { Entypo } from "@expo/vector-icons";
 import { useState } from "react";
-import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Modal, Pressable, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function CalendarPage() {
   const [date, setDate] = useState(new Date());
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedDayRecords, setSelectedDayRecords] = useState<RegisterData[]>([]);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+
   const {
     loading,
     error,
@@ -17,11 +22,20 @@ export default function CalendarPage() {
     previousMonthBalance,
     currentBalance,
     workedDays,
+    dailyRecords,
   } = useCalendar(date.getFullYear(), date.getMonth() + 1);
   const { theme } = useTheme();
 
   const changeMonth = (amount: number) => {
     setDate(new Date(date.getFullYear(), date.getMonth() + amount, 1));
+  };
+
+  const openDayDetails = (day: Date) => {
+    const originalDateString = `${String(day.getDate()).padStart(2, '0')}/${String(day.getMonth() + 1).padStart(2, '0')}/${day.getFullYear()}`;
+    const records = dailyRecords[originalDateString] || [];
+    setSelectedDayRecords(records);
+    setSelectedDate(day);
+    setModalVisible(true);
   };
 
   const renderCalendar = () => {
@@ -88,11 +102,13 @@ export default function CalendarPage() {
               const textStyle = isToday ? "text-primary-foreground" : (balance < 0 ? "text-white" : "text-secondary-content");
 
               return (
-                <View key={j} className={`w-12 h-16 items-center justify-center rounded-lg ${cellStyle}`}>
-                    <Text className={`font-bold ${textStyle}`}>{day.getDate()}</Text>
-                    {balance !== undefined && <Text className={`text-xs ${textStyle}`}>{formatBalance(balance)}</Text>}
-                    {isWorked && <Entypo name="check" size={16} color={isToday ? colors[theme].secondary : colors[theme].primary} />}
-                </View>
+                <TouchableOpacity key={j} onPress={() => openDayDetails(day)}>
+                    <View className={`w-12 h-16 items-center justify-center rounded-lg ${cellStyle}`}>
+                        <Text className={`font-bold ${textStyle}`}>{day.getDate()}</Text>
+                        {balance !== undefined && <Text className={`text-xs ${textStyle}`}>{formatBalance(balance)}</Text>}
+                        {isWorked && <Entypo name="check" size={16} color={isToday ? colors[theme].secondary : colors[theme].primary} />}
+                    </View>
+                </TouchableOpacity>
               );
             })}
           </View>
@@ -119,6 +135,38 @@ export default function CalendarPage() {
           renderCalendar()
         )}
       </View>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => {
+          setModalVisible(!modalVisible);
+        }}
+      >
+        <View className="flex-1 justify-center items-center bg-black/50">
+          <View className="m-5 bg-background p-5 rounded-2xl shadow-lg w-4/5">
+            <Text className="text-lg font-bold text-text mb-4">
+              Registros de {selectedDate?.toLocaleDateString('pt-BR')}
+            </Text>
+            {selectedDayRecords.length > 0 ? (
+              selectedDayRecords.map((record, index) => (
+                <View key={record.id} className="flex-row justify-between items-center mb-2">
+                    <Text className="text-text">{(index % 2 === 0) ? 'Entrada' : 'Saída'}:</Text>
+                    <Text className="text-text font-bold">{record.time}</Text>
+                </View>
+              ))
+            ) : (
+              <Text className="text-text">Nenhum registro encontrado para este dia.</Text>
+            )}
+            <Pressable
+              className="rounded-lg p-2 bg-primary mt-4"
+              onPress={() => setModalVisible(!modalVisible)}
+            >
+              <Text className="text-white font-bold text-center">Fechar</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }

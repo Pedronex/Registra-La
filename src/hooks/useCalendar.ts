@@ -10,6 +10,7 @@ interface CalendarData {
   previousMonthBalance: number;
   currentBalance: number;
   workedDays: Set<string>;
+  dailyRecords: Record<string, RegisterData[]>;
 }
 
 export function useCalendar(year: number, month: number) {
@@ -21,6 +22,7 @@ export function useCalendar(year: number, month: number) {
     previousMonthBalance: 0,
     currentBalance: 0,
     workedDays: new Set(),
+    dailyRecords: {},
   });
   const { config } = useConfig();
 
@@ -77,7 +79,7 @@ export function useCalendar(year: number, month: number) {
       totalBalance += balance;
     }
 
-    return { dailyBalances, totalBalance, workedDays };
+    return { dailyBalances, totalBalance, workedDays, dailyRecords };
   }, [config]);
 
   const loadCalendarData = useCallback(async () => {
@@ -85,7 +87,7 @@ export function useCalendar(year: number, month: number) {
       setLoading(true);
       setError(null);
 
-      const { dailyBalances: currentMonthBalances, totalBalance: currentMonthTotal, workedDays } = await calculateBalance(year, month);
+      const { dailyBalances: currentMonthBalances, totalBalance: currentMonthTotal, workedDays, dailyRecords } = await calculateBalance(year, month);
 
       const previousMonth = month === 1 ? 12 : month - 1;
       const previousYear = month === 1 ? year - 1 : year;
@@ -97,6 +99,7 @@ export function useCalendar(year: number, month: number) {
         previousMonthBalance: previousMonthTotal,
         currentBalance: previousMonthTotal + currentMonthTotal,
         workedDays,
+        dailyRecords,
       });
 
     } catch (err) {
