@@ -14,13 +14,13 @@ export function MonthNavigator({ date, onChangeMonth }: MonthNavigatorProps) {
   return (
     <View className="flex-row justify-between items-center mb-4">
       <TouchableOpacity onPress={() => onChangeMonth(-1)}>
-        <Entypo name="chevron-left" size={30} color={colors[theme].primary} />
+        <Entypo name="chevron-left" size={30} color={colors[theme].primaryContent} />
       </TouchableOpacity>
       <Text className="text-xl text-primary-content">{`${
         date.toLocaleString("default", { month: "long" })
       } ${date.getFullYear()}`}</Text>
       <TouchableOpacity onPress={() => onChangeMonth(1)}>
-        <Entypo name="chevron-right" size={30} color={colors[theme].primary} />
+        <Entypo name="chevron-right" size={30} color={colors[theme].primaryContent} />
       </TouchableOpacity>
     </View>
   );

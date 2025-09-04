@@ -1,8 +1,12 @@
 import { Header } from "@/components/Header";
 import { RegisterData } from "@/db/schema";
 import { useCalendar } from "@/hooks/useCalendar";
+import { useTheme } from "@/providers/ThemeProvider";
+import { colors } from "@/utils/colorThemes";
+import { Entypo } from "@expo/vector-icons";
+import { router } from "expo-router";
 import { useState } from "react";
-import { ActivityIndicator, View } from "react-native";
+import { ActivityIndicator, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
   MonthNavigator,
@@ -18,7 +22,8 @@ export default function CalendarPage() {
   const [selectedDayRecords, setSelectedDayRecords] = useState<RegisterData[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
-  // --- Data Fetching ---
+  // --- Hooks ---
+  const { theme } = useTheme();
   const {
     loading,
     error, // TODO: Display error state in the UI
@@ -52,7 +57,14 @@ export default function CalendarPage() {
   // --- Render ---
   return (
     <SafeAreaView className="flex-1 bg-background">
-      <Header title="Calendário" />
+      <Header
+        title="Calendário"
+        back={() => (
+          <TouchableOpacity onPress={() => router.back()}>
+            <Entypo name="arrow-left" size={30} color={colors[theme].primary} />
+          </TouchableOpacity>
+        )}
+      />
       <View className="flex-1 p-4">
         {loading ? (
           <ActivityIndicator size="large" />
