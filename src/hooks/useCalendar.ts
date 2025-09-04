@@ -27,7 +27,7 @@ export function useCalendar(year: number, month: number) {
   const { config } = useConfig();
 
   const calculateBalance = useCallback(async (targetYear: number, targetMonth: number) => {
-    if (!config) return { dailyBalances: {}, totalBalance: 0, workedDays: new Set<string>() };
+    if (!config) return { dailyBalances: {}, totalBalance: 0, workedDays: new Set<string>(), dailyRecords: {} };
 
     const startDate = new Date(targetYear, targetMonth - 1, 1);
     startDate.setHours(0, 0, 0, 0);
