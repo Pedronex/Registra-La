@@ -76,7 +76,6 @@ export default function CalendarPage() {
             {week.map((day, j) => {
               if (!day) return <View key={j} className="w-12 h-16" />;
 
-              const dayString = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
               const originalDateString = `${String(day.getDate()).padStart(2, '0')}/${String(day.getMonth() + 1).padStart(2, '0')}/${day.getFullYear()}`;
 
               const balance = dailyBalances[originalDateString];
