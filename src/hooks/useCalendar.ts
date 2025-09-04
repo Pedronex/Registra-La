@@ -9,6 +9,7 @@ interface CalendarData {
   monthBalance: number;
   previousMonthBalance: number;
   currentBalance: number;
+  workedDays: Set<string>;
 }
 
 export function useCalendar(year: number, month: number) {
@@ -19,21 +20,28 @@ export function useCalendar(year: number, month: number) {
     monthBalance: 0,
     previousMonthBalance: 0,
     currentBalance: 0,
+    workedDays: new Set(),
   });
   const { config } = useConfig();
 
   const calculateBalance = useCallback(async (targetYear: number, targetMonth: number) => {
-    if (!config) return { dailyBalances: {}, totalBalance: 0 };
+    if (!config) return { dailyBalances: {}, totalBalance: 0, workedDays: new Set<string>() };
 
     const startDate = new Date(targetYear, targetMonth - 1, 1);
+    startDate.setHours(0, 0, 0, 0);
     const endDate = new Date(targetYear, targetMonth, 0);
+    endDate.setHours(23, 59, 59, 999);
 
-    const records = await database.select().from(registersTable).where(
-      and(
-        gte(registersTable.date, startDate.toISOString().split('T')[0]),
-        lte(registersTable.date, endDate.toISOString().split('T')[0])
-      )
-    );
+    const allRecords = await database.select().from(registersTable);
+
+    const records = allRecords.filter(record => {
+        try {
+            const recordDate = new Date(record.date.split('/').reverse().join('-'));
+            return recordDate.getTime() >= startDate.getTime() && recordDate.getTime() <= endDate.getTime();
+        } catch (e) {
+            return false;
+        }
+    });
 
     const dailyRecords: Record<string, RegisterData[]> = {};
     for (const record of records) {
@@ -45,9 +53,14 @@ export function useCalendar(year: number, month: number) {
 
     const dailyBalances: Record<string, number> = {};
     let totalBalance = 0;
+    const workedDays = new Set<string>();
 
     for (const date in dailyRecords) {
+      workedDays.add(date);
       const dayRecords = dailyRecords[date];
+
+      dayRecords.sort((a, b) => a.time.localeCompare(b.time));
+
       if (dayRecords.length % 2 !== 0) continue;
 
       let workedMillis = 0;
@@ -63,7 +76,7 @@ export function useCalendar(year: number, month: number) {
       totalBalance += balance;
     }
 
-    return { dailyBalances, totalBalance };
+    return { dailyBalances, totalBalance, workedDays };
   }, [config]);
 
   const loadCalendarData = useCallback(async () => {
@@ -71,7 +84,7 @@ export function useCalendar(year: number, month: number) {
       setLoading(true);
       setError(null);
 
-      const { dailyBalances: currentMonthBalances, totalBalance: currentMonthTotal } = await calculateBalance(year, month);
+      const { dailyBalances: currentMonthBalances, totalBalance: currentMonthTotal, workedDays } = await calculateBalance(year, month);
 
       const previousMonth = month === 1 ? 12 : month - 1;
       const previousYear = month === 1 ? year - 1 : year;
@@ -82,6 +95,7 @@ export function useCalendar(year: number, month: number) {
         monthBalance: currentMonthTotal,
         previousMonthBalance: previousMonthTotal,
         currentBalance: previousMonthTotal + currentMonthTotal,
+        workedDays,
       });
 
     } catch (err) {

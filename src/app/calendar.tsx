@@ -8,7 +8,7 @@ import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function CalendarPage() {
-  const [date, setDate] = useState(new Date());
+  const [currentDate, setCurrentDate] = useState(new Date());
   const {
     loading,
     error,
@@ -16,33 +16,29 @@ export default function CalendarPage() {
     monthBalance,
     previousMonthBalance,
     currentBalance,
-  } = useCalendar(date.getFullYear(), date.getMonth() + 1);
+    workedDays,
+  } = useCalendar(currentDate.getFullYear(), currentDate.getMonth() + 1);
   const { theme } = useTheme();
 
-  const changeMonth = (amount: number) => {
-    setDate(new Date(date.getFullYear(), date.getMonth() + amount, 1));
+  const changeWeek = (amount: number) => {
+    const newDate = new Date(currentDate);
+    newDate.setDate(newDate.getDate() + amount * 7);
+    setCurrentDate(newDate);
   };
 
   const renderCalendar = () => {
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    const firstDay = new Date(year, month, 1).getDay();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const weeks: (number | null)[][] = [];
-    let week: (number | null)[] = Array(firstDay).fill(null);
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
 
-    for (let day = 1; day <= daysInMonth; day++) {
-      week.push(day);
-      if (week.length === 7) {
-        weeks.push(week);
-        week = [];
-      }
-    }
-    if (week.length > 0) {
-      while(week.length < 7) {
-        week.push(null);
-      }
-      weeks.push(week);
+    const dayOfWeek = currentDate.getDay();
+    const firstDayOfWeek = new Date(currentDate);
+    firstDayOfWeek.setDate(firstDayOfWeek.getDate() - dayOfWeek);
+
+    const week: Date[] = [];
+    for(let i = 0; i < 7; i++) {
+        const day = new Date(firstDayOfWeek);
+        day.setDate(day.getDate() + i);
+        week.push(day);
     }
 
     const formatBalance = (balance: number) => {
@@ -55,42 +51,44 @@ export default function CalendarPage() {
     return (
       <View>
         <View className="flex-row justify-between items-center mb-4">
-          <TouchableOpacity onPress={() => changeMonth(-1)}>
+          <TouchableOpacity onPress={() => changeWeek(-1)}>
             <Entypo name="chevron-left" size={30} color={colors[theme].primary} />
           </TouchableOpacity>
           <Text className="text-xl text-text">{`${
-            date.toLocaleString("default", { month: "long" })
-          } ${date.getFullYear()}`}</Text>
-          <TouchableOpacity onPress={() => changeMonth(1)}>
+            currentDate.toLocaleString("default", { month: "long" })
+          } ${currentDate.getFullYear()}`}</Text>
+          <TouchableOpacity onPress={() => changeWeek(1)}>
             <Entypo name="chevron-right" size={30} color={colors[theme].primary} />
           </TouchableOpacity>
         </View>
         <View className="flex-row justify-around mb-2">
-            {["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map(day => <Text key={day} className="w-12 text-center text-text">{day}</Text>)}
+            {["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map(day => <Text key={day} className="w-12 text-center text-secondary-content">{day}</Text>)}
         </View>
-        {weeks.map((week, i) => (
-          <View key={i} className="flex-row justify-around">
+        <View className="flex-row justify-around">
             {week.map((day, j) => {
-              const dayString = day ? `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}` : '';
+              const dayString = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
               const balance = dailyBalances[dayString];
+              const isWorked = workedDays.has(dayString);
+              const today = new Date();
+              const isToday = day.getDate() === today.getDate() && day.getMonth() === today.getMonth() && day.getFullYear() === today.getFullYear();
+
+              const cellStyle = isToday ? "bg-primary" : (balance < 0 ? "bg-red-500" : "bg-secondary");
+              const textStyle = isToday ? "text-primary-foreground" : (balance < 0 ? "text-white" : "text-secondary-content");
+
               return (
-                <View key={j} className="w-12 h-12 items-center justify-center">
-                  {day && (
-                    <View className="items-center">
-                        <Text className="text-text">{day}</Text>
-                        {balance !== undefined && <Text className={`text-xs ${balance >= 0 ? 'text-green-500' : 'text-red-500'}`}>{formatBalance(balance)}</Text>}
-                    </View>
-                  )}
+                <View key={j} className={`w-12 h-16 items-center justify-center rounded-lg ${cellStyle}`}>
+                    <Text className={`font-bold ${textStyle}`}>{day.getDate()}</Text>
+                    {balance !== undefined && <Text className={`text-xs ${textStyle}`}>{formatBalance(balance)}</Text>}
+                    {isWorked && <Entypo name="check" size={16} color={isToday ? colors[theme].secondary : colors[theme].primary} />}
                 </View>
               );
             })}
-          </View>
-        ))}
-        <View className="mt-4 p-4 rounded-lg bg-card">
-            <Text className="text-lg text-card-foreground mb-2">Resumo do Mês</Text>
-            <Text className="text-text">Saldo do Mês Anterior: {formatBalance(previousMonthBalance)}</Text>
-            <Text className="text-text">Saldo deste Mês: {formatBalance(monthBalance)}</Text>
-            <Text className="text-text font-bold">Saldo Atual: {formatBalance(currentBalance)}</Text>
+        </View>
+        <View className="mt-4 p-4 rounded-lg bg-secondary">
+            <Text className="text-lg text-secondary-content mb-2">Resumo do Mês</Text>
+            <Text className="text-secondary-content">Saldo do Mês Anterior: {formatBalance(previousMonthBalance)}</Text>
+            <Text className="text-secondary-content">Saldo deste Mês: {formatBalance(monthBalance)}</Text>
+            <Text className="text-secondary-content font-bold">Saldo Atual: {formatBalance(currentBalance)}</Text>
         </View>
       </View>
     );
