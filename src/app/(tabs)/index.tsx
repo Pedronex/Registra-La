@@ -41,7 +41,7 @@ export default function HomePage() {
       </View>
       <View className="flex-row justify-end p-4">
         {isConfigured && (
-          <Link href="/register" asChild>
+          <Link href="/add" asChild>
             <TouchableOpacity
               className="rounded-full bg-primary"
               accessibilityRole="button"
