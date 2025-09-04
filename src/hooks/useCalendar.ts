@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
 import { database } from "@/db";
 import { registersTable, RegisterData } from "@/db/schema";
-import { and, gte, lte } from "drizzle-orm";
 import { useConfig } from "./useConfig";
+import { parseDateDDMMYYYY } from "@/utils/dateTime";
 
+// --- Interfaces ---
 interface CalendarData {
   dailyBalances: Record<string, number>;
   monthBalance: number;
@@ -12,6 +13,84 @@ interface CalendarData {
   workedDays: Set<string>;
   dailyRecords: Record<string, RegisterData[]>;
 }
+
+// --- Helper Functions ---
+
+/**
+ * Fetches all records from the database and filters them for a specific month.
+ */
+async function fetchAndFilterRecordsForMonth(year: number, month: number): Promise<RegisterData[]> {
+  const startDate = new Date(year, month - 1, 1);
+  startDate.setHours(0, 0, 0, 0);
+  const endDate = new Date(year, month, 0);
+  endDate.setHours(23, 59, 59, 999);
+
+  const allRecords = await database.select().from(registersTable);
+
+  return allRecords.filter(record => {
+    try {
+      const recordDate = parseDateDDMMYYYY(record.date);
+      return recordDate.getTime() >= startDate.getTime() && recordDate.getTime() <= endDate.getTime();
+    } catch (e) {
+      console.error(`Error parsing date for record ID ${record.id}: ${record.date}`, e);
+      return false;
+    }
+  });
+}
+
+/**
+ * Groups a list of records by their date string.
+ */
+function groupRecordsByDay(records: RegisterData[]): Record<string, RegisterData[]> {
+  const dailyRecords: Record<string, RegisterData[]> = {};
+  for (const record of records) {
+    if (!dailyRecords[record.date]) {
+      dailyRecords[record.date] = [];
+    }
+    dailyRecords[record.date].push(record);
+  }
+  return dailyRecords;
+}
+
+/**
+ * Calculates daily balances, total balance, and worked days from grouped records.
+ */
+function calculateBalancesFromDailyRecords(
+  dailyRecords: Record<string, RegisterData[]>,
+  workHours: number
+) {
+  const dailyBalances: Record<string, number> = {};
+  let totalBalance = 0;
+  const workedDays = new Set(Object.keys(dailyRecords));
+
+  for (const date in dailyRecords) {
+    const dayRecords = dailyRecords[date];
+    dayRecords.sort((a, b) => a.time.localeCompare(b.time));
+
+    if (dayRecords.length % 2 !== 0) {
+      dailyBalances[date] = 0; // Or some other handling for incomplete data
+      continue;
+    }
+
+    let workedMillis = 0;
+    const isoDate = date.split('/').reverse().join('-');
+    for (let i = 0; i < dayRecords.length; i += 2) {
+      const timeIn = new Date(`${isoDate}T${dayRecords[i].time}`).getTime();
+      const timeOut = new Date(`${isoDate}T${dayRecords[i + 1].time}`).getTime();
+      workedMillis += timeOut - timeIn;
+    }
+
+    const workedHours = workedMillis / (1000 * 60 * 60);
+    const balance = workedHours - workHours;
+    dailyBalances[date] = balance;
+    totalBalance += balance;
+  }
+
+  return { dailyBalances, totalBalance, workedDays };
+}
+
+
+// --- Main Hook ---
 
 export function useCalendar(year: number, month: number) {
   const [loading, setLoading] = useState(true);
@@ -26,58 +105,14 @@ export function useCalendar(year: number, month: number) {
   });
   const { config } = useConfig();
 
-  const calculateBalance = useCallback(async (targetYear: number, targetMonth: number) => {
-    if (!config) return { dailyBalances: {}, totalBalance: 0, workedDays: new Set<string>(), dailyRecords: {} };
-
-    const startDate = new Date(targetYear, targetMonth - 1, 1);
-    startDate.setHours(0, 0, 0, 0);
-    const endDate = new Date(targetYear, targetMonth, 0);
-    endDate.setHours(23, 59, 59, 999);
-
-    const allRecords = await database.select().from(registersTable);
-
-    const records = allRecords.filter(record => {
-        try {
-            const recordDate = new Date(record.date.split('/').reverse().join('-'));
-            return recordDate.getTime() >= startDate.getTime() && recordDate.getTime() <= endDate.getTime();
-        } catch (e) {
-            return false;
-        }
-    });
-
-    const dailyRecords: Record<string, RegisterData[]> = {};
-    for (const record of records) {
-      if (!dailyRecords[record.date]) {
-        dailyRecords[record.date] = [];
-      }
-      dailyRecords[record.date].push(record);
+  const getMonthlyData = useCallback(async (targetYear: number, targetMonth: number) => {
+    if (!config) {
+        return { dailyBalances: {}, totalBalance: 0, workedDays: new Set<string>(), dailyRecords: {} };
     }
 
-    const dailyBalances: Record<string, number> = {};
-    let totalBalance = 0;
-    const workedDays = new Set<string>();
-
-    for (const date in dailyRecords) {
-      workedDays.add(date);
-      const dayRecords = dailyRecords[date];
-
-      dayRecords.sort((a, b) => a.time.localeCompare(b.time));
-
-      if (dayRecords.length % 2 !== 0) continue;
-
-      let workedMillis = 0;
-      const isoDate = date.split('/').reverse().join('-');
-      for (let i = 0; i < dayRecords.length; i += 2) {
-        const timeIn = new Date(`${isoDate}T${dayRecords[i].time}`).getTime();
-        const timeOut = new Date(`${isoDate}T${dayRecords[i+1].time}`).getTime();
-        workedMillis += timeOut - timeIn;
-      }
-
-      const workedHours = workedMillis / (1000 * 60 * 60);
-      const balance = workedHours - (config.workHours || 8);
-      dailyBalances[date] = balance;
-      totalBalance += balance;
-    }
+    const records = await fetchAndFilterRecordsForMonth(targetYear, targetMonth);
+    const dailyRecords = groupRecordsByDay(records);
+    const { dailyBalances, totalBalance, workedDays } = calculateBalancesFromDailyRecords(dailyRecords, config.workHours || 8);
 
     return { dailyBalances, totalBalance, workedDays, dailyRecords };
   }, [config]);
@@ -87,19 +122,19 @@ export function useCalendar(year: number, month: number) {
       setLoading(true);
       setError(null);
 
-      const { dailyBalances: currentMonthBalances, totalBalance: currentMonthTotal, workedDays, dailyRecords } = await calculateBalance(year, month);
+      const currentMonthData = await getMonthlyData(year, month);
 
       const previousMonth = month === 1 ? 12 : month - 1;
       const previousYear = month === 1 ? year - 1 : year;
-      const { totalBalance: previousMonthTotal } = await calculateBalance(previousYear, previousMonth);
+      const previousMonthData = await getMonthlyData(previousYear, previousMonth);
 
       setCalendarData({
-        dailyBalances: currentMonthBalances,
-        monthBalance: currentMonthTotal,
-        previousMonthBalance: previousMonthTotal,
-        currentBalance: previousMonthTotal + currentMonthTotal,
-        workedDays,
-        dailyRecords,
+        dailyBalances: currentMonthData.dailyBalances,
+        monthBalance: currentMonthData.totalBalance,
+        previousMonthBalance: previousMonthData.totalBalance,
+        currentBalance: previousMonthData.totalBalance + currentMonthData.totalBalance,
+        workedDays: currentMonthData.workedDays,
+        dailyRecords: currentMonthData.dailyRecords,
       });
 
     } catch (err) {
@@ -108,7 +143,7 @@ export function useCalendar(year: number, month: number) {
     } finally {
       setLoading(false);
     }
-  }, [year, month, calculateBalance]);
+  }, [year, month, getMonthlyData]);
 
   useEffect(() => {
     loadCalendarData();
