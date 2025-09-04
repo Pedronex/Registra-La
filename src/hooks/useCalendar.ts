@@ -64,9 +64,10 @@ export function useCalendar(year: number, month: number) {
       if (dayRecords.length % 2 !== 0) continue;
 
       let workedMillis = 0;
+      const isoDate = date.split('/').reverse().join('-');
       for (let i = 0; i < dayRecords.length; i += 2) {
-        const timeIn = new Date(`${date}T${dayRecords[i].time}`).getTime();
-        const timeOut = new Date(`${date}T${dayRecords[i+1].time}`).getTime();
+        const timeIn = new Date(`${isoDate}T${dayRecords[i].time}`).getTime();
+        const timeOut = new Date(`${isoDate}T${dayRecords[i+1].time}`).getTime();
         workedMillis += timeOut - timeIn;
       }
 
