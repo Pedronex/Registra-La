@@ -4,10 +4,12 @@ import { useCalendar } from "@/hooks/useCalendar";
 import { useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { MonthNavigator } from "@/components/calendar/MonthNavigator";
-import { CalendarGrid } from "@/components/calendar/CalendarGrid";
-import { BalanceSummary } from "@/components/calendar/BalanceSummary";
-import { DayRecordsModal } from "@/components/calendar/DayRecordsModal";
+import {
+  MonthNavigator,
+  CalendarGrid,
+  BalanceSummary,
+  DayRecordsModal
+} from "@/components/calendar";
 
 export default function CalendarPage() {
   // --- State ---
