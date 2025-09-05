@@ -15,10 +15,10 @@ const getUniqueIdentifier = () => {
 
 const getAppName = () => {
   if (IS_DEV) {
-    return 'Registra Lá (Dev)';
+    return 'Registra Dev';
   }
   if (IS_PREVIEW) {
-    return 'Registra Lá (Preview)';
+    return 'Registra Prev';
   }
   return 'Registra Lá';
 }
