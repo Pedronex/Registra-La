@@ -1,7 +1,7 @@
-import { Tabs } from "expo-router";
-import { Entypo, FontAwesome } from "@expo/vector-icons";
 import { useTheme } from "@/providers/ThemeProvider";
 import { colors } from "@/utils/colorThemes";
+import { Entypo, FontAwesome } from "@expo/vector-icons";
+import { Tabs } from "expo-router";
 
 export default function TabsLayout() {
   const { theme } = useTheme();
@@ -10,9 +10,11 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
+        tabBarActiveBackgroundColor: colors[theme].primaryContent,
         tabBarStyle: {
           backgroundColor: colors[theme].background,
         },
+        tabBarHideOnKeyboard: true,
         tabBarActiveTintColor: colors[theme].primary,
         tabBarInactiveTintColor: colors[theme].surfaceContent,
       }}
@@ -33,6 +35,7 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, size }) => (
             <Entypo name="plus" size={size} color={color} />
           ),
+          popToTopOnBlur: true,
         }}
       />
       <Tabs.Screen
