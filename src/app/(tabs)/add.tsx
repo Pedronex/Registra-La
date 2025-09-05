@@ -103,7 +103,8 @@ export default function RegisterPage() {
   async function handleRegister() {
     const result = await saveRegister(register);
     if (result) {
-      router.push("/");
+      
+      router.push("/(tabs)/");
     }
   }
 
@@ -202,7 +203,7 @@ export default function RegisterPage() {
       <View className="flex-row gap-x-2 w-full">
         <TouchableOpacity
           className="flex-1 items-center p-4 mt-6 rounded-lg bg-error"
-          onPress={() => router.push("/")}
+          onPress={() => router.push("/(tabs)/")}
         >
           <Text className="text-lg font-bold text-error-content">Voltar</Text>
         </TouchableOpacity>
