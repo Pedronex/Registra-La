@@ -15,7 +15,7 @@ export default function InitialPage() {
   /**
    * Renderiza o cabeçalho da página
    */
-  const renderHeader = () => <Header showConfig={false} showCalendar={false} />;
+  const renderHeader = () => <Header showConfig={false} />;
 
   /**
    * Renderiza o slogan do aplicativo
@@ -36,7 +36,7 @@ export default function InitialPage() {
    */
   const renderEnterButton = () => (
     <Link
-      href={config?.id ? '/(tabs)/index' : '/config'}
+      href={config?.id ? '/(tabs)/' : '/config'}
       className="p-2 mt-5 w-full rounded-3xl bg-primary"
       accessibilityRole="button"
       accessibilityLabel="Entrar no aplicativo"

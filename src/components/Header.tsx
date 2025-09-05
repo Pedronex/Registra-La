@@ -13,10 +13,9 @@ interface HeaderProps {
    */
   title?: string;
   /**
-   *
+   * Se deve mostrar o botão de configuração
    */
   showConfig?: boolean;
-  showCalendar?: boolean;
   back?: () => React.ReactNode;
 }
 
@@ -27,7 +26,6 @@ interface HeaderProps {
 export function Header({
   title = "Registra lá",
   showConfig = true,
-  showCalendar = true,
   back,
 }: HeaderProps) {
   const logoDark = require("@/assets/Relogio.png");
@@ -35,7 +33,9 @@ export function Header({
 
   const LogoContainer = () => (
     <View
-      className={`p-2 w-14 h-14 rounded-2xl ${theme === "dark" ? "" : "bg-primary"}`}
+      className={`p-2 w-14 h-14 rounded-2xl ${
+        theme === "dark" ? "" : "bg-primary"
+      }`}
     >
       <Image
         source={logoDark}
@@ -55,17 +55,6 @@ export function Header({
             accessibilityLabel="Configurar aplicativo"
           >
             <Entypo name="cog" size={35} color={colors[theme].primary} />
-          </TouchableOpacity>
-        </Link>
-      )}
-      {showCalendar && (
-        <Link href="/calendar" asChild>
-          <TouchableOpacity
-            className="p-2 rounded-lg"
-            accessibilityRole="button"
-            accessibilityLabel="Visualizar calendário"
-          >
-            <Entypo name="calendar" size={35} color={colors[theme].primary} />
           </TouchableOpacity>
         </Link>
       )}
@@ -90,7 +79,7 @@ export function Header({
   return (
     <View
       className={`flex-row items-center px-6 w-screen ${
-        showConfig || showCalendar ? "justify-between" : "justify-center"
+        showConfig ? "justify-between" : "justify-center"
       }`}
     >
       <LogoContainer />
