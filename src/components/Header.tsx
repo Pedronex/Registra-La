@@ -1,8 +1,10 @@
+import { useUpdate } from "@/hooks/useUpdate";
 import { useTheme } from "@/providers/ThemeProvider";
 import { colors } from "@/utils/colorThemes";
 import { Entypo } from "@expo/vector-icons";
 import { Link } from "expo-router";
 import { Image, Text, TouchableOpacity, View } from "react-native";
+import { UpdateAlert } from "./UpdateAlert";
 
 /**
  * Interface de propriedades do componente Header
@@ -30,6 +32,7 @@ export function Header({
 }: HeaderProps) {
   const logoDark = require("@/assets/Relogio.png");
   const { theme } = useTheme();
+  const { updateAvailable } = useUpdate();
 
   const LogoContainer = () => (
     <View
@@ -77,19 +80,22 @@ export function Header({
   }
 
   return (
-    <View
-      className={`flex-row items-center px-6 w-screen ${
-        showConfig ? "justify-between" : "justify-center"
-      }`}
-    >
-      <LogoContainer />
-      <Text
-        className="text-4xl font-medium text-surface-content"
-        accessibilityRole="header"
+    <>
+      <View
+        className={`flex-row items-center px-6 w-screen ${
+          showConfig ? "justify-between" : "justify-center"
+        }`}
       >
-        {title}
-      </Text>
-      <ActionButtons />
-    </View>
+        <LogoContainer />
+        <Text
+          className="text-4xl font-medium text-surface-content"
+          accessibilityRole="header"
+        >
+          {title}
+        </Text>
+        <ActionButtons />
+      </View>
+      {updateAvailable && <UpdateAlert />}
+    </>
   );
 }

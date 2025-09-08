@@ -117,6 +117,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     policy: "appVersion",
   },
   updates: {
+    checkAutomatically: 'ON_LOAD',
+    fallbackToCacheTimeout: 60000,
     url: "https://u.expo.dev/0c422c0c-86f1-4951-8936-0b5ee55d06b4",
   },
 });

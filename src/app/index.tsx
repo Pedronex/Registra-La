@@ -36,7 +36,7 @@ export default function InitialPage() {
    */
   const renderEnterButton = () => (
     <Link
-      href={config?.id ? '/(tabs)/' : '/config'}
+      href={config?.id ? "/(tabs)/" : "/config"}
       className="p-2 mt-5 w-full rounded-3xl bg-primary"
       accessibilityRole="button"
       accessibilityLabel="Entrar no aplicativo"
