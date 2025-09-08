@@ -10,20 +10,15 @@
       "android": {
         "buildType": "apk"
       },
-      "env": {
-        "VARIANT_NAME": " Dev"
-      },
       "channel": "development"
     },
     "preview": {
       "android": {
         "buildType": "apk"
       },
-      "env": {
-        "VARIANT_NAME": " Prev"
-      },
       "distribution": "internal",
-      "channel": "preview"
+      "channel": "preview",
+      "autoIncrement": true
     },
     "production": {
       "node": "22.17.1",

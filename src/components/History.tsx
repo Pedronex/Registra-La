@@ -4,6 +4,7 @@ import { useTimeRecords } from "@/hooks/useTimeRecords";
 import { useTheme } from "@/providers/ThemeProvider";
 import { colors } from "@/utils/colorThemes";
 import { Entypo, MaterialIcons } from "@expo/vector-icons";
+import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
 import { addDays, format, parse, subDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { router } from "expo-router";
@@ -109,14 +110,27 @@ export function History() {
           color={colors[theme].primaryContent}
         />
       </TouchableOpacity>
-      <View className="items-center">
+      <TouchableOpacity 
+        className="items-center"
+        onPress={() => {
+          DateTimePickerAndroid.open({
+            value: date,
+            mode: 'date',
+            onChange: (event, selectedDate) => {
+              if (event.type === 'set' && selectedDate) {
+                setDate(selectedDate);
+              }
+            },
+          });
+        }}
+      >
         <Text className="text-2xl font-bold text-primary-content">
           {format(date, "dd 'de' MMMM", { locale: ptBR })}
         </Text>
         <Text className="text-sm opacity-80 text-primary-content">
           {format(date, "yyyy", { locale: ptBR })}
         </Text>
-      </View>
+      </TouchableOpacity>
       <TouchableOpacity
         onPress={() => setDate(addDays(date, 1))}
         className="p-3 rounded-full bg-primary-focus"

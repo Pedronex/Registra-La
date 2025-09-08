@@ -1,8 +1,10 @@
+import { useUpdate } from "@/hooks/useUpdate";
 import { useTheme } from "@/providers/ThemeProvider";
 import { colors } from "@/utils/colorThemes";
 import { Entypo } from "@expo/vector-icons";
 import { Link } from "expo-router";
 import { Image, Text, TouchableOpacity, View } from "react-native";
+import { UpdateAlert } from "./UpdateAlert";
 
 /**
  * Interface de propriedades do componente Header
@@ -13,7 +15,7 @@ interface HeaderProps {
    */
   title?: string;
   /**
-   *
+   * Se deve mostrar o botão de configuração
    */
   showConfig?: boolean;
   back?: () => React.ReactNode;
@@ -29,66 +31,29 @@ export function Header({
   back,
 }: HeaderProps) {
   const logoDark = require("@/assets/Relogio.png");
-
   const { theme } = useTheme();
+  const { updateAvailable } = useUpdate();
 
-  if (back) {
-    return (
-      <View className={"flex-row justify-between items-center px-4 w-screen"}>
-        {back()}
-        <Text
-          className="text-4xl text-surface-content"
-          accessibilityRole="header"
-        >
-          {title}
-        </Text>
-        <View
-          className={`p-2 w-14 h-14 rounded-2xl mr-2 ${
-            theme === "dark" ? "" : "bg-primary"
-          }`}
-        >
-          <Image
-            source={logoDark}
-            width={50}
-            height={50}
-            className="mr-2 w-full h-full"
-            accessibilityLabel="Logo do aplicativo"
-          />
-        </View>
-      </View>
-    );
-  }
-
-  return (
+  const LogoContainer = () => (
     <View
-      className={`flex-row  ${
-        showConfig || back ? "justify-between" : "justify-center"
-      } items-center px-4 w-screen`}
+      className={`p-2 w-14 h-14 rounded-2xl ${
+        theme === "dark" ? "" : "bg-primary"
+      }`}
     >
-      <View
-        className={`p-2 w-14 h-14 rounded-2xl mr-2 ${
-          theme === "dark" ? "" : "bg-primary"
-        }`}
-      >
-        <Image
-          source={logoDark}
-          width={50}
-          height={50}
-          className="mr-2 w-full h-full"
-          accessibilityLabel="Logo do aplicativo"
-        />
-      </View>
+      <Image
+        source={logoDark}
+        className="w-full h-full"
+        accessibilityLabel="Logo do aplicativo"
+      />
+    </View>
+  );
 
-      <Text
-        className="text-4xl text-surface-content"
-        accessibilityRole="header"
-      >
-        {title}
-      </Text>
+  const ActionButtons = () => (
+    <View className="flex-row gap-4">
       {showConfig && (
         <Link href="/config" asChild>
           <TouchableOpacity
-            className="rounded-lg"
+            className="p-2 rounded-lg"
             accessibilityRole="button"
             accessibilityLabel="Configurar aplicativo"
           >
@@ -97,5 +62,40 @@ export function Header({
         </Link>
       )}
     </View>
+  );
+
+  if (back) {
+    return (
+      <View className="flex-row justify-between items-center px-6 w-screen">
+        {back()}
+        <Text
+          className="text-4xl font-medium text-surface-content"
+          accessibilityRole="header"
+        >
+          {title}
+        </Text>
+        <LogoContainer />
+      </View>
+    );
+  }
+
+  return (
+    <>
+      <View
+        className={`flex-row items-center px-6 w-screen ${
+          showConfig ? "justify-between" : "justify-center"
+        }`}
+      >
+        <LogoContainer />
+        <Text
+          className="text-4xl font-medium text-surface-content"
+          accessibilityRole="header"
+        >
+          {title}
+        </Text>
+        <ActionButtons />
+      </View>
+      {updateAvailable && <UpdateAlert />}
+    </>
   );
 }

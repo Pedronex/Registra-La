@@ -9,9 +9,8 @@ import * as Updates from "expo-updates";
 import { useEffect } from "react";
 import { Text, View } from "react-native";
 
-import { Messages } from "@/constants/Messages";
 import { database, expo } from "@/db";
-import { Alert } from "@/lib/Alert";
+import { useUpdate } from "@/hooks/useUpdate";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import migrations from "../../drizzle/migrations";
 
@@ -23,13 +22,14 @@ export default function Layout() {
   useDrizzleStudio(expo);
 
   const { success, error } = useMigrations(database, migrations);
+  const { loadUpdates } = useUpdate();
 
   useEffect(() => {
+    loadUpdates();
     /**
      * Inicializa o aplicativo verificando atualizações e carregando configurações
      */
     const initializeApp = async () => {
-      checkForUpdates();
       LogRocket.init("gcrcj1/registra-la", {
         updateId: Updates.isEmbeddedLaunch ? null : Updates.updateId,
         expoChannel: Updates.channel,
@@ -38,39 +38,8 @@ export default function Layout() {
 
     // Inicializa o aplicativo
     initializeApp();
-  }, []);
-
-  /**
-   * Verifica se há atualizações disponíveis
-   */
-  const checkForUpdates = async () => {
-    if (!Updates.isEmbeddedLaunch) {
-      console.info("Skipping update check in development mode.");
-      return;
-    }
-
-    try {
-      const update = await Updates.checkForUpdateAsync();
-
-      if (update.isAvailable) {
-        Alert.confirm(
-          "Atualização disponível",
-          Messages.confirmations.update,
-          async () => {
-            try {
-              await Updates.fetchUpdateAsync();
-              await Updates.reloadAsync();
-            } catch (error) {
-              console.error(Messages.errors.update.install, error);
-              Alert.error(Messages.errors.update.install);
-            }
-          }
-        );
-      }
-    } catch (error) {
-      console.error(Messages.errors.update.check, error);
-    }
-  };
+  }, [loadUpdates]);
+  // Componente de notificação de atualização foi movido para a página inicial
 
   if (error) {
     return (

@@ -70,3 +70,14 @@ export function isToday(date: Date | string): boolean {
     dateObj.getFullYear() === today.getFullYear()
   );
 }
+
+/**
+ * Converte uma string de data no formato DD/MM/YYYY para um objeto Date.
+ * @param dateString A string de data no formato DD/MM/YYYY.
+ * @returns Um objeto Date.
+ */
+export function parseDateDDMMYYYY(dateString: string): Date {
+  const [day, month, year] = dateString.split('/').map(Number);
+  // O mês no construtor do Date é 0-indexed, então subtraímos 1.
+  return new Date(year, month - 1, day);
+}
