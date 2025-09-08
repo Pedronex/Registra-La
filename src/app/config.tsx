@@ -80,7 +80,7 @@ export default function ConfigPage() {
       });
 
       Alert.success(Messages.success.config.save);
-      router.push("/home");
+      router.push("/(tabs)/");
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : Messages.errors.config.save;
@@ -187,7 +187,7 @@ export default function ConfigPage() {
       <Text className="mb-1 text-sm font-medium text-background-content">
         Dias da Semana Trabalhados
       </Text>
-      <View className="flex flex-row flex-wrap font-medium gap-2 text-background-content">
+      <View className="flex flex-row flex-wrap gap-2 font-medium text-background-content">
         {[
           "segunda",
           "terça",
@@ -260,7 +260,7 @@ export default function ConfigPage() {
             onPress={handlePasteApiKey}
             className="p-2 ml-2 rounded-lg bg-primary"
           >
-            <Text className="text-sm text-primary-content font-medium">
+            <Text className="text-sm font-medium text-primary-content">
               Colar
             </Text>
           </TouchableOpacity>
@@ -272,7 +272,7 @@ export default function ConfigPage() {
         }
         className="mt-2"
       >
-        <Text className="text-sm text-primary font-medium underline">
+        <Text className="text-sm font-medium underline text-primary">
           Obtenha sua chave de API aqui
         </Text>
       </TouchableOpacity>
@@ -328,15 +328,15 @@ export default function ConfigPage() {
 
             {currentStep === 3 && <>{renderGeminiApiKeyInput()}</>}
 
-            <View className="flex flex-row justify-center gap-x-4 mt-6">
+            <View className="flex flex-row gap-x-4 justify-center mt-6">
               {currentStep > 1 && (
                 <TouchableOpacity
-                  className="p-3 w-28 rounded-lg bg-tertiary border border-primary"
+                  className="p-3 w-28 rounded-lg border bg-tertiary border-primary"
                   onPress={prevStep}
                   accessibilityLabel="Voltar"
                   accessibilityRole="button"
                 >
-                  <Text className="text-center text-background-content font-medium">
+                  <Text className="font-medium text-center text-background-content">
                     Voltar
                   </Text>
                 </TouchableOpacity>
