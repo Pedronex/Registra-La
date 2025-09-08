@@ -38,7 +38,7 @@ export default function Layout() {
 
     // Inicializa o aplicativo
     initializeApp();
-  }, []);
+  }, [loadUpdates]);
   // Componente de notificação de atualização foi movido para a página inicial
 
   if (error) {
