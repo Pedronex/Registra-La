@@ -103,7 +103,6 @@ export default function RegisterPage() {
   async function handleRegister() {
     const result = await saveRegister(register);
     if (result) {
-      
       router.push("/(tabs)/");
     }
   }
