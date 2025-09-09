@@ -72,7 +72,6 @@ export default function RegisterPage() {
         ...register,
         photo: result.assets[0].uri,
       });
-
       if (
         register.type === "trabalho" &&
         config.geminiApiKey &&

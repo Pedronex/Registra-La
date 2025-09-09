@@ -1,7 +1,9 @@
 import { Header } from "@/components/Header";
 import { History } from "@/components/History";
 import { useConfig } from "@/hooks/useConfig";
-import { Text, View } from "react-native";
+import { Entypo } from "@expo/vector-icons";
+import { Link } from "expo-router";
+import { Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 /**
@@ -24,6 +26,17 @@ export default function HomePage() {
 
       <View className="flex-1 p-4">
         <History />
+      </View>
+
+      <View className="m-4">
+        <Link href="/add" asChild>
+          <TouchableOpacity className="flex-row gap-x-4 justify-center items-center p-4 w-full rounded-lg bg-primary">
+            <Entypo name="clock" size={24} color="white" />
+            <Text className="text-lg font-bold text-primary-content">
+              Registrar o Ponto
+            </Text>
+          </TouchableOpacity>
+        </Link>
       </View>
     </SafeAreaView>
   );

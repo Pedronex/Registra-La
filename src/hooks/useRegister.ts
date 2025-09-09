@@ -82,7 +82,6 @@ export function useRegister() {
         try {
             setLoading(true);
             setError(null);
-
             await database.insert(registersTable).values(data);
 
             return true;
