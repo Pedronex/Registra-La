@@ -11,8 +11,8 @@ export const registersTable = sqliteTable('registers', {
   id: integer('id').primaryKey({ autoIncrement: true }),
 
   // Informações básicas do registro
-  type: text('type', {enum: ['folga', 'trabalho', 'atestado']}).notNull(),
-  time: text('time').notNull(),
+  type: text('type', { enum: ['folga', 'trabalho', 'atestado'] }).notNull(),
+  time: text('time').notNull().default('00:00'),
   date: text('date').notNull(),
   isFullDay: integer('is_full_day', { mode: 'boolean' }).notNull().default(false),
 
@@ -35,7 +35,7 @@ export const configTable = sqliteTable('config', {
   workHours: integer('work_hours').notNull(),
   tolerance: integer('tolerance'),
   breakTime: integer('break_time'),
-  workDays: text('work_days', {mode:'json'}),
+  workDays: text('work_days', { mode: 'json' }),
   companyName: text('company_name'),
   geminiApiKey: text('gemini_api_key'),
 

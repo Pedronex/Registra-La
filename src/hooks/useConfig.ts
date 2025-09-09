@@ -5,6 +5,7 @@
 
 import { database } from '@/db';
 import { ConfigInsert, configTable } from '@/db/schema';
+import { desc } from 'drizzle-orm';
 import { useCallback, useEffect, useState } from 'react';
 
 /**
@@ -24,7 +25,7 @@ export function useConfig() {
       setLoading(true);
       setError(null);
 
-      const [config] = await database.select().from(configTable);
+      const [config] = await database.select().from(configTable).limit(1).orderBy(desc(configTable.id));
       setConfig(config);
 
       return config;
@@ -49,6 +50,7 @@ export function useConfig() {
         target: configTable.id,
         set: configData,
       });
+
       setConfig(configData);
 
       return true;

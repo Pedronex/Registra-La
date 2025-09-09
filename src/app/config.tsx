@@ -77,6 +77,7 @@ export default function ConfigPage() {
         breakTime,
         workDays,
         geminiApiKey,
+        id: 1,
       });
 
       Alert.success(Messages.success.config.save);
