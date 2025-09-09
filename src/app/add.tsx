@@ -125,8 +125,6 @@ export default function RegisterPage() {
     );
   }
 
-  console.log(config?.workHours)
-
   function renderRegisterForm() {
     switch (register.type) {
       case "trabalho":
