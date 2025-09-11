@@ -1,6 +1,5 @@
-import { View, Text } from "react-native";
+import { Text, View } from "react-native";
 import { DayCell } from "./DayCell";
-import { RegisterData } from "@/db/schema";
 
 interface CalendarGridProps {
   date: Date;
