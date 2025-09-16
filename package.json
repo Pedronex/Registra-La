@@ -13,6 +13,7 @@
     "lint": "expo lint"
   },
   "dependencies": {
+    "@expo/metro-runtime": "~6.1.2",
     "@expo/vector-icons": "^15.0.2",
     "@logrocket/react-native": "^1.56.1",
     "@react-native-community/datetimepicker": "8.4.4",
@@ -36,7 +37,7 @@
     "expo-image-picker": "~17.0.7",
     "expo-linking": "~8.0.7",
     "expo-location": "~19.0.6",
-    "expo-router": "~6.0.0",
+    "expo-router": "~6.0.5",
     "expo-secure-store": "~15.0.6",
     "expo-splash-screen": "~31.0.8",
     "expo-sqlite": "~16.0.8",
