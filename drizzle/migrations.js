@@ -7,6 +7,7 @@ import m0002 from './0002_tired_galactus.sql';
 import m0003 from './0003_mixed_molecule_man.sql';
 import m0004 from './0004_thankful_lockjaw.sql';
 import m0005 from './0005_medical_dormammu.sql';
+import m0006 from './0006_clumsy_toro.sql';
 
   export default {
     journal,
@@ -16,7 +17,8 @@ m0001,
 m0002,
 m0003,
 m0004,
-m0005
+m0005,
+m0006
     }
   }
   

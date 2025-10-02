@@ -44,7 +44,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     },
     package: getUniqueIdentifier(),
     edgeToEdgeEnabled: true,
-    permissions: ["android.permission.RECORD_AUDIO"],
   },
   web: {
     bundler: "metro",
@@ -68,7 +67,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       "expo-build-properties",
       {
         android: {
-          usesCleartextTraffic: true,
+          // usesCleartextTraffic: true,
           minSdkVersion: 25,
         },
       },
@@ -92,12 +91,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     [
       "expo-sqlite",
       {
-        enableFTS: true,
-        useSQLCipher: true,
-        android: {
-          enableFTS: false,
-          useSQLCipher: false,
-        },
+        enableFTS: false,
+        useSQLCipher: false,
         ios: {
           customBuildFlags: [
             "-DSQLITE_ENABLE_DBSTAT_VTAB=1 -DSQLITE_ENABLE_SNAPSHOT=1",

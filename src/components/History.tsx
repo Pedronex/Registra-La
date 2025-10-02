@@ -14,33 +14,43 @@ import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
 /**
  * Componente que exibe o histórico de registros de ponto
  */
-export function History() {
+type HistoryProps = {
+  date?: Date;
+  onDateChange?: (date: Date) => void;
+};
+
+export function History({ date: controlledDate, onDateChange }: HistoryProps = {}) {
   // Estados
-  const [date, setDate] = useState(new Date());
+  const [internalDate, setInternalDate] = useState(new Date());
+  const date = controlledDate ?? internalDate;
+  const setDate = onDateChange ?? setInternalDate;
 
   // Hooks
   const { records, loading } = useTimeRecords(format(date, "dd/MM/yyyy"));
   const { config } = useConfig();
   const { theme } = useTheme();
 
-  // Efeito para atualizar a data para o dia atual
+  // Efeito para atualizar a data para o dia atual se não for controlado
   useEffect(() => {
-    setDate(new Date());
-  }, []);
+    if (!controlledDate) {
+      setDate(new Date());
+    }
+  }, [controlledDate, setDate]);
 
   /**
    * Calcula o total de horas trabalhadas
    */
   const totalHoursWorked = useMemo(() => {
-    if (records.length < 2) {
+    const workRecords = records.filter(r => r.type === "trabalho").sort((a, b) => a.time.localeCompare(b.time));
+    if (workRecords.length < 2) {
       return "00:00";
     }
 
     let totalMilliseconds = 0;
-    for (let i = 0; i < records.length; i += 2) {
-      if (records[i + 1]) {
-        const startTime = parse(records[i].time, "HH:mm", new Date());
-        const endTime = parse(records[i + 1].time, "HH:mm", new Date());
+    for (let i = 0; i < workRecords.length; i += 2) {
+      if (workRecords[i + 1]) {
+        const startTime = parse(workRecords[i].time, "HH:mm", new Date());
+        const endTime = parse(workRecords[i + 1].time, "HH:mm", new Date());
         totalMilliseconds += endTime.getTime() - startTime.getTime();
       }
     }
@@ -59,22 +69,57 @@ export function History() {
    * Calcula o saldo de horas do dia
    */
   const hourBalance = useMemo(() => {
-    if (!config?.workHours || records.length < 2) {
-      return "00:00";
+    const workRecords = records.filter(r => r.type === "trabalho").sort((a, b) => a.time.localeCompare(b.time));
+    if (!config?.workHours || workRecords.length < 2) {
+      // Mesmo sem pares de trabalho suficientes, ainda podemos ter abono que zere o saldo
+      if (!config?.workHours) return "00:00";
+      const targetMilliseconds = (config.workHours || 0) * 3600 * 1000;
+      let abonoMilliseconds = 0;
+      const abonos = records.filter(r => r.type !== "trabalho");
+      for (const a of abonos) {
+        if (a.isFullDay) {
+          abonoMilliseconds += (config.workHours || 0) * 3600 * 1000;
+        } else if (a.time) {
+          const [hh, mm] = (a.time || "0:0").split(":").map(Number);
+          abonoMilliseconds += ((hh || 0) * 60 + (mm || 0)) * 60 * 1000;
+        }
+      }
+      const diffMilliseconds = abonoMilliseconds - targetMilliseconds;
+      const toleranceMilliseconds = (config.tolerance || 10) * 60 * 1000;
+      if (config.tolerance && Math.abs(diffMilliseconds) <= toleranceMilliseconds) {
+        return "00:00";
+      }
+      const totalSeconds = Math.abs(diffMilliseconds) / 1000;
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const sign = diffMilliseconds >= 0 ? "+" : "-";
+      return `${sign}${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
     }
 
     const targetMilliseconds = config.workHours * 3600 * 1000;
 
     let totalMilliseconds = 0;
-    for (let i = 0; i < records.length; i += 2) {
-      if (records[i + 1]) {
-        const startTime = parse(records[i].time, "HH:mm", new Date());
-        const endTime = parse(records[i + 1].time, "HH:mm", new Date());
+    for (let i = 0; i < workRecords.length; i += 2) {
+      if (workRecords[i + 1]) {
+        const startTime = parse(workRecords[i].time, "HH:mm", new Date());
+        const endTime = parse(workRecords[i + 1].time, "HH:mm", new Date());
         totalMilliseconds += endTime.getTime() - startTime.getTime();
       }
     }
 
-    const diffMilliseconds = totalMilliseconds - targetMilliseconds;
+    // Soma de abonos (folga/atestado)
+    let abonoMilliseconds = 0;
+    const abonos = records.filter(r => r.type !== "trabalho");
+    for (const a of abonos) {
+      if (a.isFullDay) {
+        abonoMilliseconds += (config.workHours || 0) * 3600 * 1000;
+      } else if (a.time) {
+        const [hh, mm] = (a.time || "0:0").split(":").map(Number);
+        abonoMilliseconds += ((hh || 0) * 60 + (mm || 0)) * 60 * 1000;
+      }
+    }
+
+    const diffMilliseconds = totalMilliseconds + abonoMilliseconds - targetMilliseconds;
     const toleranceMilliseconds = (config.tolerance || 10) * 60 * 1000;
 
     if (
@@ -153,16 +198,26 @@ export function History() {
       | { type: "break"; data: { formatted: string } };
 
     const items: HistoryItem[] = [];
-    for (let i = 0; i < records.length; i++) {
-      items.push({
-        type: "record",
-        data: records[i],
-        isEntry: i % 2 === 0,
-      });
 
-      if (i % 2 !== 0 && records[i + 1]) {
-        const exitTime = parse(records[i].time, "HH:mm", new Date());
-        const nextEntryTime = parse(records[i + 1].time, "HH:mm", new Date());
+    // Base: todos os registros em ordem, mas o pareamento/intervalos só consideram "trabalho"
+    const workRecords = records.filter(r => r.type === "trabalho").sort((a, b) => a.time.localeCompare(b.time));
+    const workIndexById = new Map<number, number>();
+    workRecords.forEach((r, idx) => {
+      if (typeof r.id === "number") workIndexById.set(r.id, idx);
+    });
+
+    // Adiciona os registros para exibição com isEntry calculado somente para trabalho
+    records.forEach((rec) => {
+      const idx = typeof rec.id === "number" ? workIndexById.get(rec.id) : undefined;
+      const isEntry = rec.type === "trabalho" ? ((idx ?? 0) % 2 === 0) : false;
+      items.push({ type: "record", data: rec, isEntry });
+    });
+
+    // Inserir intervalos apenas entre registros de trabalho consecutivos
+    for (let i = 0; i < workRecords.length - 1; i++) {
+      if (i % 2 !== 0) {
+        const exitTime = parse(workRecords[i].time, "HH:mm", new Date());
+        const nextEntryTime = parse(workRecords[i + 1].time, "HH:mm", new Date());
         const breakMilliseconds = nextEntryTime.getTime() - exitTime.getTime();
 
         const totalSeconds = breakMilliseconds / 1000;
@@ -170,15 +225,11 @@ export function History() {
         const minutes = Math.floor((totalSeconds % 3600) / 60);
 
         if (hours > 0 || minutes > 0) {
-          items.push({
-            type: "break",
-            data: {
-              formatted: `${hours}h ${minutes}m intervalo`,
-            },
-          });
+          items.push({ type: "break", data: { formatted: `${hours}h ${minutes}m intervalo` } });
         }
       }
     }
+
     return items;
   }, [records]);
 
@@ -196,19 +247,36 @@ export function History() {
               onPress={() => router.push(`/${item.data.id}`)}
             >
               <View className="justify-center items-center w-12 h-12 rounded-full">
-                <MaterialIcons
-                  name={item.isEntry ? "login" : "logout"}
-                  size={24}
-                  color={colors[theme].surfaceContent}
-                />
+                {item.data.type === "trabalho" ? (
+                  <MaterialIcons
+                    name={item.isEntry ? "login" : "logout"}
+                    size={24}
+                    color={colors[theme].surfaceContent}
+                  />
+                ) : item.data.type === "folga" ? (
+                  <MaterialIcons
+                    name="beach-access"
+                    size={24}
+                    color={colors[theme].surfaceContent}
+                  />
+                ) : (
+                  <MaterialIcons
+                    name="medical-services"
+                    size={24}
+                    color={colors[theme].surfaceContent}
+                  />
+                )}
               </View>
               <View className="flex-1 ml-4">
                 <Text className="text-xl font-bold text-surface-content">
                   {item.data.time}
                 </Text>
                 <Text className="text-sm opacity-80 text-surface-content">
-                  {item.data.description ||
-                    (item.isEntry ? "Entrada" : "Saída")}
+                  {item.data.type === "trabalho"
+                    ? (item.data.description || (item.isEntry ? "Entrada" : "Saída"))
+                    : item.data.type === "folga"
+                      ? (item.data.isFullDay ? "Folga - dia todo" : "Folga - horas")
+                      : (item.data.description || "Atestado")}
                 </Text>
               </View>
               <MaterialIcons

@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useState } from "react";
 import { database } from "@/db";
-import { registersTable, RegisterData } from "@/db/schema";
-import { useConfig } from "./useConfig";
+import { RegisterData, registersTable } from "@/db/schema";
 import { parseDateDDMMYYYY } from "@/utils/dateTime";
+import { useCallback, useEffect, useState } from "react";
+import { useConfig } from "./useConfig";
 
 // --- Interfaces ---
 interface CalendarData {
@@ -61,29 +61,43 @@ function calculateBalancesFromDailyRecords(
 ) {
   const dailyBalances: Record<string, number> = {};
   let totalBalance = 0;
-  const workedDays = new Set(Object.keys(dailyRecords));
+  const workedDays = new Set<string>();
 
   for (const date in dailyRecords) {
     const dayRecords = dailyRecords[date];
-    dayRecords.sort((a, b) => a.time.localeCompare(b.time));
-
-    if (dayRecords.length % 2 !== 0) {
-      dailyBalances[date] = 0; // Or some other handling for incomplete data
-      continue;
-    }
+    const workRecords = dayRecords.filter(r => r.type === 'trabalho').sort((a, b) => a.time.localeCompare(b.time));
 
     let workedMillis = 0;
     const isoDate = date.split('/').reverse().join('-');
-    for (let i = 0; i < dayRecords.length; i += 2) {
-      const timeIn = new Date(`${isoDate}T${dayRecords[i].time}`).getTime();
-      const timeOut = new Date(`${isoDate}T${dayRecords[i + 1].time}`).getTime();
-      workedMillis += timeOut - timeIn;
+    if (workRecords.length >= 2) {
+      for (let i = 0; i < workRecords.length; i += 2) {
+        if (workRecords[i + 1]) {
+          const timeIn = new Date(`${isoDate}T${workRecords[i].time}`).getTime();
+          const timeOut = new Date(`${isoDate}T${workRecords[i + 1].time}`).getTime();
+          workedMillis += timeOut - timeIn;
+        }
+      }
     }
 
-    const workedHours = workedMillis / (1000 * 60 * 60);
-    const balance = workedHours - workHours;
+    // Soma abonos do dia (folga/atestado)
+    let abonoMillis = 0;
+    const abonos = dayRecords.filter(r => r.type !== 'trabalho');
+    for (const a of abonos) {
+      if (a.isFullDay) {
+        abonoMillis += (workHours || 0) * 3600 * 1000;
+      } else if (a.time) {
+        const [hh, mm] = (a.time || '0:0').split(':').map(Number);
+        abonoMillis += ((hh || 0) * 60 + (mm || 0)) * 60 * 1000;
+      }
+    }
+
+    const workedHoursValue = (workedMillis + abonoMillis) / (1000 * 60 * 60);
+    const balance = workedHoursValue - workHours;
     dailyBalances[date] = balance;
     totalBalance += balance;
+    if (workRecords.length > 0) {
+      workedDays.add(date);
+    }
   }
 
   return { dailyBalances, totalBalance, workedDays };

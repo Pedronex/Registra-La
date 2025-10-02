@@ -1,4 +1,5 @@
 import "expo-dev-client";
+import "react-native-gesture-handler";
 import "../../global.css";
 
 import LogRocket from "@logrocket/react-native";
@@ -9,7 +10,6 @@ import { useEffect } from "react";
 import { Text, View } from "react-native";
 
 import { database } from "@/db";
-import { useUpdate } from "@/hooks/useUpdate";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import migrations from "../../drizzle/migrations";
 
@@ -19,23 +19,25 @@ import migrations from "../../drizzle/migrations";
  */
 export default function Layout() {
   const { success, error } = useMigrations(database, migrations);
-  const { loadUpdates } = useUpdate();
 
   useEffect(() => {
-    loadUpdates();
     /**
      * Inicializa o aplicativo verificando atualizações e carregando configurações
      */
     const initializeApp = async () => {
-      LogRocket.init("gcrcj1/registra-la", {
-        updateId: Updates.isEmbeddedLaunch ? null : Updates.updateId,
-        expoChannel: Updates.channel,
-      });
+      try {
+        if (Updates.channel !== "development") {
+          LogRocket.init("gcrcj1/registra-la", {
+            updateId: Updates.isEmbeddedLaunch ? null : Updates.updateId,
+            expoChannel: Updates.channel,
+          });
+        }
+      } catch {}
     };
 
     // Inicializa o aplicativo
     initializeApp();
-  }, [loadUpdates]);
+  }, []);
   // Componente de notificação de atualização foi movido para a página inicial
 
   if (error) {

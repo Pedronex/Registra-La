@@ -1,5 +1,5 @@
 import * as ImagePicker from "expo-image-picker";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import {
   ActivityIndicator,
@@ -26,8 +26,11 @@ import { SafeAreaView } from "react-native-safe-area-context";
  * Permite o usuário registrar o seu ponto
  */
 export default function RegisterPage() {
+  const params = useLocalSearchParams<{ date?: string }>();
   const [register, setRegister] = useState<RegisterInsert>({
-    date: new Date().toLocaleDateString("pt-BR"),
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+    date: (typeof params.date === 'string' && params.date) ? params.date : new Date().toLocaleDateString("pt-BR"),
     time: new Date().toLocaleTimeString("pt-BR", {
       hour: "2-digit",
       minute: "2-digit",
