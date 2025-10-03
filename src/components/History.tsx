@@ -155,7 +155,7 @@ export function History({ date: controlledDate, onDateChange }: HistoryProps = {
           color={colors[theme].primaryContent}
         />
       </TouchableOpacity>
-      <TouchableOpacity 
+      <TouchableOpacity
         className="items-center"
         onPress={() => {
           DateTimePickerAndroid.open({
@@ -330,16 +330,14 @@ export function History({ date: controlledDate, onDateChange }: HistoryProps = {
         </View>
         <View className="flex-row justify-between items-center">
           <Text
-            className={`text-lg ${
-              hourBalance.includes("-") ? "text-red-500" : "text-green-500"
-            }`}
+            className={`text-lg ${hourBalance.includes("-") ? "text-red-500" : "text-green-500"
+              }`}
           >
             Banco de Horas:
           </Text>
           <Text
-            className={`text-lg font-bold ${
-              hourBalance.includes("-") ? "text-red-500" : "text-green-500"
-            }`}
+            className={`text-lg font-bold ${hourBalance.includes("-") ? "text-red-500" : "text-green-500"
+              }`}
           >
             {hourBalance}
           </Text>

@@ -39,6 +39,8 @@ export default function RegisterEdit() {
     location: "",
     photo: "",
     isFullDay: false,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
   });
 
   const { config } = useConfig();
@@ -258,9 +260,8 @@ export default function RegisterEdit() {
               </Text>
               <View className="flex-row gap-x-2 mb-4">
                 <TouchableOpacity
-                  className={`flex-1 items-center p-3 rounded-lg ${
-                    register.isFullDay ? "bg-primary" : "bg-surface"
-                  }`}
+                  className={`flex-1 items-center p-3 rounded-lg ${register.isFullDay ? "bg-primary" : "bg-surface"
+                    }`}
                   onPress={() => {
                     handleInputChange("isFullDay", true);
                     handleInputChange(
@@ -270,30 +271,27 @@ export default function RegisterEdit() {
                   }}
                 >
                   <Text
-                    className={`text-base font-medium ${
-                      register.isFullDay
-                        ? "text-primary-content"
-                        : "text-surface-content"
-                    }`}
+                    className={`text-base font-medium ${register.isFullDay
+                      ? "text-primary-content"
+                      : "text-surface-content"
+                      }`}
                   >
                     Dia Todo
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  className={`flex-1 items-center p-3 rounded-lg ${
-                    !register.isFullDay ? "bg-primary" : "bg-surface"
-                  }`}
+                  className={`flex-1 items-center p-3 rounded-lg ${!register.isFullDay ? "bg-primary" : "bg-surface"
+                    }`}
                   onPress={() => {
                     handleInputChange("isFullDay", false);
                     handleInputChange("time", "00:00");
                   }}
                 >
                   <Text
-                    className={`text-base font-medium ${
-                      !register.isFullDay
-                        ? "text-primary-content"
-                        : "text-surface-content"
-                    }`}
+                    className={`text-base font-medium ${!register.isFullDay
+                      ? "text-primary-content"
+                      : "text-surface-content"
+                      }`}
                   >
                     Horas
                   </Text>
@@ -304,8 +302,7 @@ export default function RegisterEdit() {
                   value={register.time?.toString() || "00:00"}
                   onChange={(value) => handleInputChange("time", value)}
                   max={
-                    `${
-                      String(config?.workHours).padStart(2, "0") || "09"
+                    `${String(config?.workHours).padStart(2, "0") || "09"
                     }:00` || "23:59"
                   }
                 />
@@ -406,17 +403,15 @@ export default function RegisterEdit() {
           {types.map((type) => (
             <TouchableOpacity
               key={type}
-              className={`flex-1 items-center p-3 rounded-lg ${
-                register.type === type ? "bg-primary" : "bg-surface"
-              }`}
+              className={`flex-1 items-center p-3 rounded-lg ${register.type === type ? "bg-primary" : "bg-surface"
+                }`}
               onPress={() => handleInputChange("type", type)}
             >
               <Text
-                className={`text-base font-medium ${
-                  register.type === type
-                    ? "text-primary-content"
-                    : "text-surface-content"
-                }`}
+                className={`text-base font-medium ${register.type === type
+                  ? "text-primary-content"
+                  : "text-surface-content"
+                  }`}
               >
                 {type.charAt(0).toUpperCase() + type.slice(1)}
               </Text>

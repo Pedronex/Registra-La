@@ -36,9 +36,8 @@ export function Header({
 
   const LogoContainer = () => (
     <View
-      className={`p-2 w-14 h-14 rounded-2xl ${
-        theme === "dark" ? "" : "bg-primary"
-      }`}
+      className={`p-2 w-14 h-14 rounded-2xl ${theme === "dark" ? "" : "bg-primary"
+        }`}
     >
       <Image
         source={logoDark}
@@ -82,9 +81,8 @@ export function Header({
   return (
     <>
       <View
-        className={`flex-row items-center px-6 w-screen ${
-          showConfig ? "justify-between" : "justify-center"
-        }`}
+        className={`flex-row items-center px-6 w-screen ${showConfig ? "justify-between" : "justify-center"
+          }`}
       >
         <LogoContainer />
         <Text

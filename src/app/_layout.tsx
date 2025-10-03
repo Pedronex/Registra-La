@@ -32,7 +32,7 @@ export default function Layout() {
             expoChannel: Updates.channel,
           });
         }
-      } catch {}
+      } catch { }
     };
 
     // Inicializa o aplicativo

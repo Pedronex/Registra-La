@@ -21,9 +21,9 @@ export function DateInput({ mode, onChange, value }: Props) {
           {mode === "date"
             ? value.toLocaleDateString("pt-BR")
             : value.toLocaleTimeString("pt-BR", {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
         </Text>
       </TouchableOpacity>
       {showDatePicker && (

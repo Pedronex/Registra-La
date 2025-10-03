@@ -54,4 +54,4 @@ export const Messages = {
     update: 'Tem certeza que deseja atualizar o aplicativo?',
     exit: 'Tem certeza que deseja sair?',
   },
-};
+}
