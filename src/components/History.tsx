@@ -5,7 +5,7 @@ import { useTheme } from "@/providers/ThemeProvider";
 import { colors } from "@/utils/colorThemes";
 import { Entypo, MaterialIcons } from "@expo/vector-icons";
 import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
-import { addDays, format, parse, subDays } from "date-fns";
+import { addDays, format, isToday, parse, subDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { router } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
@@ -29,7 +29,7 @@ export function History({ date: controlledDate, onDateChange }: HistoryProps = {
   const { records, loading } = useTimeRecords(format(date, "dd/MM/yyyy"));
   const { config } = useConfig();
   const { theme } = useTheme();
-
+  const [currentTime, setCurrentTime] = useState(new Date())
   // Efeito para atualizar a data para o dia atual se não for controlado
   useEffect(() => {
     if (!controlledDate) {
@@ -37,14 +37,35 @@ export function History({ date: controlledDate, onDateChange }: HistoryProps = {
     }
   }, [controlledDate, setDate]);
 
+  const isClockedIn = useMemo(() => {
+    if (!isToday(date)){
+      return false;
+    }
+    const workRecords = records.filter(r => r.type === "trabalho");
+    return workRecords.length % 2 !== 0 
+  }, [records, date])
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout | null = null;
+
+    if (isClockedIn) {
+      timer = setInterval(() => {
+        setCurrentTime(new Date());
+      }, 60000);
+    }
+
+    return () => {
+      if (timer) {
+        clearInterval(timer);
+      }
+    };
+  }, [isClockedIn]);
+
   /**
    * Calcula o total de horas trabalhadas
    */
   const totalHoursWorked = useMemo(() => {
     const workRecords = records.filter(r => r.type === "trabalho").sort((a, b) => a.time.localeCompare(b.time));
-    if (workRecords.length < 2) {
-      return "00:00";
-    }
 
     let totalMilliseconds = 0;
     for (let i = 0; i < workRecords.length; i += 2) {
@@ -55,6 +76,15 @@ export function History({ date: controlledDate, onDateChange }: HistoryProps = {
       }
     }
 
+    if (isClockedIn) {
+      const lastEntry = workRecords[workRecords.length - 1];
+      if (lastEntry) {
+        const startTime = parse(lastEntry.time, "HH:mm", new Date());
+        totalMilliseconds += currentTime.getTime() - startTime.getTime();
+      }
+    }
+    if (totalMilliseconds <= 0) return "00:00";
+
     const totalSeconds = totalMilliseconds / 1000;
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
@@ -63,7 +93,7 @@ export function History({ date: controlledDate, onDateChange }: HistoryProps = {
       2,
       "0"
     )}`;
-  }, [records]);
+  }, [records, isClockedIn, currentTime]);
 
   /**
    * Calcula o saldo de horas do dia
@@ -107,6 +137,14 @@ export function History({ date: controlledDate, onDateChange }: HistoryProps = {
       }
     }
 
+    if (isClockedIn) {
+      const lastEntry = workRecords[workRecords.length - 1];
+      if (lastEntry) {
+        const startTime = parse(lastEntry.time, "HH:mm", new Date());
+        totalMilliseconds += currentTime.getTime() - startTime.getTime();
+      }
+    }
+
     // Soma de abonos (folga/atestado)
     let abonoMilliseconds = 0;
     const abonos = records.filter(r => r.type !== "trabalho");
@@ -138,7 +176,7 @@ export function History({ date: controlledDate, onDateChange }: HistoryProps = {
       2,
       "0"
     )}`;
-  }, [records, config]);
+  }, [records, config, isClockedIn, currentTime]);
 
   /**
    * Renderiza o cabeçalho com a data e os botões de navegação
@@ -190,7 +228,6 @@ export function History({ date: controlledDate, onDateChange }: HistoryProps = {
   );
 
   /**
-   * Cria a lista de itens para exibição, incluindo registros e intervalos
    */
   const displayItems = useMemo(() => {
     type HistoryItem =
@@ -198,25 +235,19 @@ export function History({ date: controlledDate, onDateChange }: HistoryProps = {
       | { type: "break"; data: { formatted: string } };
 
     const items: HistoryItem[] = [];
-
-    // Base: todos os registros em ordem, mas o pareamento/intervalos só consideram "trabalho"
+    
     const workRecords = records.filter(r => r.type === "trabalho").sort((a, b) => a.time.localeCompare(b.time));
-    const workIndexById = new Map<number, number>();
-    workRecords.forEach((r, idx) => {
-      if (typeof r.id === "number") workIndexById.set(r.id, idx);
-    });
 
-    // Adiciona os registros para exibição com isEntry calculado somente para trabalho
-    records.forEach((rec) => {
-      const idx = typeof rec.id === "number" ? workIndexById.get(rec.id) : undefined;
-      const isEntry = rec.type === "trabalho" ? ((idx ?? 0) % 2 === 0) : false;
-      items.push({ type: "record", data: rec, isEntry });
-    });
+    for (let i = 0; i < workRecords.length; i++) {
+      const record = workRecords[i];
+      const isEntry = i % 2 === 0;
 
-    // Inserir intervalos apenas entre registros de trabalho consecutivos
-    for (let i = 0; i < workRecords.length - 1; i++) {
-      if (i % 2 !== 0) {
-        const exitTime = parse(workRecords[i].time, "HH:mm", new Date());
+      // ponto atual (Entrada ou Saída)
+      items.push({ type: "record", data: record, isEntry });
+
+      // VERIFICAÇÃO DO INTERVALO:
+      if (!isEntry && workRecords[i + 1]) {
+        const exitTime = parse(record.time, "HH:mm", new Date());
         const nextEntryTime = parse(workRecords[i + 1].time, "HH:mm", new Date());
         const breakMilliseconds = nextEntryTime.getTime() - exitTime.getTime();
 
@@ -229,7 +260,6 @@ export function History({ date: controlledDate, onDateChange }: HistoryProps = {
         }
       }
     }
-
     return items;
   }, [records]);
 
