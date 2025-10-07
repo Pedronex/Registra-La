@@ -243,7 +243,7 @@ export function History({ date: controlledDate, onDateChange }: HistoryProps = {
           return (
             <TouchableOpacity
               key={`record-${item.data.id}`}
-              className="flex-row items-center p-3 mb-4 rounded-lg bg-secondary-focus active:opacity-80"
+              className="flex-row items-center p-3 mb-4 rounded-lg bg-secondary-focus active:opacity-80 justify-between"
               onPress={() => router.push(`/${item.data.id}`)}
             >
               <View className="justify-center items-center w-12 h-12 rounded-full">
@@ -251,38 +251,43 @@ export function History({ date: controlledDate, onDateChange }: HistoryProps = {
                   <MaterialIcons
                     name={item.isEntry ? "login" : "logout"}
                     size={24}
-                    color={colors[theme].surfaceContent}
+                    color={colors[theme].secondaryContent}
                   />
                 ) : item.data.type === "folga" ? (
                   <MaterialIcons
                     name="beach-access"
                     size={24}
-                    color={colors[theme].surfaceContent}
+                    color={colors[theme].secondaryContent}
                   />
                 ) : (
                   <MaterialIcons
                     name="medical-services"
                     size={24}
-                    color={colors[theme].surfaceContent}
+                    color={colors[theme].secondaryContent}
                   />
                 )}
               </View>
               <View className="flex-1 ml-4">
-                <Text className="text-xl font-bold text-surface-content">
+                <Text className="text-xl font-bold text-secondary-content">
                   {item.data.time}
                 </Text>
-                <Text className="text-sm opacity-80 text-surface-content">
+                <Text className="text-sm opacity-80 text-secondary-content">
                   {item.data.type === "trabalho"
                     ? (item.data.description || (item.isEntry ? "Entrada" : "Saída"))
                     : item.data.type === "folga"
                       ? (item.data.isFullDay ? "Folga - dia todo" : "Folga - horas")
                       : (item.data.description || "Atestado")}
                 </Text>
+                {item.data.nsr && (
+                  <Text className="text-xs opacity-60 text-secondary-content mt-1">
+                    NSR: {item.data.nsr}
+                  </Text>
+                )}
               </View>
               <MaterialIcons
                 name="edit"
                 size={20}
-                color={colors[theme].surfaceContent}
+                color={colors[theme].secondaryContent}
                 style={{ opacity: 0.6 }}
               />
             </TouchableOpacity>
@@ -293,11 +298,11 @@ export function History({ date: controlledDate, onDateChange }: HistoryProps = {
               key={`break-${index}`}
               className="flex-row justify-center items-center my-2"
             >
-              <View className="flex-1 h-[1px] bg-surface-content opacity-20" />
-              <Text className="mx-4 text-sm text-surface-content">
+              <View className="flex-1 h-[1px] bg-secondary-content opacity-20" />
+              <Text className="mx-4 text-sm text-secondary-content">
                 {item.data.formatted}
               </Text>
-              <View className="flex-1 h-[1px] bg-surface-content opacity-20" />
+              <View className="flex-1 h-[1px] bg-secondary-content opacity-20" />
             </View>
           );
         }
@@ -313,7 +318,7 @@ export function History({ date: controlledDate, onDateChange }: HistoryProps = {
         <View className="flex-1 justify-center items-center">
           <ActivityIndicator
             size="large"
-            color={colors[theme].surfaceContent}
+            color={colors[theme].secondaryContent}
           />
         </View>
       ) : (

@@ -1,7 +1,7 @@
 import { useTheme } from "@/providers/ThemeProvider";
 import { colors } from "@/utils/colorThemes";
 import { Entypo } from "@expo/vector-icons";
-import { Text, View, TouchableOpacity } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
 
 interface DayCellProps {
   day: Date | null;
@@ -28,8 +28,8 @@ export function DayCell({ day, balance, isWorked, onPress }: DayCellProps) {
   const today = new Date();
   const isToday = day.getDate() === today.getDate() && day.getMonth() === today.getMonth() && day.getFullYear() === today.getFullYear();
 
-  const cellStyle = isToday ? "bg-primary" : (balance !== undefined && balance < 0 ? "bg-red-500" : "bg-secondary");
-  const textStyle = isToday ? "text-primary-foreground" : (balance !== undefined && balance < 0 ? "text-white" : "text-secondary-content");
+  const cellStyle = isToday ? "bg-primary" : (balance !== undefined && balance < 0 ? "bg-error" : "bg-secondary");
+  const textStyle = isToday ? "text-primary-content" : (balance !== undefined && balance < 0 ? "text-error-content" : "text-secondary-content");
 
   return (
     <TouchableOpacity onPress={() => onPress(day)}>

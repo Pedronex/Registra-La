@@ -10,6 +10,7 @@ import {
   View,
 } from "react-native";
 
+import { BalanceInput } from "@/components/BalanceInput";
 import { DateInput } from "@/components/DateInput";
 import { Header } from "@/components/Header";
 import { HourInput } from "@/components/HourInput";
@@ -205,6 +206,24 @@ export default function RegisterPage() {
             </View>
           </View>
         );
+      case "saldo":
+        return (
+          <View className="flex-1 gap-y-5 mt-4 space-y-4 w-full">
+            <BalanceInput
+              value={{
+                hours: register.time?.split(':')[0] || '00',
+                minutes: register.time?.split(':')[1] || '00',
+                date: new Date(register.date.split('/').reverse().join('-') + 'T00:00:00'),
+                operation: register.isFullDay ? 'increase' : 'decrease',
+              }}
+              onChange={(hours, minutes, date, operation) => {
+                handleInputChange('time', `${hours}:${minutes}`);
+                handleInputChange('date', date.toLocaleDateString('pt-BR'));
+                handleInputChange('isFullDay', operation === 'increase');
+              }}
+            />
+          </View>
+        );
       default:
         return (
           <View className="flex-1 gap-y-5 mt-4 space-y-4 w-full">
@@ -242,8 +261,8 @@ export default function RegisterPage() {
                 >
                   <Text
                     className={`text-base font-medium ${register.isFullDay
-                        ? "text-primary-content"
-                        : "text-surface-content"
+                      ? "text-primary-content"
+                      : "text-surface-content"
                       }`}
                   >
                     Dia Todo
@@ -259,8 +278,8 @@ export default function RegisterPage() {
                 >
                   <Text
                     className={`text-base font-medium ${!register.isFullDay
-                        ? "text-primary-content"
-                        : "text-surface-content"
+                      ? "text-primary-content"
+                      : "text-surface-content"
                       }`}
                   >
                     Horas
@@ -287,7 +306,7 @@ export default function RegisterPage() {
                 value={register.location || ""}
                 onChangeText={(value) => handleInputChange("location", value)}
                 className="p-2 rounded-md bg-surface text-surface-content"
-                placeholder="Digite a descrição do atestado"
+                placeholder="Digite a descrição"
                 placeholderTextColor={colors[theme].surfaceContent + "60"}
                 multiline
                 numberOfLines={3}
@@ -296,7 +315,7 @@ export default function RegisterPage() {
 
             <View className="w-full">
               <Text className="mb-1 text-lg font-medium text-background-content">
-                Foto do Atestado
+                Foto
               </Text>
               {register.photo ? (
                 <TouchableOpacity
@@ -330,7 +349,7 @@ export default function RegisterPage() {
   }
 
   function renderTypesForm() {
-    const types = ["trabalho", "folga", "atestado"];
+    const types = ["trabalho", "folga", "atestado", 'saldo'];
 
     return (
       <View className="w-full">
@@ -347,8 +366,8 @@ export default function RegisterPage() {
             >
               <Text
                 className={`text-base font-medium ${register.type === type
-                    ? "text-primary-content"
-                    : "text-surface-content"
+                  ? "text-primary-content"
+                  : "text-surface-content"
                   }`}
               >
                 {type.charAt(0).toUpperCase() + type.slice(1)}

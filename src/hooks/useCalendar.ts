@@ -1,43 +1,46 @@
-import { database } from '@/db'
-import { RegisterData, registersTable } from '@/db/schema'
-import { parseDateDDMMYYYY } from '@/utils/dateTime'
-import { useCallback, useEffect, useState } from 'react'
-import { useConfig } from './useConfig'
+import { database } from '@/db';
+import { RegisterData, registersTable } from '@/db/schema';
+import { parseDateDDMMYYYY } from '@/utils/dateTime';
+import { useCallback, useEffect, useState } from 'react';
+import { useConfig } from './useConfig';
 
 // --- Interfaces ---
 interface CalendarData {
-  dailyBalances: Record<string, number>
-  monthBalance: number
-  previousMonthBalance: number
-  currentBalance: number
-  workedDays: Set<string>
-  dailyRecords: Record<string, RegisterData[]>
+  dailyBalances: Record<string, number>;
+  monthBalance: number;
+  previousMonthBalance: number;
+  currentBalance: number;
+  workedDays: Set<string>;
+  dailyRecords: Record<string, RegisterData[]>;
 }
 
 // --- Helper Functions ---
 
 /**
- * Fetches all records from the database and filters them for a specific month.
+ * Fetches all records from the database.
  */
-async function fetchAndFilterRecordsForMonth(year: number, month: number): Promise<RegisterData[]> {
-  const startDate = new Date(year, month - 1, 1)
-  startDate.setHours(0, 0, 0, 0)
-  const endDate = new Date(year, month, 0)
-  endDate.setHours(23, 59, 59, 999)
+async function fetchAllRecords(): Promise<RegisterData[]> {
+  return await database.select().from(registersTable);
+}
 
-  const allRecords = await database.select().from(registersTable)
+/**
+ * Filters a list of records for a specific month.
+ */
+function filterRecordsForMonth(records: RegisterData[], year: number, month: number): RegisterData[] {
+  const startDate = new Date(year, month - 1, 1);
+  startDate.setHours(0, 0, 0, 0);
+  const endDate = new Date(year, month, 0);
+  endDate.setHours(23, 59, 59, 999);
 
-  return allRecords.filter((record) => {
+  return records.filter((record) => {
     try {
-      const recordDate = parseDateDDMMYYYY(record.date)
-      return (
-        recordDate.getTime() >= startDate.getTime() && recordDate.getTime() <= endDate.getTime()
-      )
+      const recordDate = parseDateDDMMYYYY(record.date);
+      return recordDate.getTime() >= startDate.getTime() && recordDate.getTime() <= endDate.getTime();
     } catch (e) {
-      console.error(`Error parsing date for record ID ${record.id}: ${record.date}`, e)
-      return false
+      console.error(`Error parsing date for record ID ${record.id}: ${record.date}`, e);
+      return false;
     }
-  })
+  });
 }
 
 /**
@@ -83,9 +86,25 @@ function calculateBalancesFromDailyRecords(
       }
     }
 
+    // Separa os registros de saldo dos outros abonos
+    const balanceAdjustments = dayRecords.filter((r) => r.type === 'saldo');
+    const abonos = dayRecords.filter((r) => r.type !== 'trabalho' && r.type !== 'saldo');
+
+    // Processa os ajustes de saldo
+    for (const adj of balanceAdjustments) {
+      const [hh, mm] = (adj.time || '0:0').split(':').map(Number);
+      const adjMillis = ((hh || 0) * 60 + (mm || 0)) * 60 * 1000;
+      const adjHours = adjMillis / (1000 * 60 * 60);
+
+      if (adj.isFullDay) { // isFullDay representa 'increase'
+        totalBalance += adjHours;
+      } else { // representa 'decrease'
+        totalBalance -= adjHours;
+      }
+    }
+
     // Soma abonos do dia (folga/atestado)
-    let abonoMillis = 0
-    const abonos = dayRecords.filter((r) => r.type !== 'trabalho')
+    let abonoMillis = 0;
     for (const a of abonos) {
       if (a.isFullDay) {
         abonoMillis += (workHours || 0) * 3600 * 1000
@@ -123,55 +142,73 @@ export function useCalendar(year: number, month: number) {
   const { config } = useConfig()
 
   const getMonthlyData = useCallback(
-    async (targetYear: number, targetMonth: number) => {
+    (records: RegisterData[], targetYear: number, targetMonth: number) => {
       if (!config) {
         return {
           dailyBalances: {},
           totalBalance: 0,
           workedDays: new Set<string>(),
           dailyRecords: {},
-        }
+        };
       }
 
-      const records = await fetchAndFilterRecordsForMonth(targetYear, targetMonth)
-      const dailyRecords = groupRecordsByDay(records)
+      const monthlyRecords = filterRecordsForMonth(records, targetYear, targetMonth);
+      const dailyRecords = groupRecordsByDay(monthlyRecords);
       const { dailyBalances, totalBalance, workedDays } = calculateBalancesFromDailyRecords(
         dailyRecords,
         config.workHours || 8,
-      )
+      );
 
-      return { dailyBalances, totalBalance, workedDays, dailyRecords }
+      return { dailyBalances, totalBalance, workedDays, dailyRecords };
     },
     [config],
   )
 
   const loadCalendarData = useCallback(async () => {
     try {
-      setLoading(true)
-      setError(null)
+      setLoading(true);
+      setError(null);
 
-      const currentMonthData = await getMonthlyData(year, month)
+      if (!config) return;
 
-      const previousMonth = month === 1 ? 12 : month - 1
-      const previousYear = month === 1 ? year - 1 : year
-      const previousMonthData = await getMonthlyData(previousYear, previousMonth)
+      const allRecords = await fetchAllRecords();
+
+      const firstRecord = allRecords.sort((a, b) => parseDateDDMMYYYY(a.date).getTime() - parseDateDDMMYYYY(b.date).getTime())[0];
+
+      let previousMonthBalance = config.initialBalance || 0;
+
+      if (firstRecord) {
+        const firstDate = parseDateDDMMYYYY(firstRecord.date);
+        let currentDate = new Date(firstDate.getFullYear(), firstDate.getMonth(), 1);
+        const targetDate = new Date(year, month - 1, 1);
+
+        while (currentDate < targetDate) {
+          const monthData = getMonthlyData(allRecords, currentDate.getFullYear(), currentDate.getMonth() + 1);
+          previousMonthBalance += monthData.totalBalance;
+          currentDate.setMonth(currentDate.getMonth() + 1);
+        }
+      }
+
+      const currentMonthData = getMonthlyData(allRecords, year, month);
+      const monthBalance = currentMonthData.totalBalance;
+      const currentBalance = previousMonthBalance + monthBalance;
 
       setCalendarData({
         dailyBalances: currentMonthData.dailyBalances,
-        monthBalance: currentMonthData.totalBalance,
-        previousMonthBalance: previousMonthData.totalBalance,
-        currentBalance: previousMonthData.totalBalance + currentMonthData.totalBalance,
+        monthBalance,
+        previousMonthBalance,
+        currentBalance,
         workedDays: currentMonthData.workedDays,
         dailyRecords: currentMonthData.dailyRecords,
-      })
+      });
     } catch (err) {
       const errorMessage =
-        err instanceof Error ? err.message : 'Erro ao carregar dados do calendário'
-      setError(errorMessage)
+        err instanceof Error ? err.message : 'Erro ao carregar dados do calendário';
+      setError(errorMessage);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [year, month, getMonthlyData])
+  }, [year, month, getMonthlyData, config]);
 
   useEffect(() => {
     loadCalendarData()

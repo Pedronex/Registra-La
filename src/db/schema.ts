@@ -1,7 +1,7 @@
 /**
  * Definição do esquema do banco de dados Drizzle ORM
  */
-import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
+import { integer, real, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 
 /**
  * Esquema da tabela de registros
@@ -10,7 +10,7 @@ export const registersTable = sqliteTable('registers', {
   id: integer('id').primaryKey({ autoIncrement: true }),
 
   // Informações básicas do registro
-  type: text('type', { enum: ['folga', 'trabalho', 'atestado'] }).notNull(),
+  type: text('type', { enum: ['folga', 'trabalho', 'atestado', 'saldo'] }).notNull(),
   time: text('time').notNull().default('00:00'),
   date: text('date').notNull(),
   isFullDay: integer('is_full_day', { mode: 'boolean' }).notNull().default(false),
@@ -37,6 +37,7 @@ export const configTable = sqliteTable('config', {
   workDays: text('work_days', { mode: 'json' }),
   companyName: text('company_name'),
   geminiApiKey: text('gemini_api_key'),
+  initialBalance: real('initial_balance').default(0.0),
 
   // Metadados
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(new Date()),
