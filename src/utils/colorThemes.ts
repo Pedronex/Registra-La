@@ -42,8 +42,8 @@ export const themes = {
     '--color-primary-content': '#FFFFFF',
 
     /* Cores secundárias para acentos */
-    '--color-secondary': '#E6CCFF',
-    '--color-secondary-content': '#E0E0E0',
+    '--color-secondary': '#c484fc',
+    '--color-secondary-content': '#000',
 
     /* Cores terciárias */
     '--color-tertiary': '#F0E6F7',

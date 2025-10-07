@@ -2,11 +2,11 @@
  * Hook personalizado para gerenciar os registros de ponto.
  * Centraliza a lógica de acesso e manipulação dos registros.
  */
+import { useCallback, useEffect, useState } from 'react'
 
 import { database } from '@/db'
 import { RegisterData, registersTable } from '@/db/schema'
 import { eq } from 'drizzle-orm'
-import { useCallback, useEffect, useState } from 'react'
 
 /**
  * Hook para gerenciar registros de ponto
