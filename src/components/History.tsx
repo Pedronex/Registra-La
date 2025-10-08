@@ -5,7 +5,7 @@ import { useTheme } from '@/providers/ThemeProvider'
 import { colors } from '@/utils/colorThemes'
 import { Entypo, MaterialIcons } from '@expo/vector-icons'
 import { DateTimePickerAndroid } from '@react-native-community/datetimepicker'
-import { addDays, format, parse, subDays } from 'date-fns'
+import { addDays, format, parse, isToday, subDays } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { router } from 'expo-router'
 import { useEffect, useMemo, useState } from 'react'
@@ -31,7 +31,7 @@ export function History({ date: controlledDate, onDateChange }: HistoryProps = {
   const { theme } = useTheme()
   const [currentTime, setCurrentTime] = useState(new Date())
   // Efeito para atualizar a data para o dia atual se não for controlado
-  
+
   useEffect(() => {
     if (!controlledDate) {
       setDate(new Date())
@@ -39,34 +39,36 @@ export function History({ date: controlledDate, onDateChange }: HistoryProps = {
   }, [controlledDate, setDate])
 
   const isClockedIn = useMemo(() => {
-    if (!isToday(date)){
-      return false;
+    if (!isToday(date)) {
+      return false
     }
-    const workRecords = records.filter(r => r.type === "trabalho");
-    return workRecords.length % 2 !== 0 
+    const workRecords = records.filter((r) => r.type === 'trabalho')
+    return workRecords.length % 2 !== 0
   }, [records, date])
 
   useEffect(() => {
-    let timer: NodeJS.Timeout | null = null;
+    let timer: NodeJS.Timeout | null = null
 
     if (isClockedIn) {
       timer = setInterval(() => {
-        setCurrentTime(new Date());
-      }, 60000);
+        setCurrentTime(new Date())
+      }, 60000)
     }
 
     return () => {
       if (timer) {
-        clearInterval(timer);
+        clearInterval(timer)
       }
-    };
-  }, [isClockedIn]);
+    }
+  }, [isClockedIn])
 
   /**
    * Calcula o total de horas trabalhadas
    */
   const totalHoursWorked = useMemo(() => {
-    const workRecords = records.filter(r => r.type === "trabalho").sort((a, b) => a.time.localeCompare(b.time));
+    const workRecords = records
+      .filter((r) => r.type === 'trabalho')
+      .sort((a, b) => a.time.localeCompare(b.time))
 
     let totalMilliseconds = 0
     for (let i = 0; i < workRecords.length; i += 2) {
@@ -78,23 +80,20 @@ export function History({ date: controlledDate, onDateChange }: HistoryProps = {
     }
 
     if (isClockedIn) {
-      const lastEntry = workRecords[workRecords.length - 1];
+      const lastEntry = workRecords[workRecords.length - 1]
       if (lastEntry) {
-        const startTime = parse(lastEntry.time, "HH:mm", new Date());
-        totalMilliseconds += currentTime.getTime() - startTime.getTime();
+        const startTime = parse(lastEntry.time, 'HH:mm', new Date())
+        totalMilliseconds += currentTime.getTime() - startTime.getTime()
       }
     }
-    if (totalMilliseconds <= 0) return "00:00";
+    if (totalMilliseconds <= 0) return '00:00'
 
-    const totalSeconds = totalMilliseconds / 1000;
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const totalSeconds = totalMilliseconds / 1000
+    const hours = Math.floor(totalSeconds / 3600)
+    const minutes = Math.floor((totalSeconds % 3600) / 60)
 
-    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
-      2,
-      "0"
-    )}`;
-  }, [records, isClockedIn, currentTime]);
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`
+  }, [records, isClockedIn, currentTime])
 
   /**
    * Calcula o saldo de horas do dia
@@ -141,10 +140,10 @@ export function History({ date: controlledDate, onDateChange }: HistoryProps = {
     }
 
     if (isClockedIn) {
-      const lastEntry = workRecords[workRecords.length - 1];
+      const lastEntry = workRecords[workRecords.length - 1]
       if (lastEntry) {
-        const startTime = parse(lastEntry.time, "HH:mm", new Date());
-        totalMilliseconds += currentTime.getTime() - startTime.getTime();
+        const startTime = parse(lastEntry.time, 'HH:mm', new Date())
+        totalMilliseconds += currentTime.getTime() - startTime.getTime()
       }
     }
 
@@ -171,12 +170,9 @@ export function History({ date: controlledDate, onDateChange }: HistoryProps = {
     const hours = Math.floor(totalSeconds / 3600)
     const minutes = Math.floor((totalSeconds % 3600) / 60)
 
-    const sign = diffMilliseconds >= 0 ? "+" : "-";
-    return `${sign}${String(hours).padStart(2, "0")}:${String(minutes).padStart(
-      2,
-      "0"
-    )}`;
-  }, [records, config, isClockedIn, currentTime]);
+    const sign = diffMilliseconds >= 0 ? '+' : '-'
+    return `${sign}${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`
+  }, [records, config, isClockedIn, currentTime])
 
   /**
    * Renderiza o cabeçalho com a data e os botões de navegação
@@ -226,22 +222,24 @@ export function History({ date: controlledDate, onDateChange }: HistoryProps = {
       | { type: 'record'; data: RegisterData; isEntry: boolean }
       | { type: 'break'; data: { formatted: string } }
 
-    const items: HistoryItem[] = [];
-    
-    const workRecords = records.filter(r => r.type === "trabalho").sort((a, b) => a.time.localeCompare(b.time));
+    const items: HistoryItem[] = []
+
+    const workRecords = records
+      .filter((r) => r.type === 'trabalho')
+      .sort((a, b) => a.time.localeCompare(b.time))
 
     for (let i = 0; i < workRecords.length; i++) {
-      const record = workRecords[i];
-      const isEntry = i % 2 === 0;
+      const record = workRecords[i]
+      const isEntry = i % 2 === 0
 
       // ponto atual (Entrada ou Saída)
-      items.push({ type: "record", data: record, isEntry });
+      items.push({ type: 'record', data: record, isEntry })
 
       // VERIFICAÇÃO DO INTERVALO:
       if (!isEntry && workRecords[i + 1]) {
-        const exitTime = parse(record.time, "HH:mm", new Date());
-        const nextEntryTime = parse(workRecords[i + 1].time, "HH:mm", new Date());
-        const breakMilliseconds = nextEntryTime.getTime() - exitTime.getTime();
+        const exitTime = parse(record.time, 'HH:mm', new Date())
+        const nextEntryTime = parse(workRecords[i + 1].time, 'HH:mm', new Date())
+        const breakMilliseconds = nextEntryTime.getTime() - exitTime.getTime()
 
         const totalSeconds = breakMilliseconds / 1000
         const hours = Math.floor(totalSeconds / 3600)
@@ -252,8 +250,8 @@ export function History({ date: controlledDate, onDateChange }: HistoryProps = {
         }
       }
     }
-    return items;
-  }, [records]);
+    return items
+  }, [records])
 
   /**
    * Renderiza a lista de registros e intervalos
