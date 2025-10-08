@@ -52,7 +52,7 @@ export function History({ date: controlledDate, onDateChange }: HistoryProps = {
     if (isClockedIn) {
       timer = setInterval(() => {
         setCurrentTime(new Date())
-      }, 60000)
+      }, 1000)
     }
 
     return () => {
@@ -91,8 +91,9 @@ export function History({ date: controlledDate, onDateChange }: HistoryProps = {
     const totalSeconds = totalMilliseconds / 1000
     const hours = Math.floor(totalSeconds / 3600)
     const minutes = Math.floor((totalSeconds % 3600) / 60)
+    const seconds = Math.floor(totalSeconds % 60)
 
-    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
   }, [records, isClockedIn, currentTime])
 
   /**
@@ -169,9 +170,10 @@ export function History({ date: controlledDate, onDateChange }: HistoryProps = {
     const totalSeconds = Math.abs(diffMilliseconds) / 1000
     const hours = Math.floor(totalSeconds / 3600)
     const minutes = Math.floor((totalSeconds % 3600) / 60)
+    const seconds = Math.floor(totalSeconds % 60)
 
     const sign = diffMilliseconds >= 0 ? '+' : '-'
-    return `${sign}${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`
+    return `${sign}${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
   }, [records, config, isClockedIn, currentTime])
 
   /**
