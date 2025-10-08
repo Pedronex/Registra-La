@@ -230,6 +230,11 @@ export function History({ date: controlledDate, onDateChange }: HistoryProps = {
       .filter((r) => r.type === 'trabalho')
       .sort((a, b) => a.time.localeCompare(b.time))
 
+    const nonWorkRecords = records
+      .filter((r) => r.type !== 'trabalho')
+      .sort((a, b) => a.time.localeCompare(b.time))
+
+    // Adiciona registros de trabalho com intervalos
     for (let i = 0; i < workRecords.length; i++) {
       const record = workRecords[i]
       const isEntry = i % 2 === 0
@@ -252,6 +257,24 @@ export function History({ date: controlledDate, onDateChange }: HistoryProps = {
         }
       }
     }
+
+    // Adiciona registros de folga e atestado
+    for (const record of nonWorkRecords) {
+      items.push({ type: 'record', data: record, isEntry: false })
+    }
+
+    // Ordena todos os itens por horário (considerando registros sem horário)
+    items.sort((a, b) => {
+      if (a.type === 'record' && b.type === 'record') {
+        // Se algum dos registros não tem horário (dia completo), coloca no final
+        if (!a.data.time && !b.data.time) return 0
+        if (!a.data.time) return 1
+        if (!b.data.time) return -1
+        return a.data.time.localeCompare(b.data.time)
+      }
+      return 0
+    })
+
     return items
   }, [records])
 
@@ -290,16 +313,29 @@ export function History({ date: controlledDate, onDateChange }: HistoryProps = {
                 )}
               </View>
               <View className="flex-1 ml-4">
-                <Text className="text-xl font-bold text-secondary-content">{item.data.time}</Text>
+                <Text className="text-xl font-bold text-secondary-content">
+                  {item.data.type === 'trabalho'
+                    ? item.data.time
+                    : item.data.isFullDay
+                      ? 'Dia completo'
+                      : item.data.time || '0:00'}
+                </Text>
                 <Text className="text-sm opacity-80 text-secondary-content">
                   {item.data.type === 'trabalho'
                     ? item.data.description || (item.isEntry ? 'Entrada' : 'Saída')
                     : item.data.type === 'folga'
                       ? item.data.isFullDay
                         ? 'Folga - dia todo'
-                        : 'Folga - horas'
-                      : item.data.description || 'Atestado'}
+                        : `Folga - ${item.data.time || '0:00'} horas`
+                      : item.data.isFullDay
+                        ? 'Atestado - dia todo'
+                        : `Atestado - ${item.data.time || '0:00'} horas`}
                 </Text>
+                {item.data.location && item.data.type !== 'trabalho' && (
+                  <Text className="text-xs opacity-60 text-secondary-content mt-1">
+                    {item.data.location}
+                  </Text>
+                )}
                 {item.data.nsr && (
                   <Text className="text-xs opacity-60 text-secondary-content mt-1">
                     NSR: {item.data.nsr}
