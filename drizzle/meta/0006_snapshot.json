@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "ce6d6756-69e8-4554-957c-c2e7f65bd2e7",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "d903a81d-8622-4ae7-9f4e-08f9926a310f",
+  "prevId": "53b25260-6f2b-4dfd-8a9e-ece6d3303ccd",
   "tables": {
     "config": {
       "name": "config",
@@ -28,19 +28,49 @@
           "notNull": false,
           "autoincrement": false
         },
+        "break_time": {
+          "name": "break_time",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "work_days": {
+          "name": "work_days",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "company_name": {
+          "name": "company_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "gemini_api_key": {
+          "name": "gemini_api_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false
+          "autoincrement": false,
+          "default": "'\"2025-09-25T14:37:43.888Z\"'"
         },
         "updated_at": {
           "name": "updated_at",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false
+          "autoincrement": false,
+          "default": "'\"2025-09-25T14:37:43.888Z\"'"
         }
       },
       "indexes": {},
@@ -70,8 +100,9 @@
           "name": "time",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'00:00'"
         },
         "date": {
           "name": "date",
@@ -111,34 +142,6 @@
         },
         "nsr": {
           "name": "nsr",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "start_time": {
-          "name": "start_time",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "end_time": {
-          "name": "end_time",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "duration": {
-          "name": "duration",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "operation": {
-          "name": "operation",
           "type": "text",
           "primaryKey": false,
           "notNull": false,

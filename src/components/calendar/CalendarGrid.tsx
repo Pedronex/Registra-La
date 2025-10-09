@@ -1,6 +1,5 @@
-import { View, Text } from "react-native";
+import { Text, View } from "react-native";
 import { DayCell } from "./DayCell";
-import { RegisterData } from "@/db/schema";
 
 interface CalendarGridProps {
   date: Date;
@@ -35,7 +34,7 @@ export function CalendarGrid({ date, dailyBalances, workedDays, onDayPress }: Ca
   return (
     <View>
       <View className="flex-row justify-around mb-2">
-        {["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map(day => <Text key={day} className="w-12 text-center text-secondary-content">{day}</Text>)}
+        {["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"].map(day => <Text key={day} className="w-12 text-center text-background-content">{day}</Text>)}
       </View>
       {weeks.map((week, i) => (
         <View key={i} className="flex-row justify-around mb-1">

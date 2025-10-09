@@ -1,3 +1,9 @@
+import {
+  BalanceSummary,
+  CalendarGrid,
+  DayRecordsModal,
+  MonthNavigator
+} from "@/components/calendar";
 import { Header } from "@/components/Header";
 import { RegisterData } from "@/db/schema";
 import { useCalendar } from "@/hooks/useCalendar";
@@ -8,12 +14,6 @@ import { router } from "expo-router";
 import { useState } from "react";
 import { ActivityIndicator, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import {
-  MonthNavigator,
-  CalendarGrid,
-  BalanceSummary,
-  DayRecordsModal
-} from "@/components/calendar";
 
 export default function CalendarPage() {
   // --- State ---
@@ -26,7 +26,6 @@ export default function CalendarPage() {
   const { theme } = useTheme();
   const {
     loading,
-    error, // TODO: Display error state in the UI
     dailyBalances,
     monthBalance,
     previousMonthBalance,

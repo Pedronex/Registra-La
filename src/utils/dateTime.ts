@@ -8,8 +8,8 @@
  * @param date Data a ser formatada ou string no formato YYYY-MM-DD
  */
 export function formatDate(date: Date | string): string {
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
-  return dateObj.toLocaleDateString('pt-BR');
+  const dateObj = typeof date === 'string' ? new Date(date) : date
+  return dateObj.toLocaleDateString('pt-BR')
 }
 
 /**
@@ -18,14 +18,14 @@ export function formatDate(date: Date | string): string {
  */
 export function formatTime(time: string | Date): string {
   if (typeof time === 'string') {
-    return time; // Assume que já está no formato correto
+    return time // Assume que já está no formato correto
   }
-  
+
   return time.toLocaleTimeString('pt-BR', {
     hour: '2-digit',
     minute: '2-digit',
-    hour12: false
-  });
+    hour12: false,
+  })
 }
 
 /**
@@ -35,13 +35,13 @@ export function formatTime(time: string | Date): string {
  * @returns Duração em minutos
  */
 export function calculateDuration(startTime: string, endTime: string): number {
-  const [startHour, startMinute] = startTime.split(':').map(Number);
-  const [endHour, endMinute] = endTime.split(':').map(Number);
-  
-  const startMinutes = startHour * 60 + startMinute;
-  const endMinutes = endHour * 60 + endMinute;
-  
-  return endMinutes - startMinutes;
+  const [startHour, startMinute] = startTime.split(':').map(Number)
+  const [endHour, endMinute] = endTime.split(':').map(Number)
+
+  const startMinutes = startHour * 60 + startMinute
+  const endMinutes = endHour * 60 + endMinute
+
+  return endMinutes - startMinutes
 }
 
 /**
@@ -49,11 +49,11 @@ export function calculateDuration(startTime: string, endTime: string): number {
  * @param minutes Total de minutos
  */
 export function minutesToHoursAndMinutes(minutes: number): string {
-  const hours = Math.floor(Math.abs(minutes) / 60);
-  const mins = Math.abs(minutes) % 60;
-  
-  const sign = minutes < 0 ? '-' : '';
-  return `${sign}${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+  const hours = Math.floor(Math.abs(minutes) / 60)
+  const mins = Math.abs(minutes) % 60
+
+  const sign = minutes < 0 ? '-' : ''
+  return `${sign}${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`
 }
 
 /**
@@ -61,14 +61,14 @@ export function minutesToHoursAndMinutes(minutes: number): string {
  * @param date Data a ser verificada ou string no formato YYYY-MM-DD
  */
 export function isToday(date: Date | string): boolean {
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
-  const today = new Date();
-  
+  const dateObj = typeof date === 'string' ? new Date(date) : date
+  const today = new Date()
+
   return (
     dateObj.getDate() === today.getDate() &&
     dateObj.getMonth() === today.getMonth() &&
     dateObj.getFullYear() === today.getFullYear()
-  );
+  )
 }
 
 /**
@@ -77,7 +77,7 @@ export function isToday(date: Date | string): boolean {
  * @returns Um objeto Date.
  */
 export function parseDateDDMMYYYY(dateString: string): Date {
-  const [day, month, year] = dateString.split('/').map(Number);
+  const [day, month, year] = dateString.split('/').map(Number)
   // O mês no construtor do Date é 0-indexed, então subtraímos 1.
-  return new Date(year, month - 1, day);
+  return new Date(year, month - 1, day)
 }

@@ -4,32 +4,32 @@
 
 @layer base {
   :root {
-    --color-primary: #6750A4;
-    --color-primary-content: #FFFFFF;
-    --color-secondary: #625B71;
-    --color-secondary-content: #FFFFFF;
-    --color-tertiary: #7D5260;
-    --color-tertiary-content: #FFFFFF;
-    --color-error: #B3261E;
-    --color-error-content: #FFFFFF;
-    --color-background: #FFFBFE;
-    --color-background-content: #1C1B1F;
-    --color-surface: #FFFBFE;
-    --color-surface-content: #1C1B1F;
+    --color-primary: #6750a4;
+    --color-primary-content: #ffffff;
+    --color-secondary: #625b71;
+    --color-secondary-content: #ffffff;
+    --color-tertiary: #7d5260;
+    --color-tertiary-content: #ffffff;
+    --color-error: #b3261e;
+    --color-error-content: #ffffff;
+    --color-background: #fffbfe;
+    --color-background-content: #1c1b1f;
+    --color-surface: #fffbfe;
+    --color-surface-content: #1c1b1f;
   }
 
   .dark {
-    --color-primary: #D0BCFF;
-    --color-primary-content: #381E72;
-    --color-secondary: #CCC2DC;
-    --color-secondary-content: #332D41;
-    --color-tertiary: #EFB8C8;
+    --color-primary: #d0bcff;
+    --color-primary-content: #381e72;
+    --color-secondary: #ccc2dc;
+    --color-secondary-content: #332d41;
+    --color-tertiary: #efb8c8;
     --color-tertiary-content: #492532;
-    --color-error: #F2B8B5;
+    --color-error: #f2b8b5;
     --color-error-content: #601410;
-    --color-background: #1C1B1F;
-    --color-background-content: #E6E1E5;
-    --color-surface: #1C1B1F;
-    --color-surface-content: #E6E1E5;
+    --color-background: #1c1b1f;
+    --color-background-content: #e6e1e5;
+    --color-surface: #1c1b1f;
+    --color-surface-content: #e6e1e5;
   }
 }

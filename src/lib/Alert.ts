@@ -2,15 +2,15 @@
  * Utilitário para exibir alertas e diálogos no aplicativo.
  * Encapsula a API de Alert do React Native com funções mais específicas.
  */
-import { AlertButton, Alert as RNAlert } from 'react-native';
+import { AlertButton, Alert as RNAlert } from 'react-native'
 
 /**
  * Interface para botões de alerta
  */
 interface AlertButtonOptions {
-  text: string;
-  onPress?: () => void;
-  style?: 'default' | 'cancel' | 'destructive';
+  text: string
+  onPress?: () => void
+  style?: 'default' | 'cancel' | 'destructive'
 }
 
 /**
@@ -23,11 +23,7 @@ class AlertUtil {
    * @param onOk Callback opcional ao pressionar OK
    */
   success(message: string, onOk?: () => void): void {
-    RNAlert.alert(
-      'Sucesso',
-      message,
-      [{ text: 'OK', onPress: onOk }]
-    );
+    RNAlert.alert('Sucesso', message, [{ text: 'OK', onPress: onOk }])
   }
 
   /**
@@ -36,11 +32,7 @@ class AlertUtil {
    * @param onOk Callback opcional ao pressionar OK
    */
   error(message: string, onOk?: () => void): void {
-    RNAlert.alert(
-      'Erro',
-      message,
-      [{ text: 'OK', onPress: onOk }]
-    );
+    RNAlert.alert('Erro', message, [{ text: 'OK', onPress: onOk }])
   }
 
   /**
@@ -50,11 +42,7 @@ class AlertUtil {
    * @param onOk Callback opcional ao pressionar OK
    */
   info(title: string, message: string, onOk?: () => void): void {
-    RNAlert.alert(
-      title,
-      message,
-      [{ text: 'OK', onPress: onOk }]
-    );
+    RNAlert.alert(title, message, [{ text: 'OK', onPress: onOk }])
   }
 
   /**
@@ -65,21 +53,17 @@ class AlertUtil {
    * @param onCancel Callback opcional ao cancelar
    */
   confirm(title: string, message: string, onConfirm: () => void, onCancel?: () => void): void {
-    RNAlert.alert(
-      title,
-      message,
-      [
-        {
-          text: 'Não',
-          onPress: onCancel,
-          style: 'cancel',
-        },
-        {
-          text: 'Sim',
-          onPress: onConfirm,
-        },
-      ]
-    );
+    RNAlert.alert(title, message, [
+      {
+        text: 'Não',
+        onPress: onCancel,
+        style: 'cancel',
+      },
+      {
+        text: 'Sim',
+        onPress: onConfirm,
+      },
+    ])
   }
 
   /**
@@ -89,15 +73,15 @@ class AlertUtil {
    * @param buttons Array de botões personalizados
    */
   custom(title: string, message: string, buttons: AlertButtonOptions[]): void {
-    const alertButtons: AlertButton[] = buttons.map(button => ({
+    const alertButtons: AlertButton[] = buttons.map((button) => ({
       text: button.text,
       onPress: button.onPress,
       style: button.style,
-    }));
+    }))
 
-    RNAlert.alert(title, message, alertButtons);
+    RNAlert.alert(title, message, alertButtons)
   }
 }
 
 // Exporta uma instância única do utilitário de alerta
-export const Alert = new AlertUtil();
+export const Alert = new AlertUtil()

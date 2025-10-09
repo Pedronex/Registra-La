@@ -8,19 +8,19 @@ No interesse de promover um ambiente aberto e acolhedor, nós, como contribuidor
 
 Exemplos de comportamento que contribuem para a criação de um ambiente positivo incluem:
 
-* Usar linguagem acolhedora e inclusiva
-* Respeitar pontos de vista e experiências diferentes
-* Aceitar críticas construtivas com elegância
-* Focar no que é melhor para a comunidade
-* Mostrar empatia para com outros membros da comunidade
+- Usar linguagem acolhedora e inclusiva
+- Respeitar pontos de vista e experiências diferentes
+- Aceitar críticas construtivas com elegância
+- Focar no que é melhor para a comunidade
+- Mostrar empatia para com outros membros da comunidade
 
 Exemplos de comportamento inaceitável por parte dos participantes incluem:
 
-* Uso de linguagem ou imagens sexualizadas e atenção ou avanços sexuais indesejados
-* Comentários insultuosos/depreciativos e ataques pessoais ou políticos
-* Assédio público ou privado
-* Publicação de informações privadas de terceiros, como endereços físicos ou eletrônicos, sem permissão explícita
-* Outras condutas que poderiam ser razoavelmente consideradas inadequadas em um ambiente profissional
+- Uso de linguagem ou imagens sexualizadas e atenção ou avanços sexuais indesejados
+- Comentários insultuosos/depreciativos e ataques pessoais ou políticos
+- Assédio público ou privado
+- Publicação de informações privadas de terceiros, como endereços físicos ou eletrônicos, sem permissão explícita
+- Outras condutas que poderiam ser razoavelmente consideradas inadequadas em um ambiente profissional
 
 ## Nossas Responsabilidades
 

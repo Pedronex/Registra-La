@@ -1,5 +1,5 @@
 import * as ImagePicker from "expo-image-picker";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import {
   ActivityIndicator,
@@ -10,6 +10,7 @@ import {
   View,
 } from "react-native";
 
+import { BalanceInput } from "@/components/BalanceInput";
 import { DateInput } from "@/components/DateInput";
 import { Header } from "@/components/Header";
 import { HourInput } from "@/components/HourInput";
@@ -26,8 +27,11 @@ import { SafeAreaView } from "react-native-safe-area-context";
  * Permite o usuário registrar o seu ponto
  */
 export default function RegisterPage() {
+  const params = useLocalSearchParams<{ date?: string }>();
   const [register, setRegister] = useState<RegisterInsert>({
-    date: new Date().toLocaleDateString("pt-BR"),
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+    date: (typeof params.date === 'string' && params.date) ? params.date : new Date().toLocaleDateString("pt-BR"),
     time: new Date().toLocaleTimeString("pt-BR", {
       hour: "2-digit",
       minute: "2-digit",
@@ -72,8 +76,11 @@ export default function RegisterPage() {
         ...register,
         photo: result.assets[0].uri,
       });
-
-      if (config.geminiApiKey && config.geminiApiKey.length > 0) {
+      if (
+        register.type === "trabalho" &&
+        config.geminiApiKey &&
+        config.geminiApiKey.length > 0
+      ) {
         const { date, time, nsr } = await extractDataPhoto(
           result.assets[0].base64 || "",
           config.geminiApiKey
@@ -92,7 +99,7 @@ export default function RegisterPage() {
 
   const handleInputChange = (
     field: keyof typeof register,
-    value: string | Date
+    value: string | Date | boolean | number
   ) => {
     setRegister((prev) => ({
       ...prev,
@@ -122,83 +129,258 @@ export default function RegisterPage() {
     );
   }
 
-  return (
-    <SafeAreaView className="flex-1 justify-between items-center px-3 pb-5 bg-background">
-      <Header />
-
-      <View className="flex-1 gap-y-5 mt-4 space-y-4 w-full">
-        <View className="w-full">
-          <Text className="mb-1 text-lg font-medium text-background-content">
-            Data
-          </Text>
-          <DateInput
-            mode="date"
-            value={
-              new Date(
-                register.date.split("/").reverse().join("-") + "T00:00:00"
-              )
-            }
-            onChange={(value) =>
-              handleInputChange("date", value.toLocaleDateString("pt-BR"))
-            }
-          />
-        </View>
-
-        <View className="w-full">
-          <Text className="mb-1 text-lg font-medium text-background-content">
-            Hora
-          </Text>
-          <HourInput
-            onChange={(value) => handleInputChange("time", value)}
-            value={register.time}
-          />
-        </View>
-
-        <View className="w-full elevation">
-          <Text className="mb-1 text-lg font-medium text-background-content">
-            Foto do Ponto
-          </Text>
-          {register.photo ? (
-            <TouchableOpacity
-              className="items-center p-3 w-full h-48 rounded-lg"
-              onPress={handleTakePhoto}
-            >
-              <Image
-                source={{ uri: `${register.photo}` }}
-                className="w-full h-full rounded-lg bg-surface"
-                resizeMode="contain"
-                width={500}
-                height={500}
+  function renderRegisterForm() {
+    switch (register.type) {
+      case "trabalho":
+        return (
+          <View className="flex-1 gap-y-5 mt-4 space-y-4 w-full">
+            <View className="w-full">
+              <Text className="mb-1 text-lg font-medium text-background-content">
+                Data
+              </Text>
+              <DateInput
+                mode="date"
+                value={
+                  new Date(
+                    register.date.split("/").reverse().join("-") + "T00:00:00"
+                  )
+                }
+                onChange={(value) =>
+                  handleInputChange("date", value.toLocaleDateString("pt-BR"))
+                }
               />
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity
-              onPress={handleTakePhoto}
-              className="justify-center items-center p-3 w-full h-48 rounded-lg bg-surface"
-            >
-              <Entypo
-                name="camera"
-                size={50}
-                color={colors[theme].surfaceContent}
-              />
-            </TouchableOpacity>
-          )}
-        </View>
+            </View>
 
-        <View className="w-full">
-          <Text className="mb-1 text-lg font-medium text-background-content">
-            NSR
-          </Text>
-          <TextInput
-            value={register.nsr || ""}
-            onChangeText={(value) => handleInputChange("nsr", value)}
-            className="p-2 rounded-md bg-surface text-surface-content"
-            placeholder="Digite o NSR (Opcional)"
-            placeholderTextColor={colors[theme].surfaceContent + "60"}
-          />
+            <View className="w-full">
+              <Text className="mb-1 text-lg font-medium text-background-content">
+                Hora
+              </Text>
+              <HourInput
+                onChange={(value) => handleInputChange("time", value)}
+                value={register.time || "00:00"}
+              />
+            </View>
+
+            <View className="w-full elevation">
+              <Text className="mb-1 text-lg font-medium text-background-content">
+                Foto do Ponto
+              </Text>
+              {register.photo ? (
+                <TouchableOpacity
+                  className="items-center p-3 w-full h-48 rounded-lg"
+                  onPress={handleTakePhoto}
+                >
+                  <Image
+                    source={{ uri: `${register.photo}` }}
+                    className="w-full h-full rounded-lg bg-surface"
+                    resizeMode="contain"
+                    width={500}
+                    height={500}
+                  />
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  onPress={handleTakePhoto}
+                  className="justify-center items-center p-3 w-full h-48 rounded-lg bg-surface"
+                >
+                  <Entypo
+                    name="camera"
+                    size={50}
+                    color={colors[theme].surfaceContent}
+                  />
+                </TouchableOpacity>
+              )}
+            </View>
+
+            <View className="w-full">
+              <Text className="mb-1 text-lg font-medium text-background-content">
+                NSR
+              </Text>
+              <TextInput
+                value={register.nsr || ""}
+                onChangeText={(value) => handleInputChange("nsr", value)}
+                className="p-2 rounded-md bg-surface text-surface-content"
+                placeholder="Digite o NSR (Opcional)"
+                placeholderTextColor={colors[theme].surfaceContent + "60"}
+              />
+            </View>
+          </View>
+        );
+      case "saldo":
+        return (
+          <View className="flex-1 gap-y-5 mt-4 space-y-4 w-full">
+            <BalanceInput
+              value={{
+                hours: register.time?.split(':')[0] || '00',
+                minutes: register.time?.split(':')[1] || '00',
+                date: new Date(register.date.split('/').reverse().join('-') + 'T00:00:00'),
+                operation: register.isFullDay ? 'increase' : 'decrease',
+              }}
+              onChange={(hours, minutes, date, operation) => {
+                handleInputChange('time', `${hours}:${minutes}`);
+                handleInputChange('date', date.toLocaleDateString('pt-BR'));
+                handleInputChange('isFullDay', operation === 'increase');
+              }}
+            />
+          </View>
+        );
+      default:
+        return (
+          <View className="flex-1 gap-y-5 mt-4 space-y-4 w-full">
+            <View className="w-full">
+              <Text className="mb-1 text-lg font-medium text-background-content">
+                Data
+              </Text>
+              <DateInput
+                mode="date"
+                value={
+                  new Date(
+                    register.date.split("/").reverse().join("-") + "T00:00:00"
+                  )
+                }
+                onChange={(value) =>
+                  handleInputChange("date", value.toLocaleDateString("pt-BR"))
+                }
+              />
+            </View>
+            <View className="w-full">
+              <Text className="mb-1 text-lg font-medium text-background-content">
+                Tipo de Abono
+              </Text>
+              <View className="flex-row gap-x-2 mb-4">
+                <TouchableOpacity
+                  className={`flex-1 items-center p-3 rounded-lg ${register.isFullDay ? "bg-primary" : "bg-surface"
+                    }`}
+                  onPress={() => {
+                    handleInputChange("isFullDay", true);
+                    handleInputChange(
+                      "time",
+                      `${config?.workHours || "08"}:00`
+                    );
+                  }}
+                >
+                  <Text
+                    className={`text-base font-medium ${register.isFullDay
+                      ? "text-primary-content"
+                      : "text-surface-content"
+                      }`}
+                  >
+                    Dia Todo
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  className={`flex-1 items-center p-3 rounded-lg ${!register.isFullDay ? "bg-primary" : "bg-surface"
+                    }`}
+                  onPress={() => {
+                    handleInputChange("isFullDay", false);
+                    handleInputChange("time", "00:00");
+                  }}
+                >
+                  <Text
+                    className={`text-base font-medium ${!register.isFullDay
+                      ? "text-primary-content"
+                      : "text-surface-content"
+                      }`}
+                  >
+                    Horas
+                  </Text>
+                </TouchableOpacity>
+              </View>
+              {!register.isFullDay && (
+                <HourInput
+                  value={register.time?.toString() || "00:00"}
+                  onChange={(value) => handleInputChange("time", value)}
+                  max={
+                    `${String(config?.workHours).padStart(2, "0") || "09"
+                    }:00` || "23:59"
+                  }
+                />
+              )}
+            </View>
+
+            <View className="w-full">
+              <Text className="mb-1 text-lg font-medium text-background-content">
+                Descrição
+              </Text>
+              <TextInput
+                value={register.location || ""}
+                onChangeText={(value) => handleInputChange("location", value)}
+                className="p-2 rounded-md bg-surface text-surface-content"
+                placeholder="Digite a descrição"
+                placeholderTextColor={colors[theme].surfaceContent + "60"}
+                multiline
+                numberOfLines={3}
+              />
+            </View>
+
+            <View className="w-full">
+              <Text className="mb-1 text-lg font-medium text-background-content">
+                Foto
+              </Text>
+              {register.photo ? (
+                <TouchableOpacity
+                  className="items-center w-full h-40 rounded-lg"
+                  onPress={handleTakePhoto}
+                >
+                  <Image
+                    source={{ uri: `${register.photo}` }}
+                    className="w-full h-full rounded-lg bg-surface"
+                    resizeMode="contain"
+                    width={500}
+                    height={500}
+                  />
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  onPress={handleTakePhoto}
+                  className="justify-center items-center p-3 w-full h-48 rounded-lg bg-surface"
+                >
+                  <Entypo
+                    name="camera"
+                    size={50}
+                    color={colors[theme].surfaceContent}
+                  />
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+        );
+    }
+  }
+
+  function renderTypesForm() {
+    const types = ["trabalho", "folga", "atestado", 'saldo'];
+
+    return (
+      <View className="w-full">
+        <Text className="mb-1 text-lg font-medium text-background-content">
+          Tipo de Registro
+        </Text>
+        <View className="flex-row gap-x-2">
+          {types.map((type) => (
+            <TouchableOpacity
+              key={type}
+              className={`flex-1 items-center p-3 rounded-lg ${register.type === type ? "bg-primary" : "bg-surface"
+                }`}
+              onPress={() => handleInputChange("type", type)}
+            >
+              <Text
+                className={`text-base font-medium ${register.type === type
+                  ? "text-primary-content"
+                  : "text-surface-content"
+                  }`}
+              >
+                {type.charAt(0).toUpperCase() + type.slice(1)}
+              </Text>
+            </TouchableOpacity>
+          ))}
         </View>
       </View>
+    );
+  }
 
+  function renderFooter() {
+    return (
       <View className="flex-row gap-x-2 w-full">
         <TouchableOpacity
           className="flex-1 items-center p-4 mt-6 rounded-lg bg-error"
@@ -217,6 +399,15 @@ export default function RegisterPage() {
           </Text>
         </TouchableOpacity>
       </View>
+    );
+  }
+
+  return (
+    <SafeAreaView className="flex-1 justify-between items-center px-3 pb-5 bg-background">
+      <Header />
+      {renderTypesForm()}
+      {renderRegisterForm()}
+      {renderFooter()}
     </SafeAreaView>
   );
 }
