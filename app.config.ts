@@ -28,7 +28,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   name: getAppName(),
   slug: `registra-la`,
   owner: 'nexcorp',
-  version: '1.1.0',
+  version: '1.2.1',
   orientation: 'portrait',
   icon: './assets/images/icon.png',
   scheme: 'registrala',
