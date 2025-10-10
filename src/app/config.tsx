@@ -1,24 +1,17 @@
-import { Header } from "@/components/Header";
-import ThemeToggle from "@/components/ToggleTheme";
-import { Messages } from "@/constants/Messages";
-import { useConfig } from "@/hooks/useConfig";
-import { Alert } from "@/lib/Alert";
-import { useTheme } from "@/providers/ThemeProvider";
-import { colors } from "@/utils/colorThemes";
-import { Entypo } from "@expo/vector-icons";
-import * as Clipboard from "expo-clipboard";
-import { useFocusEffect, useRouter } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
-import {
-  Linking,
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import { CheckBox } from "react-native-elements";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Header } from '@/components/Header'
+import ThemeToggle from '@/components/ToggleTheme'
+import { Messages } from '@/constants/Messages'
+import { useConfig } from '@/hooks/useConfig'
+import { Alert } from '@/lib/Alert'
+import { useTheme } from '@/providers/ThemeProvider'
+import { colors } from '@/utils/colorThemes'
+import { Entypo } from '@expo/vector-icons'
+import * as Clipboard from 'expo-clipboard'
+import { useFocusEffect, useRouter } from 'expo-router'
+import { useCallback, useEffect, useState } from 'react'
+import { Linking, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { CheckBox } from 'react-native-elements'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 /**
  * Página de configuração do aplicativo
@@ -26,64 +19,64 @@ import { SafeAreaView } from "react-native-safe-area-context";
  */
 export default function ConfigPage() {
   // Estados locais para os campos do formulário
-  const [workHours, setWorkHours] = useState<number>(0);
-  const [tolerance, setTolerance] = useState<number>(0);
-  const [companyName, setCompanyName] = useState<string>("");
-  const [breakTime, setBreakTime] = useState<number>(0);
-  const [workDays, setWorkDays] = useState<string[]>([]);
-  const [geminiApiKey, setGeminiApiKey] = useState<string>("");
-  const [initialBalanceHours, setInitialBalanceHours] = useState<number>(0);
-  const [initialBalanceMinutes, setInitialBalanceMinutes] = useState<number>(0);
-  const [initialBalanceSign, setInitialBalanceSign] = useState<"positive" | "negative">("positive");
-  const [isPasteAvailable, setIsPasteAvailable] = useState(false);
-  const [currentStep, setCurrentStep] = useState(1);
+  const [workHours, setWorkHours] = useState<number>(0)
+  const [tolerance, setTolerance] = useState<number>(0)
+  const [companyName, setCompanyName] = useState<string>('')
+  const [breakTime, setBreakTime] = useState<number>(0)
+  const [workDays, setWorkDays] = useState<string[]>([])
+  const [geminiApiKey, setGeminiApiKey] = useState<string>('')
+  const [initialBalanceHours, setInitialBalanceHours] = useState<number>(0)
+  const [initialBalanceMinutes, setInitialBalanceMinutes] = useState<number>(0)
+  const [initialBalanceSign, setInitialBalanceSign] = useState<'positive' | 'negative'>('positive')
+  const [isPasteAvailable, setIsPasteAvailable] = useState(false)
+  const [currentStep, setCurrentStep] = useState(1)
 
   // Hooks
-  const router = useRouter();
-  const { config, loading, saveConfig: persistConfig } = useConfig();
-  const { theme } = useTheme();
+  const router = useRouter()
+  const { config, loading, saveConfig: persistConfig } = useConfig()
+  const { theme } = useTheme()
 
   // Carrega configurações existentes quando o componente é montado
   useEffect(() => {
     if (config) {
-      setWorkHours(config.workHours);
-      setTolerance(config.tolerance || 0);
-      setCompanyName(config.companyName || "");
-      setBreakTime(config.breakTime || 0);
-      setWorkDays(Array.isArray(config.workDays) ? config.workDays : []);
-      setGeminiApiKey(config.geminiApiKey || "");
+      setWorkHours(config.workHours)
+      setTolerance(config.tolerance || 0)
+      setCompanyName(config.companyName || '')
+      setBreakTime(config.breakTime || 0)
+      setWorkDays(Array.isArray(config.workDays) ? config.workDays : [])
+      setGeminiApiKey(config.geminiApiKey || '')
 
-      const balance = config.initialBalance || 0;
-      setInitialBalanceSign(balance < 0 ? "negative" : "positive");
-      const absoluteBalance = Math.abs(balance);
-      const hours = Math.floor(absoluteBalance);
-      const minutes = Math.round((absoluteBalance - hours) * 60);
-      setInitialBalanceHours(hours);
-      setInitialBalanceMinutes(minutes);
+      const balance = config.initialBalance || 0
+      setInitialBalanceSign(balance < 0 ? 'negative' : 'positive')
+      const absoluteBalance = Math.abs(balance)
+      const hours = Math.floor(absoluteBalance)
+      const minutes = Math.round((absoluteBalance - hours) * 60)
+      setInitialBalanceHours(hours)
+      setInitialBalanceMinutes(minutes)
     }
-  }, [config]);
+  }, [config])
 
   useFocusEffect(
     useCallback(() => {
       const checkClipboard = async () => {
-        const hasString = await Clipboard.hasStringAsync();
-        setIsPasteAvailable(hasString);
-      };
-      checkClipboard();
-    }, [])
-  );
+        const hasString = await Clipboard.hasStringAsync()
+        setIsPasteAvailable(hasString)
+      }
+      checkClipboard()
+    }, []),
+  )
 
-  const nextStep = () => setCurrentStep(currentStep + 1);
-  const prevStep = () => setCurrentStep(currentStep - 1);
+  const nextStep = () => setCurrentStep(currentStep + 1)
+  const prevStep = () => setCurrentStep(currentStep - 1)
 
   /**
    * Salva as configurações e navega para a página inicial
    */
   const handleSaveConfig = async () => {
     try {
-      const totalMinutes = initialBalanceHours * 60 + initialBalanceMinutes;
-      const decimalHours = totalMinutes / 60;
-      const initialBalance = initialBalanceSign === 'negative' ? -decimalHours : decimalHours;
+      const totalMinutes = initialBalanceHours * 60 + initialBalanceMinutes
+      const decimalHours = totalMinutes / 60
+      const initialBalance = initialBalanceSign === 'negative' ? -decimalHours : decimalHours
 
       await persistConfig({
         workHours,
@@ -94,16 +87,15 @@ export default function ConfigPage() {
         geminiApiKey,
         initialBalance,
         id: 1,
-      });
+      })
 
-      Alert.success(Messages.success.config.save);
-      router.push("/(tabs)/");
+      Alert.success(Messages.success.config.save)
+      router.push('/(tabs)/')
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : Messages.errors.config.save;
-      Alert.error(errorMessage);
+      const errorMessage = error instanceof Error ? error.message : Messages.errors.config.save
+      Alert.error(errorMessage)
     }
-  };
+  }
 
   /**
    * Renderiza o campo de entrada para horas de trabalho
@@ -117,17 +109,17 @@ export default function ConfigPage() {
         className="px-4 py-3 w-full rounded-lg border bg-surface border-surface-content text-background-content"
         keyboardType="numeric"
         placeholder="Ex: 8"
-        placeholderTextColor={colors[theme].surfaceContent + "80"}
-        value={isNaN(workHours) ? "" : workHours.toString()}
+        placeholderTextColor={colors[theme].surfaceContent + '80'}
+        value={isNaN(workHours) ? '' : workHours.toString()}
         onChangeText={(text) => {
-          const numericValue = text.replace(/[^0-9]/g, "");
-          setWorkHours(numericValue === "" ? 0 : Number(numericValue));
+          const numericValue = text.replace(/[^0-9]/g, '')
+          setWorkHours(numericValue === '' ? 0 : Number(numericValue))
         }}
         accessibilityLabel="Horas de trabalho diárias"
         accessibilityHint="Digite o número de horas de trabalho por dia"
       />
     </View>
-  );
+  )
 
   /**
    * Renderiza o campo de entrada para tolerância
@@ -141,35 +133,41 @@ export default function ConfigPage() {
         className="px-4 py-3 w-full rounded-lg border bg-surface border-surface-content text-background-content"
         keyboardType="numeric"
         placeholder="Ex: 15"
-        placeholderTextColor={colors[theme].surfaceContent + "80"}
-        value={isNaN(tolerance) ? "" : tolerance.toString()}
+        placeholderTextColor={colors[theme].surfaceContent + '80'}
+        value={isNaN(tolerance) ? '' : tolerance.toString()}
         onChangeText={(text) => {
-          const numericValue = text.replace(/[^0-9]/g, "");
-          setTolerance(numericValue === "" ? 0 : Number(numericValue));
+          const numericValue = text.replace(/[^0-9]/g, '')
+          setTolerance(numericValue === '' ? 0 : Number(numericValue))
         }}
         accessibilityLabel="Tolerância em minutos"
         accessibilityHint="Digite o número de minutos de tolerância"
       />
     </View>
-  );
+  )
 
   const renderInitialBalanceInput = () => (
     <View>
-      <Text className="mb-1 text-sm font-medium text-background-content">
-        Saldo Inicial
-      </Text>
+      <Text className="mb-1 text-sm font-medium text-background-content">Saldo Inicial</Text>
       <View className="flex-row items-center gap-x-2">
         <TouchableOpacity
           className={`px-4 py-2 rounded-lg ${initialBalanceSign === 'positive' ? 'bg-primary' : 'bg-surface'}`}
           onPress={() => setInitialBalanceSign('positive')}
         >
-          <Text className={`${initialBalanceSign === 'positive' ? 'text-primary-content' : 'text-surface-content'}`}>+</Text>
+          <Text
+            className={`${initialBalanceSign === 'positive' ? 'text-primary-content' : 'text-surface-content'}`}
+          >
+            +
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity
           className={`px-4 py-2 rounded-lg ${initialBalanceSign === 'negative' ? 'bg-primary' : 'bg-surface'}`}
           onPress={() => setInitialBalanceSign('negative')}
         >
-          <Text className={`${initialBalanceSign === 'negative' ? 'text-primary-content' : 'text-surface-content'}`}>-</Text>
+          <Text
+            className={`${initialBalanceSign === 'negative' ? 'text-primary-content' : 'text-surface-content'}`}
+          >
+            -
+          </Text>
         </TouchableOpacity>
         <TextInput
           className="px-4 py-3 w-20 rounded-lg border bg-surface border-surface-content text-background-content text-center"
@@ -178,8 +176,8 @@ export default function ConfigPage() {
           maxLength={3}
           value={initialBalanceHours.toString()}
           onChangeText={(text) => {
-            const numericValue = text.replace(/[^0-9]/g, "");
-            setInitialBalanceHours(numericValue === "" ? 0 : Number(numericValue));
+            const numericValue = text.replace(/[^0-9]/g, '')
+            setInitialBalanceHours(numericValue === '' ? 0 : Number(numericValue))
           }}
         />
         <Text className="font-bold text-background-content">:</Text>
@@ -190,35 +188,32 @@ export default function ConfigPage() {
           maxLength={2}
           value={initialBalanceMinutes.toString().padStart(2, '0')}
           onChangeText={(text) => {
-            const numericValue = text.replace(/[^0-9]/g, "");
-            const minutes = Number(numericValue);
-            setInitialBalanceMinutes(minutes > 59 ? 59 : minutes);
+            const numericValue = text.replace(/[^0-9]/g, '')
+            const minutes = Number(numericValue)
+            setInitialBalanceMinutes(minutes > 59 ? 59 : minutes)
           }}
         />
       </View>
     </View>
-  );
-
+  )
 
   /**
    * Renderiza o campo de entrada para nome da empresa
    */
   const renderCompanyNameInput = () => (
     <View>
-      <Text className="mb-1 text-sm font-medium text-background-content">
-        Nome da Empresa
-      </Text>
+      <Text className="mb-1 text-sm font-medium text-background-content">Nome da Empresa</Text>
       <TextInput
         className="px-4 py-3 w-full rounded-lg border bg-surface border-surface-content text-background-content"
         placeholder="Ex: Empresa XYZ"
-        placeholderTextColor={colors[theme].surfaceContent + "80"}
+        placeholderTextColor={colors[theme].surfaceContent + '80'}
         value={companyName}
         onChangeText={setCompanyName}
         accessibilityLabel="Nome da empresa"
         accessibilityHint="Digite o nome da empresa"
       />
     </View>
-  );
+  )
 
   /**
    * Renderiza o campo de entrada para intervalo de trabalho
@@ -232,16 +227,16 @@ export default function ConfigPage() {
         className="px-4 py-3 w-full rounded-lg border bg-surface border-surface-content text-background-content"
         keyboardType="numeric"
         placeholder="Ex: 15"
-        placeholderTextColor={colors[theme].surfaceContent + "80"}
-        value={isNaN(breakTime) ? "" : breakTime.toString()}
+        placeholderTextColor={colors[theme].surfaceContent + '80'}
+        value={isNaN(breakTime) ? '' : breakTime.toString()}
         onChangeText={(text) => {
-          const numericValue = text.replace(/[^0-9]/g, "");
-          setBreakTime(numericValue === "" ? 0 : Number(numericValue));
+          const numericValue = text.replace(/[^0-9]/g, '')
+          setBreakTime(numericValue === '' ? 0 : Number(numericValue))
         }}
         accessibilityLabel="Intervalo de trabalho em minutos"
       />
     </View>
-  );
+  )
 
   /**
    * Renderiza o campo de entrada para dias da semana trabalhados
@@ -252,35 +247,25 @@ export default function ConfigPage() {
         Dias da Semana Trabalhados
       </Text>
       <View className="flex flex-row flex-wrap gap-2 font-medium text-background-content">
-        {[
-          "segunda",
-          "terça",
-          "quarta",
-          "quinta",
-          "sexta",
-          "sábado",
-          "domingo",
-        ].map((day) => (
+        {['segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado', 'domingo'].map((day) => (
           <CheckBox
             key={day}
             title={day}
             checked={workDays.includes(day)}
             onPress={() =>
               setWorkDays((prev) =>
-                prev.includes(day)
-                  ? prev.filter((d) => d !== day)
-                  : [...prev, day]
+                prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day],
               )
             }
             containerStyle={{
-              backgroundColor: "transparent",
+              backgroundColor: 'transparent',
               borderWidth: 0,
               padding: 8,
               margin: 0,
             }}
             textStyle={{
               color: colors[theme].backgroundColor,
-              fontWeight: "500",
+              fontWeight: '500',
             }}
             checkedColor={colors[theme].primary}
             uncheckedColor={colors[theme].secondary}
@@ -288,52 +273,41 @@ export default function ConfigPage() {
         ))}
       </View>
     </View>
-  );
+  )
 
   const handlePasteApiKey = async () => {
-    const text = await Clipboard.getStringAsync();
-    setGeminiApiKey(text);
-  };
+    const text = await Clipboard.getStringAsync()
+    setGeminiApiKey(text)
+  }
 
   const renderToggleTheme = () => (
     <View>
-      <Text className="mb-1 text-sm font-medium text-background-content">
-        Tema do Aplicativo
-      </Text>
+      <Text className="mb-1 text-sm font-medium text-background-content">Tema do Aplicativo</Text>
       <ThemeToggle />
     </View>
-  );
+  )
 
   const renderGeminiApiKeyInput = () => (
     <View>
-      <Text className="mb-1 text-sm font-medium text-background-content">
-        Gemini API Key
-      </Text>
+      <Text className="mb-1 text-sm font-medium text-background-content">Gemini API Key</Text>
       <View className="flex-row items-center">
         <TextInput
           className="flex-1 px-4 py-3 w-full rounded-lg border bg-surface border-surface-content text-background-content"
           placeholder="Insira sua API Key do Gemini"
-          placeholderTextColor={colors[theme].surfaceContent + "80"}
+          placeholderTextColor={colors[theme].surfaceContent + '80'}
           value={geminiApiKey}
           onChangeText={setGeminiApiKey}
           accessibilityLabel="Gemini API Key"
           accessibilityHint="Insira sua API Key do Gemini"
         />
         {isPasteAvailable && (
-          <TouchableOpacity
-            onPress={handlePasteApiKey}
-            className="p-2 ml-2 rounded-lg bg-primary"
-          >
-            <Text className="text-sm font-medium text-primary-content">
-              Colar
-            </Text>
+          <TouchableOpacity onPress={handlePasteApiKey} className="p-2 ml-2 rounded-lg bg-primary">
+            <Text className="text-sm font-medium text-primary-content">Colar</Text>
           </TouchableOpacity>
         )}
       </View>
       <TouchableOpacity
-        onPress={() =>
-          Linking.openURL("https://aistudio.google.com/app/apikey")
-        }
+        onPress={() => Linking.openURL('https://aistudio.google.com/app/apikey')}
         className="mt-2"
       >
         <Text className="text-sm font-medium underline text-primary">
@@ -341,24 +315,27 @@ export default function ConfigPage() {
         </Text>
       </TouchableOpacity>
     </View>
-  );
+  )
 
   return (
     <SafeAreaView className="flex-1 bg-background">
-      <Header showConfig={false}
-        back={config ? () => (
-          <TouchableOpacity onPress={() => router.back()}
-            className="rounded-lg"
-            accessibilityRole="button"
-            accessibilityLabel="Voltar"
-          >
-            <Entypo
-              name="chevron-left"
-              size={35}
-              color={colors[theme].primary}
-            />
-          </TouchableOpacity>
-        ) : undefined}
+      <Header
+        showConfig={false}
+        title="Configurações"
+        back={
+          config
+            ? () => (
+                <TouchableOpacity
+                  onPress={() => router.back()}
+                  className="rounded-lg"
+                  accessibilityRole="button"
+                  accessibilityLabel="Voltar"
+                >
+                  <Entypo name="chevron-left" size={35} color={colors[theme].primary} />
+                </TouchableOpacity>
+              )
+            : undefined
+        }
       />
       <ScrollView className="flex-1 px-4 py-6">
         <View className="space-y-6">
@@ -367,9 +344,9 @@ export default function ConfigPage() {
               Configuração de Horas de Trabalho
             </Text>
             <Text className="mb-4 text-sm font-medium text-background-content">
-              {currentStep === 1 && "Passo 1: Horas de Trabalho"}
-              {currentStep === 2 && "Passo 2: Detalhes da Empresa"}
-              {currentStep === 3 && "Passo 3: Integrações"}
+              {currentStep === 1 && 'Passo 1: Horas de Trabalho'}
+              {currentStep === 2 && 'Passo 2: Detalhes da Empresa'}
+              {currentStep === 3 && 'Passo 3: Integrações'}
             </Text>
           </View>
 
@@ -401,9 +378,7 @@ export default function ConfigPage() {
                   accessibilityLabel="Voltar"
                   accessibilityRole="button"
                 >
-                  <Text className="font-medium text-center text-background-content">
-                    Voltar
-                  </Text>
+                  <Text className="font-medium text-center text-background-content">Voltar</Text>
                 </TouchableOpacity>
               )}
 
@@ -414,9 +389,7 @@ export default function ConfigPage() {
                   accessibilityLabel="Próximo"
                   accessibilityRole="button"
                 >
-                  <Text className="text-center text-primary-content">
-                    Próximo
-                  </Text>
+                  <Text className="text-center text-primary-content">Próximo</Text>
                 </TouchableOpacity>
               )}
 
@@ -429,7 +402,7 @@ export default function ConfigPage() {
                   disabled={loading}
                 >
                   <Text className="text-center text-primary-content">
-                    {loading ? "Salvando..." : "Salvar"}
+                    {loading ? 'Salvando...' : 'Salvar'}
                   </Text>
                 </TouchableOpacity>
               )}
@@ -438,5 +411,5 @@ export default function ConfigPage() {
         </View>
       </ScrollView>
     </SafeAreaView>
-  );
+  )
 }
