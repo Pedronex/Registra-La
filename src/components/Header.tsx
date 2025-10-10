@@ -26,7 +26,7 @@ interface HeaderProps {
  * Exibe o logo e o título do aplicativo
  */
 export function Header({
-  title = "Registra lá",
+  title = "Configurações",
   showConfig = true,
   back,
 }: HeaderProps) {

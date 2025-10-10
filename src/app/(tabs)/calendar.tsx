@@ -2,7 +2,7 @@ import {
   BalanceSummary,
   CalendarGrid,
   DayRecordsModal,
-  MonthNavigator
+  MonthNavigator,
 } from "@/components/calendar";
 import { Header } from "@/components/Header";
 import { RegisterData } from "@/db/schema";
@@ -19,7 +19,9 @@ export default function CalendarPage() {
   // --- State ---
   const [date, setDate] = useState(new Date());
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedDayRecords, setSelectedDayRecords] = useState<RegisterData[]>([]);
+  const [selectedDayRecords, setSelectedDayRecords] = useState<RegisterData[]>(
+    [],
+  );
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
   // --- Hooks ---
@@ -40,7 +42,7 @@ export default function CalendarPage() {
   };
 
   const openDayDetails = (day: Date) => {
-    const originalDateString = `${String(day.getDate()).padStart(2, '0')}/${String(day.getMonth() + 1).padStart(2, '0')}/${day.getFullYear()}`;
+    const originalDateString = `${String(day.getDate()).padStart(2, "0")}/${String(day.getMonth() + 1).padStart(2, "0")}/${day.getFullYear()}`;
     const records = dailyRecords[originalDateString] || [];
     setSelectedDayRecords(records);
     setSelectedDate(day);
@@ -60,7 +62,11 @@ export default function CalendarPage() {
         title="Calendário"
         back={() => (
           <TouchableOpacity onPress={() => router.back()}>
-            <Entypo name="arrow-left" size={30} color={colors[theme].primary} />
+            <Entypo
+              name="chevron-left"
+              size={30}
+              color={colors[theme].primary}
+            />
           </TouchableOpacity>
         )}
       />
