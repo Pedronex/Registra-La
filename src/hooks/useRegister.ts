@@ -17,59 +17,23 @@ export function useRegister() {
   /**
    * Coletar dados da foto do registro de ponto
    */
-  const extractDataPhoto = useCallback(async (base64: string, apiKey: string) => {
+  const extractDataPhoto = useCallback(async (formData: FormData) => {
     setLoading(true)
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          contents: [
-            {
-              role: 'user',
-              parts: [
-                {
-                  inlineData: {
-                    mimeType: 'image/jpeg',
-                    data: base64,
-                  },
-                },
-              ],
-            },
-          ],
-          generationConfig: {
-            temperature: 0.1,
-            maxOutputTokens: 1024,
-            thinkingConfig: {
-              thinkingBudget: 0,
-            },
-            responseMimeType: 'application/json',
-            responseSchema: {
-              type: 'object',
-              properties: {
-                date: { type: 'string' },
-                time: { type: 'string' },
-                nsr: { type: 'string' },
-              },
-              required: ['date', 'time', 'nsr'],
-              propertyOrdering: ['date', 'time', 'nsr'],
-            },
-          },
-        }),
-      },
-    )
-    console.info('Retorno do Gemini: ', response)
 
-    const data = await response.json()
-    const { date, time, nsr } = JSON.parse(data.candidates[0].content.parts[0].text) as {
+    const request = await fetch('https://pontola-645173022183.us-central1.run.app/extract', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      body: formData,
+    })
+    const { date, time, nsr } = await request.json() as {
       date: string
       time: string
       nsr: string
     }
     setLoading(false)
+
     return { date, time, nsr }
   }, [])
 
@@ -77,12 +41,15 @@ export function useRegister() {
    * Salva um novo registro de ponto
    */
   const saveRegister = useCallback(async (data: RegisterInsert) => {
+    console.log(data)
+
     try {
       setLoading(true)
       setError(null)
+
       await database
         .insert(registersTable)
-        .values({ ...data, createdAt: Date.now(), updatedAt: Date.now() })
+        .values({ ...data, createdAt: new Date(), updatedAt: new Date() })
 
       return true
     } catch (err) {
@@ -104,7 +71,7 @@ export function useRegister() {
 
       await database
         .update(registersTable)
-        .set({ ...data, updatedAt: Date.now() })
+        .set({ ...data, updatedAt: new Date() })
         .where(eq(registersTable.id, id))
 
       return true

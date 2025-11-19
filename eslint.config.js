@@ -7,4 +7,14 @@ module.exports = defineConfig([
   {
     ignores: ['dist/*'],
   },
+  {
+    rules: {
+      'import-x/no-unresolved': [
+        'error',
+        {
+          ignore: ['^bun(:\\w+)?$'], // Ignores modules starting with 'bun:'
+        },
+      ],
+    },
+  },
 ])

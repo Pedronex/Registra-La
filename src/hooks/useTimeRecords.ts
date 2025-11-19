@@ -28,9 +28,9 @@ export function useTimeRecords(date: string) {
         .select()
         .from(registersTable)
         .where(eq(registersTable.date, date))
-      setRecords(result.sort((a, b) => a.time.localeCompare(b.time)))
+      setRecords(result.sort((a, b) => a.timeInMinutes - b.timeInMinutes))
 
-      return result.sort((a, b) => a.time.localeCompare(b.time))
+      return result.sort((a, b) => a.timeInMinutes - b.timeInMinutes)
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro ao carregar registros'
       setError(errorMessage)

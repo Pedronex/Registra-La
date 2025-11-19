@@ -75,11 +75,9 @@ function applyTolerance(balanceHours: number, toleranceMinutes: number): number 
   const balanceMinutes = Math.round(balanceHours * 60)
 
   if (Math.abs(balanceMinutes) <= effectiveTolerance) {
-    console.log(`[applyTolerance] Applied tolerance: ${balanceHours}h -> 0h`)
     return 0
   }
 
-  console.log(`[applyTolerance] Outside tolerance: ${balanceHours}h remains unchanged`)
   return balanceHours
 }
 
@@ -99,16 +97,13 @@ function calculateBalancesFromDailyRecords(
     const dayRecords = dailyRecords[date]
     const workRecords = dayRecords
       .filter((r) => r.type === 'trabalho')
-      .sort((a, b) => a.time.localeCompare(b.time))
+      .sort((a, b) => a.timeInMinutes - b.timeInMinutes)
 
-    let workedMillis = 0
-    const isoDate = date.split('/').reverse().join('-')
+    let workedMinutes = 0
     if (workRecords.length >= 2) {
       for (let i = 0; i < workRecords.length; i += 2) {
         if (workRecords[i + 1]) {
-          const timeIn = new Date(`${isoDate}T${workRecords[i].time}`).getTime()
-          const timeOut = new Date(`${isoDate}T${workRecords[i + 1].time}`).getTime()
-          workedMillis += timeOut - timeIn
+          workedMinutes += workRecords[i + 1].timeInMinutes - workRecords[i].timeInMinutes
         }
       }
     }
@@ -119,31 +114,20 @@ function calculateBalancesFromDailyRecords(
 
     // Processa os ajustes de saldo
     for (const adj of balanceAdjustments) {
-      const [hh, mm] = (adj.time || '0:0').split(':').map(Number)
-      const adjMillis = ((hh || 0) * 60 + (mm || 0)) * 60 * 1000
-      const adjHours = adjMillis / (1000 * 60 * 60)
-
-      if (adj.isFullDay) {
-        // isFullDay representa 'increase'
-        totalBalance += adjHours
-      } else {
-        // representa 'decrease'
-        totalBalance -= adjHours
-      }
+      totalBalance += adj.timeInMinutes
     }
 
     // Soma abonos do dia (folga/atestado)
-    let abonoMillis = 0
+    let abonoInMinutes = 0
     for (const a of abonos) {
       if (a.isFullDay) {
-        abonoMillis += (workHours || 0) * 3600 * 1000
-      } else if (a.time) {
-        const [hh, mm] = (a.time || '0:0').split(':').map(Number)
-        abonoMillis += ((hh || 0) * 60 + (mm || 0)) * 60 * 1000
+        abonoInMinutes += (workHours || 0) * 3600
+      } else if (a.timeInMinutes) {
+        abonoInMinutes += a.timeInMinutes * 60
       }
     }
 
-    const workedHoursValue = (workedMillis + abonoMillis) / (1000 * 60 * 60)
+    const workedHoursValue = (workedMinutes + abonoInMinutes) / 60
     const rawBalance = workedHoursValue - workHours
 
     // Aplica a tolerância ao saldo diário
@@ -211,7 +195,7 @@ export function useCalendar(year: number, month: number) {
         (a, b) => parseDateDDMMYYYY(a.date).getTime() - parseDateDDMMYYYY(b.date).getTime(),
       )[0]
 
-      let previousMonthBalance = config.initialBalance || 0
+      let previousMonthBalance = (config.initialBalanceInMinutes || 0) / 60
 
       if (firstRecord) {
         const firstDate = parseDateDDMMYYYY(firstRecord.date)
@@ -224,6 +208,7 @@ export function useCalendar(year: number, month: number) {
             currentDate.getFullYear(),
             currentDate.getMonth() + 1,
           )
+          console.info(monthData.totalBalance)
           previousMonthBalance += monthData.totalBalance
           currentDate.setMonth(currentDate.getMonth() + 1)
         }

@@ -24,7 +24,6 @@ export default function ConfigPage() {
   const [companyName, setCompanyName] = useState<string>('')
   const [breakTime, setBreakTime] = useState<number>(0)
   const [workDays, setWorkDays] = useState<string[]>([])
-  const [geminiApiKey, setGeminiApiKey] = useState<string>('')
   const [initialBalanceHours, setInitialBalanceHours] = useState<number>(0)
   const [initialBalanceMinutes, setInitialBalanceMinutes] = useState<number>(0)
   const [initialBalanceSign, setInitialBalanceSign] = useState<'positive' | 'negative'>('positive')
@@ -44,13 +43,12 @@ export default function ConfigPage() {
       setCompanyName(config.companyName || '')
       setBreakTime(config.breakTime || 0)
       setWorkDays(Array.isArray(config.workDays) ? config.workDays : [])
-      setGeminiApiKey(config.geminiApiKey || '')
 
-      const balance = config.initialBalance || 0
+      const balance = config.initialBalanceInMinutes || 0
       setInitialBalanceSign(balance < 0 ? 'negative' : 'positive')
       const absoluteBalance = Math.abs(balance)
-      const hours = Math.floor(absoluteBalance)
-      const minutes = Math.round((absoluteBalance - hours) * 60)
+      const hours = Math.floor(absoluteBalance / 60)
+      const minutes = Math.round(absoluteBalance % 60)
       setInitialBalanceHours(hours)
       setInitialBalanceMinutes(minutes)
     }
@@ -75,8 +73,6 @@ export default function ConfigPage() {
   const handleSaveConfig = async () => {
     try {
       const totalMinutes = initialBalanceHours * 60 + initialBalanceMinutes
-      const decimalHours = totalMinutes / 60
-      const initialBalance = initialBalanceSign === 'negative' ? -decimalHours : decimalHours
 
       await persistConfig({
         workHours,
@@ -84,8 +80,7 @@ export default function ConfigPage() {
         companyName,
         breakTime,
         workDays,
-        geminiApiKey,
-        initialBalance,
+        initialBalanceInMinutes: initialBalanceSign === 'negative' ? -totalMinutes : totalMinutes,
         id: 1,
       })
 
@@ -169,23 +164,26 @@ export default function ConfigPage() {
             -
           </Text>
         </TouchableOpacity>
+      </View>
+      <View className="flex-col items-start gap-x-2">
+        <Text className="font-bold text-background-content">Horas</Text>
         <TextInput
-          className="px-4 py-3 w-20 rounded-lg border bg-surface border-surface-content text-background-content text-center"
+          className="px-4 py-3 rounded-lg border bg-surface border-surface-content text-background-content text-center"
           keyboardType="numeric"
           placeholder="HH"
-          maxLength={3}
           value={initialBalanceHours.toString()}
           onChangeText={(text) => {
             const numericValue = text.replace(/[^0-9]/g, '')
             setInitialBalanceHours(numericValue === '' ? 0 : Number(numericValue))
           }}
         />
-        <Text className="font-bold text-background-content">:</Text>
+      </View>
+      <View className="flex-col items-start gap-x-2">
+        <Text className="font-bold text-background-content">Minutos</Text>
         <TextInput
-          className="px-4 py-3 w-20 rounded-lg border bg-surface border-surface-content text-background-content text-center"
+          className="px-4 py-3 rounded-lg border bg-surface border-surface-content text-background-content text-center"
           keyboardType="numeric"
-          placeholder="MM"
-          maxLength={2}
+          placeholder="Minutos"
           value={initialBalanceMinutes.toString().padStart(2, '0')}
           onChangeText={(text) => {
             const numericValue = text.replace(/[^0-9]/g, '')
@@ -275,45 +273,10 @@ export default function ConfigPage() {
     </View>
   )
 
-  const handlePasteApiKey = async () => {
-    const text = await Clipboard.getStringAsync()
-    setGeminiApiKey(text)
-  }
-
   const renderToggleTheme = () => (
     <View>
       <Text className="mb-1 text-sm font-medium text-background-content">Tema do Aplicativo</Text>
       <ThemeToggle />
-    </View>
-  )
-
-  const renderGeminiApiKeyInput = () => (
-    <View>
-      <Text className="mb-1 text-sm font-medium text-background-content">Gemini API Key</Text>
-      <View className="flex-row items-center">
-        <TextInput
-          className="flex-1 px-4 py-3 w-full rounded-lg border bg-surface border-surface-content text-background-content"
-          placeholder="Insira sua API Key do Gemini"
-          placeholderTextColor={colors[theme].surfaceContent + '80'}
-          value={geminiApiKey}
-          onChangeText={setGeminiApiKey}
-          accessibilityLabel="Gemini API Key"
-          accessibilityHint="Insira sua API Key do Gemini"
-        />
-        {isPasteAvailable && (
-          <TouchableOpacity onPress={handlePasteApiKey} className="p-2 ml-2 rounded-lg bg-primary">
-            <Text className="text-sm font-medium text-primary-content">Colar</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-      <TouchableOpacity
-        onPress={() => Linking.openURL('https://aistudio.google.com/app/apikey')}
-        className="mt-2"
-      >
-        <Text className="text-sm font-medium underline text-primary">
-          Obtenha sua chave de API aqui
-        </Text>
-      </TouchableOpacity>
     </View>
   )
 
@@ -368,8 +331,6 @@ export default function ConfigPage() {
               </>
             )}
 
-            {currentStep === 3 && <>{renderGeminiApiKeyInput()}</>}
-
             <View className="flex flex-row gap-x-4 justify-center mt-6">
               {currentStep > 1 && (
                 <TouchableOpacity
@@ -382,7 +343,7 @@ export default function ConfigPage() {
                 </TouchableOpacity>
               )}
 
-              {currentStep < 3 && (
+              {currentStep < 2 && (
                 <TouchableOpacity
                   className="p-3 w-28 rounded-lg bg-primary"
                   onPress={nextStep}
@@ -393,7 +354,7 @@ export default function ConfigPage() {
                 </TouchableOpacity>
               )}
 
-              {currentStep === 3 && (
+              {currentStep === 2 && (
                 <TouchableOpacity
                   className="p-3 w-28 rounded-lg bg-primary"
                   onPress={handleSaveConfig}

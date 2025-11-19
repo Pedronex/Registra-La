@@ -3,9 +3,10 @@ import { useConfig } from '@/hooks/useConfig'
 import { useTimeRecords } from '@/hooks/useTimeRecords'
 import { useTheme } from '@/providers/ThemeProvider'
 import { colors } from '@/utils/colorThemes'
+import { convertMinutesToTime, convertSecondsToTime } from '@/utils/convert'
 import { Entypo, MaterialIcons } from '@expo/vector-icons'
 import { DateTimePickerAndroid } from '@react-native-community/datetimepicker'
-import { addDays, format, parse, isToday, subDays } from 'date-fns'
+import { addDays, format, isToday, subDays } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { router } from 'expo-router'
 import { useEffect, useMemo, useState } from 'react'
@@ -29,7 +30,9 @@ export function History({ date: controlledDate, onDateChange }: HistoryProps = {
   const { records, loading } = useTimeRecords(format(date, 'dd/MM/yyyy'))
   const { config } = useConfig()
   const { theme } = useTheme()
-  const [currentTime, setCurrentTime] = useState(new Date())
+  const [currentTimeInSeconds, setCurrentTimeInSeconds] = useState(
+    new Date().getHours() * 3600 + new Date().getMinutes() * 60 + new Date().getSeconds(),
+  )
   // Efeito para atualizar a data para o dia atual se não for controlado
 
   useEffect(() => {
@@ -51,7 +54,9 @@ export function History({ date: controlledDate, onDateChange }: HistoryProps = {
 
     if (isClockedIn) {
       timer = setInterval(() => {
-        setCurrentTime(new Date())
+        setCurrentTimeInSeconds(
+          new Date().getHours() * 3600 + new Date().getMinutes() * 60 + new Date().getSeconds(),
+        )
       }, 1000)
     }
 
@@ -68,33 +73,25 @@ export function History({ date: controlledDate, onDateChange }: HistoryProps = {
   const totalHoursWorked = useMemo(() => {
     const workRecords = records
       .filter((r) => r.type === 'trabalho')
-      .sort((a, b) => a.time.localeCompare(b.time))
+      .sort((a, b) => a.timeInMinutes - b.timeInMinutes)
 
-    let totalMilliseconds = 0
+    let totalInSeconds = 0
     for (let i = 0; i < workRecords.length; i += 2) {
       if (workRecords[i + 1]) {
-        const startTime = parse(workRecords[i].time, 'HH:mm', new Date())
-        const endTime = parse(workRecords[i + 1].time, 'HH:mm', new Date())
-        totalMilliseconds += endTime.getTime() - startTime.getTime()
+        totalInSeconds += workRecords[i + 1].timeInMinutes * 60 - workRecords[i].timeInMinutes * 60
       }
     }
 
     if (isClockedIn) {
       const lastEntry = workRecords[workRecords.length - 1]
       if (lastEntry) {
-        const startTime = parse(lastEntry.time, 'HH:mm', new Date())
-        totalMilliseconds += currentTime.getTime() - startTime.getTime()
+        totalInSeconds += currentTimeInSeconds - lastEntry.timeInMinutes * 60
       }
     }
-    if (totalMilliseconds <= 0) return '00:00'
+    if (totalInSeconds <= 0) return '00:00'
 
-    const totalSeconds = totalMilliseconds / 1000
-    const hours = Math.floor(totalSeconds / 3600)
-    const minutes = Math.floor((totalSeconds % 3600) / 60)
-    const seconds = Math.floor(totalSeconds % 60)
-
-    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
-  }, [records, isClockedIn, currentTime])
+    return convertSecondsToTime(totalInSeconds)
+  }, [records, isClockedIn, currentTimeInSeconds])
 
   /**
    * Calcula o saldo de horas do dia
@@ -102,79 +99,66 @@ export function History({ date: controlledDate, onDateChange }: HistoryProps = {
   const hourBalance = useMemo(() => {
     const workRecords = records
       .filter((r) => r.type === 'trabalho')
-      .sort((a, b) => a.time.localeCompare(b.time))
+      .sort((a, b) => a.timeInMinutes - b.timeInMinutes)
     if (!config?.workHours || workRecords.length < 2) {
       // Mesmo sem pares de trabalho suficientes, ainda podemos ter abono que zere o saldo
       if (!config?.workHours) return '00:00'
-      const targetMilliseconds = (config.workHours || 0) * 3600 * 1000
-      let abonoMilliseconds = 0
+      const targetSeconds = (config.workHours || 0) * 3600
+      let abonoSeconds = 0
       const abonos = records.filter((r) => r.type !== 'trabalho')
       for (const a of abonos) {
         if (a.isFullDay) {
-          abonoMilliseconds += (config.workHours || 0) * 3600 * 1000
-        } else if (a.time) {
-          const [hh, mm] = (a.time || '0:0').split(':').map(Number)
-          abonoMilliseconds += ((hh || 0) * 60 + (mm || 0)) * 60 * 1000
+          abonoSeconds += (config.workHours || 0) * 3600
+        } else if (a.timeInMinutes) {
+          abonoSeconds += a.timeInMinutes * 60
         }
       }
-      const diffMilliseconds = abonoMilliseconds - targetMilliseconds
-      const toleranceMilliseconds = (config.tolerance || 10) * 60 * 1000
-      if (Math.abs(diffMilliseconds) <= toleranceMilliseconds) {
+      const diffSeconds = abonoSeconds - targetSeconds
+      const toleranceSeconds = (config.tolerance || 10) * 60
+      if (Math.abs(diffSeconds) <= toleranceSeconds) {
         return '00:00'
       }
-      const totalSeconds = Math.abs(diffMilliseconds) / 1000
-      const hours = Math.floor(totalSeconds / 3600)
-      const minutes = Math.floor((totalSeconds % 3600) / 60)
-      const sign = diffMilliseconds >= 0 ? '+' : '-'
-      return `${sign}${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`
+      const totalSeconds = diffSeconds
+      const minutes = totalSeconds / 60
+      return convertMinutesToTime(minutes)
     }
 
-    const targetMilliseconds = config.workHours * 3600 * 1000
+    const targetSeconds = config.workHours * 3600
 
-    let totalMilliseconds = 0
+    let totalInSeconds = 0
     for (let i = 0; i < workRecords.length; i += 2) {
       if (workRecords[i + 1]) {
-        const startTime = parse(workRecords[i].time, 'HH:mm', new Date())
-        const endTime = parse(workRecords[i + 1].time, 'HH:mm', new Date())
-        totalMilliseconds += endTime.getTime() - startTime.getTime()
+        totalInSeconds += workRecords[i + 1].timeInMinutes * 60 - workRecords[i].timeInMinutes * 60
       }
     }
 
     if (isClockedIn) {
       const lastEntry = workRecords[workRecords.length - 1]
       if (lastEntry) {
-        const startTime = parse(lastEntry.time, 'HH:mm', new Date())
-        totalMilliseconds += currentTime.getTime() - startTime.getTime()
+        totalInSeconds += currentTimeInSeconds - lastEntry.timeInMinutes * 60
       }
     }
 
     // Soma de abonos (folga/atestado)
-    let abonoMilliseconds = 0
+    let abonoSeconds = 0
     const abonos = records.filter((r) => r.type !== 'trabalho')
     for (const a of abonos) {
       if (a.isFullDay) {
-        abonoMilliseconds += (config.workHours || 0) * 3600 * 1000
-      } else if (a.time) {
-        const [hh, mm] = (a.time || '0:0').split(':').map(Number)
-        abonoMilliseconds += ((hh || 0) * 60 + (mm || 0)) * 60 * 1000
+        abonoSeconds += (config.workHours || 0) * 3600
+      } else if (a.timeInMinutes) {
+        abonoSeconds += a.timeInMinutes * 60
       }
     }
 
-    const diffMilliseconds = totalMilliseconds + abonoMilliseconds - targetMilliseconds
-    const toleranceMilliseconds = (config.tolerance || 10) * 60 * 1000
+    const diffSeconds = totalInSeconds + abonoSeconds - targetSeconds
+    const toleranceSeconds = (config.tolerance || 10) * 60
 
-    if (Math.abs(diffMilliseconds) <= toleranceMilliseconds) {
+    if (Math.abs(diffSeconds) <= toleranceSeconds) {
       return '00:00'
     }
-
-    const totalSeconds = Math.abs(diffMilliseconds) / 1000
-    const hours = Math.floor(totalSeconds / 3600)
-    const minutes = Math.floor((totalSeconds % 3600) / 60)
-    const seconds = Math.floor(totalSeconds % 60)
-
-    const sign = diffMilliseconds >= 0 ? '+' : '-'
-    return `${sign}${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
-  }, [records, config, isClockedIn, currentTime])
+    const totalSeconds = Math.abs(diffSeconds)
+    return convertSecondsToTime(totalSeconds)
+  }, [records, config, isClockedIn, currentTimeInSeconds])
 
   /**
    * Renderiza o cabeçalho com a data e os botões de navegação
@@ -228,11 +212,11 @@ export function History({ date: controlledDate, onDateChange }: HistoryProps = {
 
     const workRecords = records
       .filter((r) => r.type === 'trabalho')
-      .sort((a, b) => a.time.localeCompare(b.time))
+      .sort((a, b) => a.timeInMinutes - b.timeInMinutes)
 
     const nonWorkRecords = records
       .filter((r) => r.type !== 'trabalho')
-      .sort((a, b) => a.time.localeCompare(b.time))
+      .sort((a, b) => a.timeInMinutes - b.timeInMinutes)
 
     // Adiciona registros de trabalho com intervalos
     for (let i = 0; i < workRecords.length; i++) {
@@ -244,13 +228,10 @@ export function History({ date: controlledDate, onDateChange }: HistoryProps = {
 
       // VERIFICAÇÃO DO INTERVALO:
       if (!isEntry && workRecords[i + 1]) {
-        const exitTime = parse(record.time, 'HH:mm', new Date())
-        const nextEntryTime = parse(workRecords[i + 1].time, 'HH:mm', new Date())
-        const breakMilliseconds = nextEntryTime.getTime() - exitTime.getTime()
+        const breakMinutes = workRecords[i + 1].timeInMinutes - record.timeInMinutes
 
-        const totalSeconds = breakMilliseconds / 1000
-        const hours = Math.floor(totalSeconds / 3600)
-        const minutes = Math.floor((totalSeconds % 3600) / 60)
+        const hours = Math.floor(breakMinutes / 60)
+        const minutes = breakMinutes % 60
 
         if (hours > 0 || minutes > 0) {
           items.push({ type: 'break', data: { formatted: `${hours}h ${minutes}m intervalo` } })
@@ -267,10 +248,10 @@ export function History({ date: controlledDate, onDateChange }: HistoryProps = {
     items.sort((a, b) => {
       if (a.type === 'record' && b.type === 'record') {
         // Se algum dos registros não tem horário (dia completo), coloca no final
-        if (!a.data.time && !b.data.time) return 0
-        if (!a.data.time) return 1
-        if (!b.data.time) return -1
-        return a.data.time.localeCompare(b.data.time)
+        if (!a.data.timeInMinutes && !b.data.timeInMinutes) return 0
+        if (!a.data.timeInMinutes) return 1
+        if (!b.data.timeInMinutes) return -1
+        return a.data.timeInMinutes - b.data.timeInMinutes
       }
       return 0
     })
@@ -315,10 +296,10 @@ export function History({ date: controlledDate, onDateChange }: HistoryProps = {
               <View className="flex-1 ml-4">
                 <Text className="text-xl font-bold text-secondary-content">
                   {item.data.type === 'trabalho'
-                    ? item.data.time
+                    ? convertMinutesToTime(item.data.timeInMinutes)
                     : item.data.isFullDay
                       ? 'Dia completo'
-                      : item.data.time || '0:00'}
+                      : item.data.timeInMinutes || '0:00'}
                 </Text>
                 <Text className="text-sm opacity-80 text-secondary-content">
                   {item.data.type === 'trabalho'
@@ -326,10 +307,10 @@ export function History({ date: controlledDate, onDateChange }: HistoryProps = {
                     : item.data.type === 'folga'
                       ? item.data.isFullDay
                         ? 'Folga - dia todo'
-                        : `Folga - ${item.data.time || '0:00'} horas`
+                        : `Folga - ${convertMinutesToTime(item.data.timeInMinutes || 0)} horas`
                       : item.data.isFullDay
                         ? 'Atestado - dia todo'
-                        : `Atestado - ${item.data.time || '0:00'} horas`}
+                        : `Atestado - ${convertMinutesToTime(item.data.timeInMinutes || 0)} horas`}
                 </Text>
                 {item.data.location && item.data.type !== 'trabalho' && (
                   <Text className="text-xs opacity-60 text-secondary-content mt-1">

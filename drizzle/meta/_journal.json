@@ -71,6 +71,27 @@
       "when": 1759847411749,
       "tag": "0009_perfect_talkback",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1761913946906,
+      "tag": "0010_living_major_mapleleaf",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1761914024880,
+      "tag": "0011_sparkling_christian_walker",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1761916283003,
+      "tag": "0012_eminent_the_santerians",
+      "breakpoints": true
     }
   ]
 }

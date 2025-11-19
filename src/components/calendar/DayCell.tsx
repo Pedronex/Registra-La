@@ -13,16 +13,12 @@ interface DayCellProps {
 function formatBalance(balance: number) {
   if (isNaN(balance)) return '+00:00'
 
-  // Log para debug
-  console.log(`[DayCell] Original balance: ${balance}h`)
-
   // Aplica tolerância de 10 minutos
   const toleranceMinutes = 10
   // Converte para minutos para evitar problemas de precisão de ponto flutuante
   const balanceMinutes = Math.round(balance * 60)
 
   if (Math.abs(balanceMinutes) <= toleranceMinutes) {
-    console.log(`[DayCell] Applied tolerance: ${balance}h (${balanceMinutes}min) -> 00:00`)
     return '00:00'
   }
 
@@ -30,7 +26,6 @@ function formatBalance(balance: number) {
   const minutes = Math.round((Math.abs(balance) % 1) * 60)
   const sign = balance < 0 ? '-' : '+'
   const result = `${sign}${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`
-  console.log(`[DayCell] Final format: ${balance}h -> ${result}`)
   return result
 }
 

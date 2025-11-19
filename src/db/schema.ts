@@ -1,7 +1,7 @@
 /**
  * Definição do esquema do banco de dados Drizzle ORM
  */
-import { integer, real, sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 
 /**
  * Esquema da tabela de registros
@@ -11,7 +11,7 @@ export const registersTable = sqliteTable('registers', {
 
   // Informações básicas do registro
   type: text('type', { enum: ['folga', 'trabalho', 'atestado', 'saldo'] }).notNull(),
-  time: text('time').notNull().default('00:00'),
+  timeInMinutes: integer('time').notNull().default(0),
   date: text('date').notNull(),
   isFullDay: integer('is_full_day', { mode: 'boolean' }).notNull().default(false),
 
@@ -22,8 +22,8 @@ export const registersTable = sqliteTable('registers', {
   nsr: text('nsr'),
 
   // Metadados
-  createdAt: integer('created_at').notNull(),
-  updatedAt: integer('updated_at').notNull(),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
 })
 
 /**
@@ -36,8 +36,7 @@ export const configTable = sqliteTable('config', {
   breakTime: integer('break_time'),
   workDays: text('work_days', { mode: 'json' }),
   companyName: text('company_name'),
-  geminiApiKey: text('gemini_api_key'),
-  initialBalance: real('initial_balance').default(0.0),
+  initialBalanceInMinutes: integer('initial_balance').default(0),
 
   // Metadados
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(new Date()),
