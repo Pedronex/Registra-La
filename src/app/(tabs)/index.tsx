@@ -5,8 +5,9 @@ import { useRegister } from '@/hooks/useRegister'
 import { useTheme } from '@/providers/ThemeProvider'
 import { colors } from '@/utils/colorThemes'
 import { convertTimeToMinutes } from '@/utils/convert'
-import { Entypo } from '@expo/vector-icons'
+import { Entypo, Octicons } from '@expo/vector-icons'
 import * as ImagePicker from 'expo-image-picker'
+import { LinearGradient } from 'expo-linear-gradient'
 import { Link } from 'expo-router'
 import { useState } from 'react'
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native'
@@ -31,15 +32,15 @@ export default function HomePage() {
   }
 
   if (loadingRegister) {
-      return (
-        <View className="flex-1 justify-center items-center p-6 bg-background">
-          <ActivityIndicator size="large" className="mb-3" color={colors[theme].backgroundColor} />
-          <Text className="text-lg font-medium text-background-content">
-            Processando dados da foto...
-          </Text>
-        </View>
-      )
-    }
+    return (
+      <View className="flex-1 justify-center items-center p-6 bg-background">
+        <ActivityIndicator size="large" className="mb-3" color={colors[theme].backgroundColor} />
+        <Text className="text-lg font-medium text-background-content">
+          Processando dados da foto...
+        </Text>
+      </View>
+    )
+  }
 
   const handleAutoSavePhoto = async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync()
@@ -85,35 +86,44 @@ export default function HomePage() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background p-4 gap-4">
       <Header title="Página Inicial" />
 
-      <View className="flex-1 p-4">
-        <History date={selectedDate ?? undefined} onDateChange={setSelectedDate} />
-      </View>
+      <History date={selectedDate ?? undefined} onDateChange={setSelectedDate} />
 
-      <View className="m-4 flex-row gap-2">
-        <Link
-          href={{
-            pathname: '/add',
-            params: selectedDate ? { date: selectedDate.toLocaleDateString('pt-BR') } : {},
-          }}
-          asChild
-        >
-          <TouchableOpacity className="flex-row gap-x-4 justify-center items-center p-2 w-1/2 rounded-lg bg-primary">
-            <Entypo name="clock" size={24} color="white" />
-            <Text className="text-lg font-bold text-primary-content">Registro Manual</Text>
+      <LinearGradient
+        colors={[colors[theme].secondary, colors[theme].surface]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={{
+          justifyContent: 'space-between',
+          borderRadius: 8,
+        }}
+        className="h-fit p-2"
+      >
+        <View className="flex-row gap-2">
+          <Link
+            href={{
+              pathname: '/add',
+              params: selectedDate ? { date: selectedDate.toLocaleDateString('pt-BR') } : {},
+            }}
+            asChild
+          >
+            <TouchableOpacity className="flex-row gap-x-4 justify-center items-center p-2 w-1/2 rounded-lg bg-primary">
+              <Entypo name="clock" size={24} color={colors[theme].primaryContent} />
+              <Text className="text-lg font-bold text-primary-content">Manual</Text>
+            </TouchableOpacity>
+          </Link>
+
+          <TouchableOpacity
+            onPress={handleAutoSavePhoto}
+            className="flex-row gap-x-4 justify-center items-center p-4 w-1/2 rounded-lg bg-primary"
+          >
+            <Octicons name="sparkles-fill" size={24} color={colors[theme].primaryContent} />
+            <Text className="text-lg font-bold text-primary-content">Automático</Text>
           </TouchableOpacity>
-        </Link>
-
-        <TouchableOpacity
-          onPress={handleAutoSavePhoto}
-          className="flex-row gap-x-4 justify-center items-center p-4 w-1/2 rounded-lg bg-primary"
-        >
-          <Entypo name="clock" size={24} color="white" />
-          <Text className="text-lg font-bold text-primary-content">Registrar Auto</Text>
-        </TouchableOpacity>
-      </View>
+        </View>
+      </LinearGradient>
     </SafeAreaView>
   )
 }

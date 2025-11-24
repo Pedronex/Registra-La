@@ -8,9 +8,11 @@ import { Entypo, MaterialIcons } from '@expo/vector-icons'
 import { DateTimePickerAndroid } from '@react-native-community/datetimepicker'
 import { addDays, format, isToday, subDays } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import { LinearGradient } from 'expo-linear-gradient'
 import { router } from 'expo-router'
 import { useEffect, useMemo, useState } from 'react'
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native'
+import { opacity } from 'react-native-reanimated/lib/typescript/Colors'
 
 /**
  * Componente que exibe o histórico de registros de ponto
@@ -164,7 +166,7 @@ export function History({ date: controlledDate, onDateChange }: HistoryProps = {
    * Renderiza o cabeçalho com a data e os botões de navegação
    */
   const renderHeader = () => (
-    <View className="flex-row justify-between items-center p-4 mb-4 rounded-lg shadow-lg bg-primary">
+    <View className="flex-row justify-between items-center p-4 mb-4 rounded-lg bg-secondary border border-primary">
       <TouchableOpacity
         onPress={() => setDate(subDays(date, 1))}
         className="p-3 rounded-full bg-primary-focus"
@@ -263,7 +265,16 @@ export function History({ date: controlledDate, onDateChange }: HistoryProps = {
    * Renderiza a lista de registros e intervalos
    */
   const renderHistoryItems = () => (
-    <View className="flex-1 justify-between p-4 rounded-lg bg-secondary">
+    <LinearGradient
+      colors={[colors[theme].secondary, colors[theme].surface]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={{
+        justifyContent: 'space-between',
+        borderRadius: 8,
+      }}
+      className="h-fit"
+    >
       {displayItems.map((item, index) => {
         if (item.type === 'record') {
           return (
@@ -272,12 +283,14 @@ export function History({ date: controlledDate, onDateChange }: HistoryProps = {
               className="flex-row items-center p-3 mb-4 rounded-lg bg-secondary-focus active:opacity-80 justify-between"
               onPress={() => router.push(`/${item.data.id}`)}
             >
-              <View className="justify-center items-center w-12 h-12 rounded-full">
+              <View
+                className={`justify-center items-center w-12 h-12 rounded-xl bg-${item.isEntry ? 'success' : 'error'} opacity-80`}
+              >
                 {item.data.type === 'trabalho' ? (
                   <MaterialIcons
                     name={item.isEntry ? 'login' : 'logout'}
                     size={24}
-                    color={colors[theme].secondaryContent}
+                    color={item.isEntry ? colors[theme].successContent : colors[theme].errorContent}
                   />
                 ) : item.data.type === 'folga' ? (
                   <MaterialIcons
@@ -334,19 +347,31 @@ export function History({ date: controlledDate, onDateChange }: HistoryProps = {
         } else if (item.type === 'break') {
           return (
             <View key={`break-${index}`} className="flex-row justify-center items-center my-2">
-              <View className="flex-1 h-[1px] bg-secondary-content opacity-20" />
-              <Text className="mx-4 text-sm text-secondary-content">{item.data.formatted}</Text>
-              <View className="flex-1 h-[1px] bg-secondary-content opacity-20" />
+              <LinearGradient
+                colors={['transparent', colors[theme].secondaryContent, 'transparent']}
+                start={{ x: 0, y: 0.5 }}
+                end={{ x: 1, y: 0.5 }}
+                style={{ flex: 1, height: 1, opacity: 0.2 }}
+              />
+              <Text className="mx-4 text-sm bg-secondary-content text-secondary px-2 py-1 rounded-full">
+                {item.data.formatted}
+              </Text>
+              <LinearGradient
+                colors={['transparent', colors[theme].secondaryContent, 'transparent']}
+                start={{ x: 0, y: 0.5 }}
+                end={{ x: 1, y: 0.5 }}
+                style={{ flex: 1, height: 1, opacity: 0.2 }}
+              />
             </View>
           )
         }
         return null
       })}
-    </View>
+    </LinearGradient>
   )
 
   return (
-    <View className="flex-1 w-full rounded-lg shadow-lg">
+    <View className="flex-1 w-full rounded-lg h-fit">
       {renderHeader()}
       {loading ? (
         <View className="flex-1 justify-center items-center">
@@ -355,26 +380,39 @@ export function History({ date: controlledDate, onDateChange }: HistoryProps = {
       ) : (
         renderHistoryItems()
       )}
-      <View className="p-4 mt-4 rounded-lg shadow-md bg-tertiary">
-        <View className="flex-row justify-between items-center">
+      <LinearGradient
+        colors={[
+          hourBalance.includes('-') ? colors[theme].error : colors[theme].success,
+          colors[theme].secondary,
+        ]}
+        start={{ x: 1, y: 1 }}
+        end={{ x: 0, y: 0 }}
+        style={{ borderRadius: 8 }}
+        className="p-4 mt-4 shadow-md flex-row flex-wrap justify-between"
+      >
+        <View className="flex-col justify-between items-start w-1/2">
           <Text className="text-lg text-tertiary-content">Total trabalhado:</Text>
-          <Text className="text-2xl font-bold text-tertiary-content">{totalHoursWorked}</Text>
+          <Text className="text-3xl font-bold text-tertiary-content">{totalHoursWorked}</Text>
         </View>
-        <View className="flex-row justify-between items-center">
+        <View className="p-3 w-fit m-2 h-fit bg-black/10 dark:bg-white/10 rounded-2xl">
+          <Entypo
+            name="clock"
+            size={28}
+            color={
+              hourBalance.includes('-') ? colors[theme].errorContent : colors[theme].successContent
+            }
+          />
+        </View>
+        <View className="w-full h-px bg-black/20 dark:bg-white/20" />
+        <View className="flex-row justify-between items-center col-span-2">
+          <Text className="text-sm text-tertiary-content">Banco de Horas:</Text>
           <Text
-            className={`text-lg ${hourBalance.includes('-') ? 'text-red-500' : 'text-green-500'}`}
-          >
-            Banco de Horas:
-          </Text>
-          <Text
-            className={`text-lg font-bold ${
-              hourBalance.includes('-') ? 'text-red-500' : 'text-green-500'
-            }`}
+            className={`text-2xl ml-2 text-${hourBalance.includes('-') ? 'error-content' : 'success-content'}`}
           >
             {hourBalance}
           </Text>
         </View>
-      </View>
+      </LinearGradient>
     </View>
   )
 }

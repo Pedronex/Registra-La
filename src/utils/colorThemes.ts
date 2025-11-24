@@ -8,10 +8,10 @@ export const colors = {
     secondaryContent: '#000',
     tertiary: '#F0E6F7',
     tertiaryContent: '#000000',
-    error: '#C0392B',
-    errorContent: '#FFFFFF',
-    success: '#27AE60',
-    successContent: '#FFFFFF',
+    error: '#FF6B6B',
+    errorContent: '#4F1C1C',
+    success: '#6BFF8E',
+    successContent: '#194A25',
     background: '#F4F6FB',
     backgroundColor: '#4A4A4A',
     surface: '#FFFFFF',
@@ -24,10 +24,10 @@ export const colors = {
     secondaryContent: '#FFFFFF',
     tertiary: '#3A1F4C',
     tertiaryContent: '#FFFFFF',
-    error: '#FF6B6B',
-    errorContent: '#000000',
-    success: '#6BFF8E',
-    successContent: '#000000',
+    error: '#4F1C1C',
+    errorContent: '#FF6B6B',
+    success: '#194A25',
+    successContent: '#6BFF8E',
     background: '#121212',
     backgroundColor: '#E0E0E0',
     surface: '#1E1E1E',
@@ -50,10 +50,10 @@ export const themes = {
     '--color-tertiary-content': '#000000',
 
     /* Cores de feedback */
-    '--color-error': '#C0392B',
-    '--color-error-content': '#FFFFFF',
-    '--color-success': '#27AE60',
-    '--color-success-content': '#FFFFFF',
+    '--color-error': '#4F1C1C',
+    '--color-error-content': '#FF6B6B',
+    '--color-success': '#6BFF8E',
+    '--color-success-content': '#194A25',
 
     /* Fundo e superfícies */
     '--color-background': '#F4F6FB',
@@ -75,10 +75,10 @@ export const themes = {
     '--color-tertiary-content': '#FFFFFF',
 
     /* Cores de feedback */
-    '--color-error': '#FF6B6B',
-    '--color-error-content': '#000000',
-    '--color-success': '#6BFF8E',
-    '--color-success-content': '#000000',
+    '--color-error-content': '#FF6B6B',
+    '--color-error': '#4F1C1C',
+    '--color-success': '#194A25',
+    '--color-success-content': '#6BFF8E',
 
     /* Fundo e superfícies */
     '--color-background': '#121212',
