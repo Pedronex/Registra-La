@@ -9,12 +9,12 @@ import { BalanceInput } from '@/components/BalanceInput'
 import { DateInput } from '@/components/DateInput'
 import { Header } from '@/components/Header'
 import { HourInput } from '@/components/HourInput'
-import { RegisterInsert } from '@/db/schema'
 import { useConfig } from '@/hooks/useConfig'
 import { useRegister } from '@/hooks/useRegister'
 import { useTheme } from '@/providers/ThemeProvider'
 import { colors } from '@/utils/colorThemes'
 import { convertMinutesToTime, convertTimeToMinutes } from '@/utils/convert'
+import { RegisterInsert } from '@/db/schema/registers'
 
 /**
  * Página de registro de ponto

@@ -6,10 +6,9 @@ import { Alert } from '@/lib/Alert'
 import { useTheme } from '@/providers/ThemeProvider'
 import { colors } from '@/utils/colorThemes'
 import { Entypo } from '@expo/vector-icons'
-import * as Clipboard from 'expo-clipboard'
-import { useFocusEffect, useRouter } from 'expo-router'
-import { useCallback, useEffect, useState } from 'react'
-import { Linking, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { useRouter } from 'expo-router'
+import { useEffect, useState } from 'react'
+import { ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { CheckBox } from 'react-native-elements'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
@@ -23,11 +22,10 @@ export default function ConfigPage() {
   const [tolerance, setTolerance] = useState<number>(0)
   const [companyName, setCompanyName] = useState<string>('')
   const [breakTime, setBreakTime] = useState<number>(0)
-  const [workDays, setWorkDays] = useState<string[]>([])
+  const [workDays, setWorkDays] = useState<number[]>([])
   const [initialBalanceHours, setInitialBalanceHours] = useState<number>(0)
   const [initialBalanceMinutes, setInitialBalanceMinutes] = useState<number>(0)
   const [initialBalanceSign, setInitialBalanceSign] = useState<'positive' | 'negative'>('positive')
-  const [isPasteAvailable, setIsPasteAvailable] = useState(false)
   const [currentStep, setCurrentStep] = useState(1)
 
   // Hooks
@@ -53,16 +51,6 @@ export default function ConfigPage() {
       setInitialBalanceMinutes(minutes)
     }
   }, [config])
-
-  useFocusEffect(
-    useCallback(() => {
-      const checkClipboard = async () => {
-        const hasString = await Clipboard.hasStringAsync()
-        setIsPasteAvailable(hasString)
-      }
-      checkClipboard()
-    }, []),
-  )
 
   const nextStep = () => setCurrentStep(currentStep + 1)
   const prevStep = () => setCurrentStep(currentStep - 1)
@@ -245,14 +233,24 @@ export default function ConfigPage() {
         Dias da Semana Trabalhados
       </Text>
       <View className="flex flex-row flex-wrap gap-2 font-medium text-background-content">
-        {['segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado', 'domingo'].map((day) => (
+        {[
+          { label: 'segunda', value: 1 },
+          { label: 'terça', value: 2 },
+          { label: 'quarta', value: 3 },
+          { label: 'quinta', value: 4 },
+          { label: 'sexta', value: 5 },
+          { label: 'sábado', value: 6 },
+          { label: 'domingo', value: 0 },
+        ].map((day) => (
           <CheckBox
-            key={day}
-            title={day}
-            checked={workDays.includes(day)}
+            key={day.value}
+            title={day.label}
+            checked={workDays.includes(day.value)}
             onPress={() =>
               setWorkDays((prev) =>
-                prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day],
+                prev.includes(day.value)
+                  ? prev.filter((d) => d !== day.value)
+                  : [...prev, day.value],
               )
             }
             containerStyle={{

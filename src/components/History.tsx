@@ -1,4 +1,4 @@
-import { RegisterData } from '@/db/schema'
+import { RegisterData } from '@/db/schema/registers'
 import { useConfig } from '@/hooks/useConfig'
 import { useTimeRecords } from '@/hooks/useTimeRecords'
 import { useTheme } from '@/providers/ThemeProvider'
@@ -12,7 +12,6 @@ import { LinearGradient } from 'expo-linear-gradient'
 import { router } from 'expo-router'
 import { useEffect, useMemo, useState } from 'react'
 import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native'
-import { opacity } from 'react-native-reanimated/lib/typescript/Colors'
 
 /**
  * Componente que exibe o histórico de registros de ponto
@@ -264,111 +263,126 @@ export function History({ date: controlledDate, onDateChange }: HistoryProps = {
   /**
    * Renderiza a lista de registros e intervalos
    */
-  const renderHistoryItems = () => (
-    <LinearGradient
-      colors={[colors[theme].secondary, colors[theme].surface]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={{
-        justifyContent: 'space-between',
-        borderRadius: 8,
-      }}
-      className="h-fit"
-    >
-      {displayItems.map((item, index) => {
-        if (item.type === 'record') {
-          return (
-            <TouchableOpacity
-              key={`record-${item.data.id}`}
-              className="flex-row items-center p-3 mb-4 rounded-lg bg-secondary-focus active:opacity-80 justify-between"
-              onPress={() => router.push(`/${item.data.id}`)}
-            >
-              <View
-                className={`justify-center items-center w-12 h-12 rounded-xl bg-${item.isEntry ? 'success' : 'error'} opacity-80`}
+  const renderHistoryItems = () => {
+    if (records.length === 0) {
+      const workDays = config?.workDays
+      if (workDays && Array.isArray(workDays) && !workDays.includes(controlledDate?.getDay())) {
+        return (
+          <View className="flex-1 justify-center items-center">
+            <Text className="text-lg text-secondary-content">Você não trabalha neste dia</Text>
+          </View>
+        )
+      }
+    }
+
+    return (
+      <LinearGradient
+        colors={[colors[theme].secondary, colors[theme].surface]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={{
+          justifyContent: 'space-between',
+          borderRadius: 8,
+        }}
+        className="h-fit"
+      >
+        {displayItems.map((item, index) => {
+          if (item.type === 'record') {
+            return (
+              <TouchableOpacity
+                key={`record-${item.data.id}`}
+                className="flex-row items-center p-3 mb-4 rounded-lg bg-secondary-focus active:opacity-80 justify-between"
+                onPress={() => router.push(`/${item.data.id}`)}
               >
-                {item.data.type === 'trabalho' ? (
-                  <MaterialIcons
-                    name={item.isEntry ? 'login' : 'logout'}
-                    size={24}
-                    color={item.isEntry ? colors[theme].successContent : colors[theme].errorContent}
-                  />
-                ) : item.data.type === 'folga' ? (
-                  <MaterialIcons
-                    name="beach-access"
-                    size={24}
-                    color={colors[theme].secondaryContent}
-                  />
-                ) : (
-                  <MaterialIcons
-                    name="medical-services"
-                    size={24}
-                    color={colors[theme].secondaryContent}
-                  />
-                )}
-              </View>
-              <View className="flex-1 ml-4">
-                <Text className="text-xl font-bold text-secondary-content">
-                  {item.data.type === 'trabalho'
-                    ? convertMinutesToTime(item.data.timeInMinutes)
-                    : item.data.isFullDay
-                      ? 'Dia completo'
-                      : item.data.timeInMinutes || '0:00'}
-                </Text>
-                <Text className="text-sm opacity-80 text-secondary-content">
-                  {item.data.type === 'trabalho'
-                    ? item.data.description || (item.isEntry ? 'Entrada' : 'Saída')
-                    : item.data.type === 'folga'
-                      ? item.data.isFullDay
-                        ? 'Folga - dia todo'
-                        : `Folga - ${convertMinutesToTime(item.data.timeInMinutes || 0)} horas`
+                <View
+                  className={`justify-center items-center w-12 h-12 rounded-xl bg-${item.isEntry ? 'success' : 'error'} opacity-80`}
+                >
+                  {item.data.type === 'trabalho' ? (
+                    <MaterialIcons
+                      name={item.isEntry ? 'login' : 'logout'}
+                      size={24}
+                      color={
+                        item.isEntry ? colors[theme].successContent : colors[theme].errorContent
+                      }
+                    />
+                  ) : item.data.type === 'folga' ? (
+                    <MaterialIcons
+                      name="beach-access"
+                      size={24}
+                      color={colors[theme].secondaryContent}
+                    />
+                  ) : (
+                    <MaterialIcons
+                      name="medical-services"
+                      size={24}
+                      color={colors[theme].secondaryContent}
+                    />
+                  )}
+                </View>
+                <View className="flex-1 ml-4">
+                  <Text className="text-xl font-bold text-secondary-content">
+                    {item.data.type === 'trabalho'
+                      ? convertMinutesToTime(item.data.timeInMinutes)
                       : item.data.isFullDay
-                        ? 'Atestado - dia todo'
-                        : `Atestado - ${convertMinutesToTime(item.data.timeInMinutes || 0)} horas`}
+                        ? 'Dia completo'
+                        : convertMinutesToTime(item.data.timeInMinutes) || '0:00'}
+                  </Text>
+                  <Text className="text-sm opacity-80 text-secondary-content">
+                    {item.data.type === 'trabalho'
+                      ? item.data.description || (item.isEntry ? 'Entrada' : 'Saída')
+                      : item.data.type === 'folga'
+                        ? item.data.isFullDay
+                          ? 'Folga - dia todo'
+                          : `Folga - ${convertMinutesToTime(item.data.timeInMinutes || 0)} horas`
+                        : item.data.isFullDay
+                          ? 'Atestado - dia todo'
+                          : `Atestado - ${convertMinutesToTime(item.data.timeInMinutes || 0)} horas`}
+                  </Text>
+                  {item.data.location && item.data.type !== 'trabalho' && (
+                    <Text className="text-xs opacity-60 text-secondary-content mt-1">
+                      {item.data.location}
+                    </Text>
+                  )}
+                  {item.data.nsr && (
+                    <Text className="text-xs opacity-60 text-secondary-content mt-1">
+                      NSR: {item.data.nsr}
+                    </Text>
+                  )}
+                </View>
+                <MaterialIcons
+                  name="edit"
+                  size={20}
+                  color={colors[theme].secondaryContent}
+                  style={{ opacity: 0.6 }}
+                />
+              </TouchableOpacity>
+            )
+          } else if (item.type === 'break') {
+            return (
+              <View key={`break-${index}`} className="flex-row justify-center items-center my-2">
+                <LinearGradient
+                  colors={['transparent', colors[theme].secondaryContent, 'transparent']}
+                  start={{ x: 0, y: 0.5 }}
+                  end={{ x: 1, y: 0.5 }}
+                  style={{ flex: 1, height: 1, opacity: 0.2 }}
+                />
+                <Text className="mx-4 text-sm bg-secondary-content text-secondary px-2 py-1 rounded-full">
+                  {item.data.formatted}
                 </Text>
-                {item.data.location && item.data.type !== 'trabalho' && (
-                  <Text className="text-xs opacity-60 text-secondary-content mt-1">
-                    {item.data.location}
-                  </Text>
-                )}
-                {item.data.nsr && (
-                  <Text className="text-xs opacity-60 text-secondary-content mt-1">
-                    NSR: {item.data.nsr}
-                  </Text>
-                )}
+                <LinearGradient
+                  colors={['transparent', colors[theme].secondaryContent, 'transparent']}
+                  start={{ x: 0, y: 0.5 }}
+                  end={{ x: 1, y: 0.5 }}
+                  style={{ flex: 1, height: 1, opacity: 0.2 }}
+                />
               </View>
-              <MaterialIcons
-                name="edit"
-                size={20}
-                color={colors[theme].secondaryContent}
-                style={{ opacity: 0.6 }}
-              />
-            </TouchableOpacity>
-          )
-        } else if (item.type === 'break') {
-          return (
-            <View key={`break-${index}`} className="flex-row justify-center items-center my-2">
-              <LinearGradient
-                colors={['transparent', colors[theme].secondaryContent, 'transparent']}
-                start={{ x: 0, y: 0.5 }}
-                end={{ x: 1, y: 0.5 }}
-                style={{ flex: 1, height: 1, opacity: 0.2 }}
-              />
-              <Text className="mx-4 text-sm bg-secondary-content text-secondary px-2 py-1 rounded-full">
-                {item.data.formatted}
-              </Text>
-              <LinearGradient
-                colors={['transparent', colors[theme].secondaryContent, 'transparent']}
-                start={{ x: 0, y: 0.5 }}
-                end={{ x: 1, y: 0.5 }}
-                style={{ flex: 1, height: 1, opacity: 0.2 }}
-              />
-            </View>
-          )
-        }
-        return null
-      })}
-    </LinearGradient>
-  )
+            )
+          }
+          return null
+        })}
+      </LinearGradient>
+    )
+  }
 
   return (
     <View className="flex-1 w-full rounded-lg h-fit">

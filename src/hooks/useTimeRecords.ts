@@ -5,8 +5,9 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { database } from '@/db'
-import { RegisterData, registersTable } from '@/db/schema'
 import { eq } from 'drizzle-orm'
+import { RegisterData } from '@/db/schema/registers'
+import { schema } from '@/db/schema'
 
 /**
  * Hook para gerenciar registros de ponto
@@ -26,8 +27,8 @@ export function useTimeRecords(date: string) {
 
       const result = await database
         .select()
-        .from(registersTable)
-        .where(eq(registersTable.date, date))
+        .from(schema.registers)
+        .where(eq(schema.registers.date, date))
       setRecords(result.sort((a, b) => a.timeInMinutes - b.timeInMinutes))
 
       return result.sort((a, b) => a.timeInMinutes - b.timeInMinutes)

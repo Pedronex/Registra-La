@@ -1,15 +1,15 @@
-import DateTimePicker from "@react-native-community/datetimepicker";
-import { useState } from "react";
-import { Text, TouchableOpacity, View } from "react-native";
+import DateTimePicker from '@react-native-community/datetimepicker'
+import { useState } from 'react'
+import { Text, TouchableOpacity, View } from 'react-native'
 
 interface Props {
-  mode: "date" | "time";
-  onChange: (text: Date) => void;
-  value: Date;
+  mode: 'date' | 'time'
+  onChange: (text: Date) => void
+  value: Date
 }
 
 export function DateInput({ mode, onChange, value }: Props) {
-  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false)
 
   return (
     <View>
@@ -18,12 +18,12 @@ export function DateInput({ mode, onChange, value }: Props) {
         className="p-2 rounded-md bg-surface"
       >
         <Text className="text-surface-content">
-          {mode === "date"
-            ? value.toLocaleDateString("pt-BR")
-            : value.toLocaleTimeString("pt-BR", {
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
+          {mode === 'date'
+            ? value.toLocaleDateString('pt-BR')
+            : value.toLocaleTimeString('pt-BR', {
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
         </Text>
       </TouchableOpacity>
       {showDatePicker && (
@@ -33,12 +33,12 @@ export function DateInput({ mode, onChange, value }: Props) {
           is24Hour={true}
           onChange={(event, date) => {
             if (date) {
-              onChange(date);
+              onChange(date)
             }
-            setShowDatePicker(false);
+            setShowDatePicker(false)
           }}
         />
       )}
     </View>
-  );
+  )
 }

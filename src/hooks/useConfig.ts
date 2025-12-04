@@ -4,7 +4,8 @@
  */
 
 import { database } from '@/db'
-import { ConfigInsert, configTable } from '@/db/schema'
+import { schema } from '@/db/schema'
+import { ConfigInsert } from '@/db/schema/config'
 import { desc } from 'drizzle-orm'
 import { useCallback, useEffect, useState } from 'react'
 
@@ -27,9 +28,9 @@ export function useConfig() {
 
       const [config] = await database
         .select()
-        .from(configTable)
+        .from(schema.config)
         .limit(1)
-        .orderBy(desc(configTable.id))
+        .orderBy(desc(schema.config.id))
       setConfig(config)
 
       return config
@@ -50,8 +51,8 @@ export function useConfig() {
       setLoading(true)
       setError(null)
 
-      await database.insert(configTable).values(configData).onConflictDoUpdate({
-        target: configTable.id,
+      await database.insert(schema.config).values(configData).onConflictDoUpdate({
+        target: schema.config.id,
         set: configData,
       })
 

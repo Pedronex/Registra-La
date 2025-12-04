@@ -101,7 +101,7 @@ export default function HomePage() {
         }}
         className="h-fit p-2"
       >
-        <View className="flex-row gap-2">
+        <View className="flex-row gap-2 justify-around p-2">
           <Link
             href={{
               pathname: '/add',

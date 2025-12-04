@@ -20,14 +20,14 @@ export function useRegister() {
   const extractDataPhoto = useCallback(async (formData: FormData) => {
     setLoading(true)
 
-    const request = await fetch('https://pontola-645173022183.us-central1.run.app/extract', {
+    const request = await fetch('https://extrator.nexsdev.com.br/extract', {
       method: 'POST',
       headers: {
         'Content-Type': 'multipart/form-data',
       },
       body: formData,
     })
-    const { date, time, nsr } = await request.json() as {
+    const { date, time, nsr } = (await request.json()) as {
       date: string
       time: string
       nsr: string

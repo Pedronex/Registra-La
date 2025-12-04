@@ -8,6 +8,7 @@ import { Slot } from 'expo-router'
 import * as Updates from 'expo-updates'
 import { useEffect } from 'react'
 import { Text, View } from 'react-native'
+import { SafeAreaProvider } from 'react-native-safe-area-context'
 
 import { database } from '@/db'
 import { ThemeProvider } from '@/providers/ThemeProvider'
@@ -56,8 +57,12 @@ export default function Layout() {
   }
 
   return (
-    <ThemeProvider>
-      <Slot />
-    </ThemeProvider>
+    <SafeAreaProvider>
+      <ThemeProvider>
+        <Slot />
+      </ThemeProvider>
+    </SafeAreaProvider>
   )
 }
+
+//

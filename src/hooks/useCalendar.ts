@@ -1,8 +1,9 @@
 import { database } from '@/db'
-import { RegisterData, registersTable } from '@/db/schema'
+import { schema } from '@/db/schema'
 import { parseDateDDMMYYYY } from '@/utils/dateTime'
 import { useCallback, useEffect, useState } from 'react'
 import { useConfig } from './useConfig'
+import { RegisterData } from '@/db/schema/registers'
 
 // --- Interfaces ---
 interface CalendarData {
@@ -20,7 +21,7 @@ interface CalendarData {
  * Fetches all records from the database.
  */
 async function fetchAllRecords(): Promise<RegisterData[]> {
-  return await database.select().from(registersTable)
+  return await database.select().from(schema.registers)
 }
 
 /**
