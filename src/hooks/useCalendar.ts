@@ -1,9 +1,9 @@
 import { database } from '@/db'
 import { schema } from '@/db/schema'
+import { RegisterData } from '@/db/schema/registers'
 import { parseDateDDMMYYYY } from '@/utils/dateTime'
 import { useCallback, useEffect, useState } from 'react'
 import { useConfig } from './useConfig'
-import { RegisterData } from '@/db/schema/registers'
 
 // --- Interfaces ---
 interface CalendarData {
@@ -124,11 +124,11 @@ function calculateBalancesFromDailyRecords(
       if (a.isFullDay) {
         abonoInMinutes += (workHours || 0) * 3600
       } else if (a.timeInMinutes) {
-        abonoInMinutes += a.timeInMinutes * 60
+        abonoInMinutes += a.timeInMinutes
       }
     }
 
-    const workedHoursValue = (workedMinutes + abonoInMinutes) / 60
+    const workedHoursValue = (workedMinutes + abonoInMinutes)
     const rawBalance = workedHoursValue - workHours
 
     // Aplica a tolerância ao saldo diário
@@ -196,7 +196,7 @@ export function useCalendar(year: number, month: number) {
         (a, b) => parseDateDDMMYYYY(a.date).getTime() - parseDateDDMMYYYY(b.date).getTime(),
       )[0]
 
-      let previousMonthBalance = (config.initialBalanceInMinutes || 0) / 60
+      let previousMonthBalance = (config.initialBalanceInMinutes || 0)
 
       if (firstRecord) {
         const firstDate = parseDateDDMMYYYY(firstRecord.date)

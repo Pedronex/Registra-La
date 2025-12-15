@@ -29,7 +29,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   slug: `registra-la`,
   owner: 'nexcorp',
   version: '1.2.2',
-  orientation: 'default',
+  orientation: 'portrait',
   icon: './assets/images/icon.png',
   scheme: 'registrala',
   userInterfaceStyle: 'automatic',

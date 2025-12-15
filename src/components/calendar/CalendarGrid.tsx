@@ -25,7 +25,7 @@ export function CalendarGrid({ date, dailyBalances, workedDays, onDayPress }: Ca
     }
   }
   if (week.length > 0) {
-    while(week.length < 7) {
+    while (week.length < 7) {
       week.push(null);
     }
     weeks.push(week);
@@ -50,6 +50,7 @@ export function CalendarGrid({ date, dailyBalances, workedDays, onDayPress }: Ca
                 balance={balance}
                 isWorked={isWorked}
                 onPress={onDayPress}
+
               />
             );
           })}

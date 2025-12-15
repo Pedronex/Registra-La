@@ -4,10 +4,10 @@ export function convertTimeToMinutes(time: string): number {
 }
 
 export function convertMinutesToTime(minutes: number): string {
-  const hours = Math.floor(minutes / 60)
-  const min = minutes % 60
-  if (hours < 0) {
-    return `-${String(hours * -1).padStart(2, '0')}:${min.toString().padStart(2, '0')}`
+  const hours = Math.floor(Math.abs(minutes) / 60)
+  const min = Math.abs(minutes) % 60
+  if (minutes < 0) {
+    return `-${hours.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`
   }
   return `${hours.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`
 }
@@ -18,11 +18,11 @@ export function convertTimeToSeconds(time: string): number {
 }
 
 export function convertSecondsToTime(seconds: number): string {
-  const hours = Math.floor(seconds / 3600)
-  const min = Math.floor((seconds % 3600) / 60)
-  const secs = seconds % 60
-  if (hours < 0) {
-    return `-${String(hours * -1).padStart(2, '0')}:${min.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+  const hours = Math.floor(Math.abs(seconds) / 3600)
+  const min = Math.floor(Math.abs(seconds % 3600) / 60)
+  const secs = Math.abs(seconds % 60)
+  if (seconds < 0) {
+    return `-${hours.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
   }
   return `${hours.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
 }

@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "798f9405-ea2e-43d9-bbfc-4694be24ec73",
-  "prevId": "9df9555a-51eb-41b3-91f7-1f38549c782f",
+  "id": "4d36aa66-58ac-4625-b5d0-7454a2dded87",
+  "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "config": {
       "name": "config",
@@ -14,22 +14,8 @@
           "notNull": true,
           "autoincrement": true
         },
-        "work_hours": {
-          "name": "work_hours",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
         "tolerance": {
           "name": "tolerance",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "break_time": {
-          "name": "break_time",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
@@ -40,17 +26,11 @@
           "type": "text",
           "primaryKey": false,
           "notNull": false,
-          "autoincrement": false
+          "autoincrement": false,
+          "default": "'[]'"
         },
         "company_name": {
           "name": "company_name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "gemini_api_key": {
-          "name": "gemini_api_key",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
@@ -64,13 +44,41 @@
           "autoincrement": false,
           "default": 0
         },
+        "entrace_time": {
+          "name": "entrace_time",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "exit_time": {
+          "name": "exit_time",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "entrace_buffer_time": {
+          "name": "entrace_buffer_time",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "exit_buffer_time": {
+          "name": "exit_buffer_time",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2025-10-31T13:11:22.996Z\"'"
+          "default": "'\"2025-12-09T12:00:44.069Z\"'"
         },
         "updated_at": {
           "name": "updated_at",
@@ -78,7 +86,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2025-10-31T13:11:22.996Z\"'"
+          "default": "'\"2025-12-09T12:00:44.069Z\"'"
         }
       },
       "indexes": {},

@@ -1,5 +1,7 @@
+import { useConfig } from '@/hooks/useConfig'
 import { useTheme } from '@/providers/ThemeProvider'
 import { colors } from '@/utils/colorThemes'
+import { convertMinutesToTime } from '@/utils/convert'
 import { Entypo } from '@expo/vector-icons'
 import { Text, TouchableOpacity, View } from 'react-native'
 
@@ -8,25 +10,6 @@ interface DayCellProps {
   balance?: number
   isWorked?: boolean
   onPress: (day: Date) => void
-}
-
-function formatBalance(balance: number) {
-  if (isNaN(balance)) return '+00:00'
-
-  // Aplica tolerância de 10 minutos
-  const toleranceMinutes = 10
-  // Converte para minutos para evitar problemas de precisão de ponto flutuante
-  const balanceMinutes = Math.round(balance * 60)
-
-  if (Math.abs(balanceMinutes) <= toleranceMinutes) {
-    return '00:00'
-  }
-
-  const hours = Math.floor(Math.abs(balance))
-  const minutes = Math.round((Math.abs(balance) % 1) * 60)
-  const sign = balance < 0 ? '-' : '+'
-  const result = `${sign}${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`
-  return result
 }
 
 export function DayCell({ day, balance, isWorked, onPress }: DayCellProps) {
@@ -42,31 +25,79 @@ export function DayCell({ day, balance, isWorked, onPress }: DayCellProps) {
     day.getMonth() === today.getMonth() &&
     day.getFullYear() === today.getFullYear()
 
-  const cellStyle = isToday
-    ? 'bg-primary'
-    : balance !== undefined && balance < 0
-      ? 'bg-error'
-      : 'bg-secondary'
-  const textStyle = isToday
-    ? 'text-primary-content'
-    : balance !== undefined && balance < 0
-      ? 'text-error-content'
-      : 'text-secondary-content'
+  const { config } = useConfig()
+
+  const isWorkDay = Array.isArray(config?.workDays) && config?.workDays.includes(day.getDay())
+
+  function cellStyle() {
+    if(balance !== undefined) {
+      if(balance < 0) {
+        return 'bg-error'
+      }else {
+        return 'bg-success'
+      }
+    } else {
+      if(isToday) {
+        return 'bg-primary'
+      } else {
+        return 'bg-secondary'
+      }
+    }
+  }
+  function textStyle() {
+    if(balance !== undefined) {
+      if(balance < 0) {
+        return 'text-error-content'
+      }else {
+        return 'text-success-content'
+      }
+    } else {
+      if(isToday) {
+        return 'text-primary-content'
+      } else {
+        return 'text-secondary-content'
+      }
+    }
+  }
+
+  function getWorkDayStatus() {
+    if (isWorked) {
+      return 'check'
+    }
+    if(isWorkDay) {
+      return 'clock'
+    }
+    return 'minus'
+  }
+
+  function getWorkDayColor() {
+    if(balance !== undefined) {
+      if(balance < 0) {
+        return colors[theme].errorContent
+      }else {
+        return colors[theme].successContent
+      }
+    } else {
+      if(isToday) {
+        return colors[theme].primaryContent
+      } else {
+        return colors[theme].secondaryContent
+      }
+    }
+  }
 
   return (
     <TouchableOpacity onPress={() => onPress(day)}>
-      <View className={`w-12 h-16 items-center justify-center rounded-lg ${cellStyle}`}>
-        <Text className={`font-bold ${textStyle}`}>{day.getDate()}</Text>
+      <View className={`w-12 h-16 items-center justify-center rounded-lg ${cellStyle()}`}>
+        <Text className={`font-bold ${textStyle()}`}>{day.getDate()}</Text>
         {balance !== undefined && (
-          <Text className={`text-xs ${textStyle}`}>{formatBalance(balance)}</Text>
+          <Text className={`text-xs ${textStyle()}`}>{convertMinutesToTime(balance)}</Text>
         )}
-        {isWorked && (
-          <Entypo
-            name="check"
-            size={16}
-            color={isToday ? colors[theme].secondary : colors[theme].primary}
-          />
-        )}
+        <Entypo
+          name={getWorkDayStatus()}
+          size={16}
+          color={getWorkDayColor()}
+        />
       </View>
     </TouchableOpacity>
   )

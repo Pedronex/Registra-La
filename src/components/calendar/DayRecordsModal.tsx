@@ -1,10 +1,10 @@
-import { RegisterData } from '@/db/schema'
+import { RegisterData } from '@/db/schema/registers'
 import { useTheme } from '@/providers/ThemeProvider'
 import { colors } from '@/utils/colorThemes'
-import { convertMinutesToTime } from '@/utils/convert'
-import { MaterialIcons } from '@expo/vector-icons'
+import { Entypo } from '@expo/vector-icons'
 import { Link } from 'expo-router'
 import { Modal, Pressable, Text, View } from 'react-native'
+import { Record } from '../Record'
 
 interface DayRecordsModalProps {
   visible: boolean
@@ -35,38 +35,9 @@ export function DayRecordsModal({ visible, onClose, records, date }: DayRecordsM
             sorted.map((record) => {
               const idx = typeof record.id === 'number' ? workIndexById.get(record.id) : undefined
               const isEntry = record.type === 'trabalho' ? (idx ?? 0) % 2 === 0 : false
-              const label =
-                record.type === 'trabalho'
-                  ? isEntry
-                    ? 'Entrada'
-                    : 'Saída'
-                  : record.type === 'folga'
-                    ? record.isFullDay
-                      ? 'Folga - dia todo'
-                      : 'Folga - horas'
-                    : 'Atestado'
-              const iconName =
-                record.type === 'trabalho'
-                  ? isEntry
-                    ? 'login'
-                    : 'logout'
-                  : record.type === 'folga'
-                    ? 'beach-access'
-                    : 'medical-services'
+
               return (
-                <View key={record.id} className="flex-row items-center justify-between mb-2">
-                  <View className="flex-row items-center gap-x-2">
-                    <MaterialIcons
-                      name={iconName as any}
-                      size={20}
-                      color={colors[theme].backgroundColor}
-                    />
-                    <Text className="text-background-content">{label}:</Text>
-                  </View>
-                  <Text className="text-background-content font-bold">
-                    {convertMinutesToTime(record.timeInMinutes)}
-                  </Text>
-                </View>
+                <Record data={record} isEntry={isEntry} key={record.id} />
               )
             })
           ) : (
@@ -74,21 +45,11 @@ export function DayRecordsModal({ visible, onClose, records, date }: DayRecordsM
           )}
           <View className="mt-4 flex-row gap-x-2">
             <Link
-              href={{
-                pathname: '/add',
-                params: {
-                  date: date
-                    ? `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`
-                    : '',
-                },
-              }}
-              asChild
+              className="bg-primary p-3 rounded-lg items-center justify-center flex-row"
+              href="/add"
             >
-              <Pressable className="flex-1 rounded-lg p-2 bg-success">
-                <Text className="text-success-content font-bold text-center">
-                  Registrar nesta data
-                </Text>
-              </Pressable>
+              <Entypo name="plus" size={20} color={colors[theme].primaryContent} style={{ marginRight: 8 }} />
+              <Text className="text-primary-content font-bold">Registro Manual</Text>
             </Link>
             <Pressable className="flex-1 rounded-lg p-2 bg-primary" onPress={onClose}>
               <Text className="text-primary-content font-bold text-center">Fechar</Text>

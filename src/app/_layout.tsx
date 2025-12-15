@@ -4,22 +4,31 @@ import '../../global.css'
 
 import LogRocket from '@logrocket/react-native'
 import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator'
+import { useDrizzleStudio } from "expo-drizzle-studio-plugin"
 import { Slot } from 'expo-router'
 import * as Updates from 'expo-updates'
 import { useEffect } from 'react'
 import { Text, View } from 'react-native'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 
+
 import { database } from '@/db'
+import migrations from '@/db/migrations/migrations'
 import { ThemeProvider } from '@/providers/ThemeProvider'
-import migrations from '../../drizzle/migrations'
+import * as SQLite from "expo-sqlite"
+const expo = SQLite.openDatabaseSync('registra_la.db')
 
 /**
  * Layout principal da aplicação
  * Gerencia atualizações e inicialização do aplicativo
  */
 export default function Layout() {
+
   const { success, error } = useMigrations(database, migrations)
+  if (process.env.NODE_ENV === 'development') {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    useDrizzleStudio(expo)
+  }
 
   useEffect(() => {
     /**
@@ -33,7 +42,7 @@ export default function Layout() {
             expoChannel: Updates.channel,
           })
         }
-      } catch {}
+      } catch { }
     }
 
     // Inicializa o aplicativo
@@ -48,6 +57,7 @@ export default function Layout() {
       </View>
     )
   }
+
   if (!success) {
     return (
       <View>

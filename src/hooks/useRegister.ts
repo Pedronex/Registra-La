@@ -4,7 +4,8 @@
  */
 
 import { database } from '@/db'
-import { RegisterInsert, registersTable } from '@/db/schema'
+import { schema } from '@/db/schema'
+import { RegisterInsert } from '@/db/schema/registers'
 import { eq } from 'drizzle-orm'
 import { useCallback, useState } from 'react'
 /**
@@ -20,21 +21,28 @@ export function useRegister() {
   const extractDataPhoto = useCallback(async (formData: FormData) => {
     setLoading(true)
 
-    const request = await fetch('https://extrator.nexsdev.com.br/extract', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-      body: formData,
-    })
-    const { date, time, nsr } = (await request.json()) as {
-      date: string
-      time: string
-      nsr: string
-    }
-    setLoading(false)
+    try {
+      const request = await fetch('https://extractor.nexsdev.com.br/extract', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        body: formData,
+      })
+      console.info(request)
+      const { date, time, nsr } = (await request.json()) as {
+        date: string
+        time: string
+        nsr: string
+      }
+      setLoading(false)
 
-    return { date, time, nsr }
+      return { date, time, nsr }
+
+    } catch (error) {
+      setError('Erro ao extrair dados da foto')
+      throw error
+    }
   }, [])
 
   /**
@@ -48,7 +56,7 @@ export function useRegister() {
       setError(null)
 
       await database
-        .insert(registersTable)
+        .insert(schema.registers)
         .values({ ...data, createdAt: new Date(), updatedAt: new Date() })
 
       return true
@@ -70,13 +78,13 @@ export function useRegister() {
       setError(null)
 
       await database
-        .update(registersTable)
+        .update(schema.registers)
         .set({ ...data, updatedAt: new Date() })
-        .where(eq(registersTable.id, id))
+        .where(eq(schema.registers.id, id))
 
       return true
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Error updating record'
+      const errorMessage = err instanceof Error ? err.message : 'Erro ao atualizar registro'
       setError(errorMessage)
       throw err
     } finally {
@@ -92,11 +100,11 @@ export function useRegister() {
       setLoading(true)
       setError(null)
 
-      const result = await database.select().from(registersTable).where(eq(registersTable.id, id))
+      const result = await database.select().from(schema.registers).where(eq(schema.registers.id, id))
 
       return result[0] || null
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Error finding record'
+      const errorMessage = err instanceof Error ? err.message : 'Erro ao localizar registro'
       setError(errorMessage)
       throw err
     } finally {
@@ -112,11 +120,11 @@ export function useRegister() {
       setLoading(true)
       setError(null)
 
-      await database.delete(registersTable).where(eq(registersTable.id, id))
+      await database.delete(schema.registers).where(eq(schema.registers.id, id))
 
       return true
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Error deleting record'
+      const errorMessage = err instanceof Error ? err.message : 'Erro ao excluir registro'
       setError(errorMessage)
       throw err
     } finally {

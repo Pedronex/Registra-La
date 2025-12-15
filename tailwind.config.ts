@@ -1,5 +1,5 @@
 /** @type {import('tailwindcss').Config} */
-import preset from 'nativewind/preset'
+const preset = require('nativewind/preset')
 
 module.exports = {
   // NOTE: Update this to include the paths to all files that contain Nativewind classes.

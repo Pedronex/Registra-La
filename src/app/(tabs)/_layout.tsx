@@ -27,14 +27,6 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="add"
-        options={{
-          title: 'Adicionar',
-          tabBarIcon: ({ color, size }) => <Entypo name="plus" size={size} color={color} />,
-          popToTopOnBlur: true,
-        }}
-      />
-      <Tabs.Screen
         name="calendar"
         options={{
           title: 'Calendário',

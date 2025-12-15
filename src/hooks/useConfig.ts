@@ -46,17 +46,48 @@ export function useConfig() {
   /**
    * Salva as configurações do aplicativo
    */
-  const saveConfig = useCallback(async (configData: ConfigInsert) => {
+  const saveConfig = useCallback(async (configData: Omit<ConfigInsert, 'workHours'>) => {
     try {
       setLoading(true)
       setError(null)
 
-      await database.insert(schema.config).values(configData).onConflictDoUpdate({
+      /* 
+        example fulltime:
+        entraceTime = 480 (08:00)
+        entraceBufferTime = 720 (12:00)
+        exitBufferTime = 840 (14:00)
+        exitTime = 1800 (18:00)
+
+        (1800 - 800) + (720 - 840)
+        600 + -120
+        480 (08:00)
+
+        example halftime:
+
+        entraceTime = 480 (08:00)
+        entraceBufferTime = 0 (undefined)
+        exitBufferTime = 0 (undefined)
+        exitTime = 720 (12:00)
+
+        (720 - 480) + (0 - 0)
+        240 + 0
+        240 (04:00)
+      */
+
+      const calculateWorkHours = (configData.exitTime - configData.entraceTime) + ((configData.entraceBufferTime || 0) - (configData.exitBufferTime || 0))
+
+      await database.insert(schema.config).values({
+        ...configData,
+        workHours: calculateWorkHours,
+      }).onConflictDoUpdate({
         target: schema.config.id,
         set: configData,
       })
 
-      setConfig(configData)
+      setConfig({
+        ...configData,
+        workHours: calculateWorkHours,
+      })
 
       return true
     } catch (err) {

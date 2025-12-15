@@ -7,13 +7,13 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { DateInput } from '@/components/DateInput'
 import { Header } from '@/components/Header'
 import { HourInput } from '@/components/HourInput'
+import { RegisterInsert } from '@/db/schema/registers'
 import { useConfig } from '@/hooks/useConfig'
 import { useRegister } from '@/hooks/useRegister'
 import { useTheme } from '@/providers/ThemeProvider'
 import { colors } from '@/utils/colorThemes'
 import { convertMinutesToTime, convertTimeToMinutes } from '@/utils/convert'
 import { Entypo } from '@expo/vector-icons'
-import { RegisterInsert } from '@/db/schema/registers'
 
 /**
  * Página de registro de ponto
@@ -180,8 +180,6 @@ export default function RegisterEdit() {
                     source={{ uri: `${register.photo}` }}
                     className="w-full h-full rounded-lg bg-surface"
                     resizeMode="contain"
-                    width={500}
-                    height={500}
                   />
                 </TouchableOpacity>
               ) : (
@@ -223,35 +221,31 @@ export default function RegisterEdit() {
               </Text>
               <View className="flex-row gap-x-2 mb-4">
                 <TouchableOpacity
-                  className={`flex-1 items-center p-3 rounded-lg ${
-                    register.isFullDay ? 'bg-primary' : 'bg-surface'
-                  }`}
+                  className={`flex-1 items-center p-3 rounded-lg ${register.isFullDay ? 'bg-primary' : 'bg-surface'
+                    }`}
                   onPress={() => {
                     handleInputChange('isFullDay', true)
                     handleInputChange('timeInMinutes', (config?.workHours || 8) * 60)
                   }}
                 >
                   <Text
-                    className={`text-base font-medium ${
-                      register.isFullDay ? 'text-primary-content' : 'text-surface-content'
-                    }`}
+                    className={`text-base font-medium ${register.isFullDay ? 'text-primary-content' : 'text-surface-content'
+                      }`}
                   >
                     Dia Todo
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  className={`flex-1 items-center p-3 rounded-lg ${
-                    !register.isFullDay ? 'bg-primary' : 'bg-surface'
-                  }`}
+                  className={`flex-1 items-center p-3 rounded-lg ${!register.isFullDay ? 'bg-primary' : 'bg-surface'
+                    }`}
                   onPress={() => {
                     handleInputChange('isFullDay', false)
                     handleInputChange('timeInMinutes', 0)
                   }}
                 >
                   <Text
-                    className={`text-base font-medium ${
-                      !register.isFullDay ? 'text-primary-content' : 'text-surface-content'
-                    }`}
+                    className={`text-base font-medium ${!register.isFullDay ? 'text-primary-content' : 'text-surface-content'
+                      }`}
                   >
                     Horas
                   </Text>
@@ -292,8 +286,6 @@ export default function RegisterEdit() {
                     source={{ uri: `${register.photo}` }}
                     className="w-full h-full rounded-lg bg-surface"
                     resizeMode="contain"
-                    width={500}
-                    height={500}
                   />
                 </TouchableOpacity>
               ) : (
@@ -350,15 +342,13 @@ export default function RegisterEdit() {
           {types.map((type) => (
             <TouchableOpacity
               key={type}
-              className={`flex-1 items-center p-3 rounded-lg ${
-                register.type === type ? 'bg-primary' : 'bg-surface'
-              }`}
+              className={`flex-1 items-center p-3 rounded-lg ${register.type === type ? 'bg-primary' : 'bg-surface'
+                }`}
               onPress={() => handleInputChange('type', type)}
             >
               <Text
-                className={`text-base font-medium ${
-                  register.type === type ? 'text-primary-content' : 'text-surface-content'
-                }`}
+                className={`text-base font-medium ${register.type === type ? 'text-primary-content' : 'text-surface-content'
+                  }`}
               >
                 {type.charAt(0).toUpperCase() + type.slice(1)}
               </Text>
@@ -378,10 +368,4 @@ export default function RegisterEdit() {
     </SafeAreaView>
   )
 }
-function editRegister(arg0: number, register: any) {
-  throw new Error('Function not implemented.')
-}
 
-function deleteRegister(arg0: number) {
-  throw new Error('Function not implemented.')
-}
