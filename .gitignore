@@ -38,3 +38,4 @@ yarn-error.*
 
 # eas
 credentials.json
+google-services.json

@@ -5,15 +5,8 @@
     {
       "idx": 0,
       "version": "6",
-      "when": 1765281644078,
-      "tag": "0000_icy_master_chief",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "6",
-      "when": 1765281787734,
-      "tag": "0001_conscious_black_tarantula",
+      "when": 1765831721193,
+      "tag": "0000_known_mephistopheles",
       "breakpoints": true
     }
   ]

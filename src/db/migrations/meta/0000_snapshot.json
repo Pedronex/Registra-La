@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "4d36aa66-58ac-4625-b5d0-7454a2dded87",
+  "id": "f95838f1-9f67-44e5-a091-c2dfdff367ee",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "config": {
@@ -29,6 +29,13 @@
           "autoincrement": false,
           "default": "'[]'"
         },
+        "work_hours": {
+          "name": "work_hours",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
         "company_name": {
           "name": "company_name",
           "type": "text",
@@ -48,14 +55,14 @@
           "name": "entrace_time",
           "type": "integer",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
         "exit_time": {
           "name": "exit_time",
           "type": "integer",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
         "entrace_buffer_time": {
@@ -63,14 +70,24 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
-          "autoincrement": false
+          "autoincrement": false,
+          "default": 0
         },
         "exit_buffer_time": {
           "name": "exit_buffer_time",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
-          "autoincrement": false
+          "autoincrement": false,
+          "default": 0
+        },
+        "notifications": {
+          "name": "notifications",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
         },
         "created_at": {
           "name": "created_at",
@@ -78,7 +95,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2025-12-09T12:00:44.069Z\"'"
+          "default": "'\"2025-12-15T20:48:41.183Z\"'"
         },
         "updated_at": {
           "name": "updated_at",
@@ -86,7 +103,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'\"2025-12-09T12:00:44.069Z\"'"
+          "default": "'\"2025-12-15T20:48:41.183Z\"'"
         }
       },
       "indexes": {},

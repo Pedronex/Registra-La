@@ -8,7 +8,7 @@ import { colors } from '@/utils/colorThemes'
 import { Entypo } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import { useEffect, useState } from 'react'
-import { ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { ScrollView, Text, TextInput, TouchableOpacity, View, Switch } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 /**
@@ -26,6 +26,7 @@ export default function ConfigPage() {
     companyName: '',
     workDays: [1, 2, 3, 4, 5],
     initialBalanceInMinutes: 0,
+    notifications: true,
   })
   const [currentStep, setCurrentStep] = useState(0)
   const [sign, setSign] = useState<'+' | '-'>('+')
@@ -51,6 +52,7 @@ export default function ConfigPage() {
         companyName: config.companyName || '',
         workDays: Array.isArray(config.workDays) ? config.workDays : [0],
         initialBalanceInMinutes: config.initialBalanceInMinutes || 0,
+        notifications: config.notifications ?? true,
       })
     }
   }, [config])
@@ -63,7 +65,6 @@ export default function ConfigPage() {
    */
   const handleSaveConfig = async () => {
     try {
-
       await persistConfig(formState)
 
       Alert.success(Messages.success.config.save)
@@ -114,7 +115,9 @@ export default function ConfigPage() {
             keyboardType="numeric"
             placeholder="HH"
             placeholderTextColor={colors[theme].surfaceContent + '80'}
-            value={Math.floor(formState.entraceTime / 60).toString().padStart(2, '0')}
+            value={Math.floor(formState.entraceTime / 60)
+              .toString()
+              .padStart(2, '0')}
             onChangeText={(text) => {
               const hours = Number(text.replace(/[^0-9]/g, '')) || 0
               const minutes = formState.entraceTime % 60
@@ -142,14 +145,18 @@ export default function ConfigPage() {
 
       {/* Entrada para o almoço */}
       <View>
-        <Text className="mb-1 text-sm font-medium text-background-content">Entrada para o Almoço</Text>
+        <Text className="mb-1 text-sm font-medium text-background-content">
+          Entrada para o Almoço
+        </Text>
         <View className="flex-row gap-x-2">
           <TextInput
             className="flex-1 px-4 py-3 rounded-lg border bg-surface border-surface-content text-background-content"
             keyboardType="numeric"
             placeholder="HH"
             placeholderTextColor={colors[theme].surfaceContent + '80'}
-            value={Math.floor(formState.entraceBufferTime / 60).toString().padStart(2, '0')}
+            value={Math.floor(formState.entraceBufferTime / 60)
+              .toString()
+              .padStart(2, '0')}
             onChangeText={(text) => {
               const hours = Number(text.replace(/[^0-9]/g, '')) || 0
               const minutes = formState.entraceBufferTime % 60
@@ -177,14 +184,18 @@ export default function ConfigPage() {
 
       {/* Saída para o almoço */}
       <View>
-        <Text className="mb-1 text-sm font-medium text-background-content">Saída para o Almoço</Text>
+        <Text className="mb-1 text-sm font-medium text-background-content">
+          Saída para o Almoço
+        </Text>
         <View className="flex-row gap-x-2">
           <TextInput
             className="flex-1 px-4 py-3 rounded-lg border bg-surface border-surface-content text-background-content"
             keyboardType="numeric"
             placeholder="HH"
             placeholderTextColor={colors[theme].surfaceContent + '80'}
-            value={Math.floor(formState.exitBufferTime / 60).toString().padStart(2, '0')}
+            value={Math.floor(formState.exitBufferTime / 60)
+              .toString()
+              .padStart(2, '0')}
             onChangeText={(text) => {
               const hours = Number(text.replace(/[^0-9]/g, '')) || 0
               const minutes = formState.exitBufferTime % 60
@@ -219,7 +230,9 @@ export default function ConfigPage() {
             keyboardType="numeric"
             placeholder="HH"
             placeholderTextColor={colors[theme].surfaceContent + '80'}
-            value={Math.floor(formState.exitTime / 60).toString().padStart(2, '0')}
+            value={Math.floor(formState.exitTime / 60)
+              .toString()
+              .padStart(2, '0')}
             onChangeText={(text) => {
               const hours = Number(text.replace(/[^0-9]/g, '')) || 0
               const minutes = formState.exitTime % 60
@@ -298,7 +311,9 @@ export default function ConfigPage() {
           className="px-4 py-3 rounded-lg border bg-surface border-surface-content text-background-content text-center"
           keyboardType="numeric"
           placeholder="HH"
-          value={Math.floor(Math.abs(formState.initialBalanceInMinutes) / 60).toString().padStart(2, '0')}
+          value={Math.floor(Math.abs(formState.initialBalanceInMinutes) / 60)
+            .toString()
+            .padStart(2, '0')}
           onChangeText={handleHoursChange}
         />
       </View>
@@ -358,12 +373,14 @@ export default function ConfigPage() {
                 'workDays',
                 formState.workDays.includes(day.value)
                   ? formState.workDays.filter((d) => d !== day.value)
-                  : [...formState.workDays, day.value]
+                  : [...formState.workDays, day.value],
               )
             }
             className={`px-3 py-2 rounded-lg border ${formState.workDays.includes(day.value) ? 'bg-primary border-primary' : 'bg-transparent border-surface-content'}`}
           >
-            <Text className={`text-sm font-medium ${formState.workDays.includes(day.value) ? 'text-primary-content' : 'text-background-content'}`}>
+            <Text
+              className={`text-sm font-medium ${formState.workDays.includes(day.value) ? 'text-primary-content' : 'text-background-content'}`}
+            >
               {day.label}
             </Text>
           </TouchableOpacity>
@@ -379,6 +396,21 @@ export default function ConfigPage() {
     </View>
   )
 
+  const renderNotificationsToggle = () => (
+    <View>
+      <Text className="mb-1 text-sm font-medium text-background-content">Notificações</Text>
+      <View className="flex-row items-center justify-between p-4 rounded-lg bg-surface">
+        <Text className="text-background-content">Ativar lembretes de ponto</Text>
+        <Switch
+          trackColor={{ false: '#767577', true: colors[theme].primary }}
+          thumbColor={formState.notifications ? '#f4f3f4' : '#f4f3f4'}
+          onValueChange={(value) => handleChange('notifications', value)}
+          value={formState.notifications}
+        />
+      </View>
+    </View>
+  )
+
   return (
     <SafeAreaView className="flex-1 bg-background">
       <Header
@@ -387,15 +419,15 @@ export default function ConfigPage() {
         back={
           config
             ? () => (
-              <TouchableOpacity
-                onPress={() => router.back()}
-                className="rounded-lg"
-                accessibilityRole="button"
-                accessibilityLabel="Voltar"
-              >
-                <Entypo name="chevron-left" size={35} color={colors[theme].primary} />
-              </TouchableOpacity>
-            )
+                <TouchableOpacity
+                  onPress={() => router.back()}
+                  className="rounded-lg"
+                  accessibilityRole="button"
+                  accessibilityLabel="Voltar"
+                >
+                  <Entypo name="chevron-left" size={35} color={colors[theme].primary} />
+                </TouchableOpacity>
+              )
             : undefined
         }
       />
@@ -414,15 +446,12 @@ export default function ConfigPage() {
           </View>
 
           <View className="flex flex-col gap-y-4">
-            {currentStep === 0 && (
-              <>
-                {renderToggleTheme()}
-              </>
-            )}
+            {currentStep === 0 && <>{renderToggleTheme()}</>}
             {currentStep === 1 && (
               <>
                 {renderWorkHoursInput()}
                 {renderWorkDaysInput()}
+                {renderNotificationsToggle()}
               </>
             )}
 

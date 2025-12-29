@@ -5,7 +5,7 @@
 
 import { database } from '@/db'
 import { schema } from '@/db/schema'
-import { ConfigInsert } from '@/db/schema/config'
+import { ConfigData, ConfigInsert } from '@/db/schema/config'
 import { desc } from 'drizzle-orm'
 import { useCallback, useEffect, useState } from 'react'
 
@@ -13,7 +13,7 @@ import { useCallback, useEffect, useState } from 'react'
  * Hook para gerenciar configurações do aplicativo
  */
 export function useConfig() {
-  const [config, setConfig] = useState<ConfigInsert | null>(null)
+  const [config, setConfig] = useState<ConfigData | null>(null)
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -46,7 +46,7 @@ export function useConfig() {
   /**
    * Salva as configurações do aplicativo
    */
-  const saveConfig = useCallback(async (configData: Omit<ConfigInsert, 'workHours'>) => {
+  const saveConfig = useCallback(async (configData: Omit<ConfigInsert, 'workHours' | 'id'>) => {
     try {
       setLoading(true)
       setError(null)
@@ -76,18 +76,15 @@ export function useConfig() {
 
       const calculateWorkHours = (configData.exitTime - configData.entraceTime) + ((configData.entraceBufferTime || 0) - (configData.exitBufferTime || 0))
 
-      await database.insert(schema.config).values({
+      const [config] = await database.insert(schema.config).values({
         ...configData,
         workHours: calculateWorkHours,
       }).onConflictDoUpdate({
         target: schema.config.id,
         set: configData,
-      })
+      }).returning()
 
-      setConfig({
-        ...configData,
-        workHours: calculateWorkHours,
-      })
+      setConfig(config)
 
       return true
     } catch (err) {

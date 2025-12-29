@@ -114,6 +114,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         },
       },
     ],
+    [
+      'expo-notifications', 
+    ]
   ],
   experiments: {
     typedRoutes: true,

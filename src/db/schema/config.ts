@@ -12,10 +12,16 @@ export const config = sqliteTable('config', {
   entraceBufferTime: integer('entrace_buffer_time').default(0),
   exitBufferTime: integer('exit_buffer_time').default(0),
 
+  notifications: integer('notifications', { mode: 'boolean' }).default(true).notNull(),
+
   // Metadados
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(new Date()),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull().default(new Date()),
 })
 
-export type ConfigData = typeof config.$inferSelect
-export type ConfigInsert = typeof config.$inferInsert
+export type ConfigData = typeof config.$inferSelect & {
+  workDays: number[]
+}
+export type ConfigInsert = typeof config.$inferInsert & {
+  workDays: number[]
+}
