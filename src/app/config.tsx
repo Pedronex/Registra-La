@@ -6,11 +6,9 @@ import { Alert } from '@/lib/Alert'
 import { useTheme } from '@/providers/ThemeProvider'
 import { colors } from '@/utils/colorThemes'
 import { Entypo } from '@expo/vector-icons'
-import * as Clipboard from 'expo-clipboard'
-import { useFocusEffect, useRouter } from 'expo-router'
-import { useCallback, useEffect, useState } from 'react'
-import { Linking, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
-import { CheckBox } from 'react-native-elements'
+import { useRouter } from 'expo-router'
+import { useEffect, useState } from 'react'
+import { ScrollView, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 /**
@@ -19,52 +17,45 @@ import { SafeAreaView } from 'react-native-safe-area-context'
  */
 export default function ConfigPage() {
   // Estados locais para os campos do formulário
-  const [workHours, setWorkHours] = useState<number>(0)
-  const [tolerance, setTolerance] = useState<number>(0)
-  const [companyName, setCompanyName] = useState<string>('')
-  const [breakTime, setBreakTime] = useState<number>(0)
-  const [workDays, setWorkDays] = useState<string[]>([])
-  const [geminiApiKey, setGeminiApiKey] = useState<string>('')
-  const [initialBalanceHours, setInitialBalanceHours] = useState<number>(0)
-  const [initialBalanceMinutes, setInitialBalanceMinutes] = useState<number>(0)
-  const [initialBalanceSign, setInitialBalanceSign] = useState<'positive' | 'negative'>('positive')
-  const [isPasteAvailable, setIsPasteAvailable] = useState(false)
-  const [currentStep, setCurrentStep] = useState(1)
+  const [formState, setFormState] = useState({
+    entraceTime: 480,
+    entraceBufferTime: 720,
+    exitBufferTime: 840,
+    exitTime: 1080,
+    tolerance: 10,
+    companyName: '',
+    workDays: [1, 2, 3, 4, 5],
+    initialBalanceInMinutes: 0,
+    notifications: true,
+  })
+  const [currentStep, setCurrentStep] = useState(0)
+  const [sign, setSign] = useState<'+' | '-'>('+')
 
   // Hooks
   const router = useRouter()
   const { config, loading, saveConfig: persistConfig } = useConfig()
   const { theme } = useTheme()
 
+  function handleChange(field: keyof typeof formState, value: (typeof formState)[typeof field]) {
+    setFormState({ ...formState, [field]: value })
+  }
+
   // Carrega configurações existentes quando o componente é montado
   useEffect(() => {
     if (config) {
-      setWorkHours(config.workHours)
-      setTolerance(config.tolerance || 0)
-      setCompanyName(config.companyName || '')
-      setBreakTime(config.breakTime || 0)
-      setWorkDays(Array.isArray(config.workDays) ? config.workDays : [])
-      setGeminiApiKey(config.geminiApiKey || '')
-
-      const balance = config.initialBalance || 0
-      setInitialBalanceSign(balance < 0 ? 'negative' : 'positive')
-      const absoluteBalance = Math.abs(balance)
-      const hours = Math.floor(absoluteBalance)
-      const minutes = Math.round((absoluteBalance - hours) * 60)
-      setInitialBalanceHours(hours)
-      setInitialBalanceMinutes(minutes)
+      setFormState({
+        entraceTime: config.entraceTime,
+        exitTime: config.exitTime,
+        entraceBufferTime: config.entraceBufferTime || 0,
+        exitBufferTime: config.exitBufferTime || 0,
+        tolerance: config.tolerance || 0,
+        companyName: config.companyName || '',
+        workDays: Array.isArray(config.workDays) ? config.workDays : [0],
+        initialBalanceInMinutes: config.initialBalanceInMinutes || 0,
+        notifications: config.notifications ?? true,
+      })
     }
   }, [config])
-
-  useFocusEffect(
-    useCallback(() => {
-      const checkClipboard = async () => {
-        const hasString = await Clipboard.hasStringAsync()
-        setIsPasteAvailable(hasString)
-      }
-      checkClipboard()
-    }, []),
-  )
 
   const nextStep = () => setCurrentStep(currentStep + 1)
   const prevStep = () => setCurrentStep(currentStep - 1)
@@ -74,20 +65,7 @@ export default function ConfigPage() {
    */
   const handleSaveConfig = async () => {
     try {
-      const totalMinutes = initialBalanceHours * 60 + initialBalanceMinutes
-      const decimalHours = totalMinutes / 60
-      const initialBalance = initialBalanceSign === 'negative' ? -decimalHours : decimalHours
-
-      await persistConfig({
-        workHours,
-        tolerance,
-        companyName,
-        breakTime,
-        workDays,
-        geminiApiKey,
-        initialBalance,
-        id: 1,
-      })
+      await persistConfig(formState)
 
       Alert.success(Messages.success.config.save)
       router.push('/(tabs)/')
@@ -97,27 +75,188 @@ export default function ConfigPage() {
     }
   }
 
+  useEffect(() => {
+    setSign(formState.initialBalanceInMinutes >= 0 ? '+' : '-')
+  }, [formState.initialBalanceInMinutes])
+
+  const handleSignPress = (newSign: '+' | '-') => {
+    setSign(newSign)
+    const absValue = Math.abs(formState.initialBalanceInMinutes)
+    handleChange('initialBalanceInMinutes', newSign === '+' ? absValue : -absValue)
+  }
+
+  const handleHoursChange = (text: string) => {
+    const numericValue = text.replace(/[^0-9]/g, '')
+    const hours = Number(numericValue) || 0
+    const minutes = Math.abs(formState.initialBalanceInMinutes) % 60
+    const total = hours * 60 + minutes
+    handleChange('initialBalanceInMinutes', sign === '+' ? total : -total)
+  }
+
+  const handleMinutesChange = (text: string) => {
+    const numericValue = text.replace(/[^0-9]/g, '')
+    const minutes = Math.min(59, Number(numericValue) || 0)
+    const hours = Math.floor(Math.abs(formState.initialBalanceInMinutes) / 60)
+    const total = hours * 60 + minutes
+    handleChange('initialBalanceInMinutes', sign === '+' ? total : -total)
+  }
+
   /**
    * Renderiza o campo de entrada para horas de trabalho
    */
   const renderWorkHoursInput = () => (
-    <View>
-      <Text className="mb-1 text-sm font-medium text-background-content">
-        Horas de Trabalho Diárias
-      </Text>
-      <TextInput
-        className="px-4 py-3 w-full rounded-lg border bg-surface border-surface-content text-background-content"
-        keyboardType="numeric"
-        placeholder="Ex: 8"
-        placeholderTextColor={colors[theme].surfaceContent + '80'}
-        value={isNaN(workHours) ? '' : workHours.toString()}
-        onChangeText={(text) => {
-          const numericValue = text.replace(/[^0-9]/g, '')
-          setWorkHours(numericValue === '' ? 0 : Number(numericValue))
-        }}
-        accessibilityLabel="Horas de trabalho diárias"
-        accessibilityHint="Digite o número de horas de trabalho por dia"
-      />
+    <View className="gap-y-4">
+      {/* Entrada */}
+      <View>
+        <Text className="mb-1 text-sm font-medium text-background-content">Entrada</Text>
+        <View className="flex-row gap-x-2">
+          <TextInput
+            className="flex-1 px-4 py-3 rounded-lg border bg-surface border-surface-content text-background-content"
+            keyboardType="numeric"
+            placeholder="HH"
+            placeholderTextColor={colors[theme].surfaceContent + '80'}
+            value={Math.floor(formState.entraceTime / 60)
+              .toString()
+              .padStart(2, '0')}
+            onChangeText={(text) => {
+              const hours = Number(text.replace(/[^0-9]/g, '')) || 0
+              const minutes = formState.entraceTime % 60
+              handleChange('entraceTime', hours * 60 + minutes)
+            }}
+            accessibilityLabel="Hora de entrada"
+            accessibilityHint="Digite a hora de entrada"
+          />
+          <TextInput
+            className="flex-1 px-4 py-3 rounded-lg border bg-surface border-surface-content text-background-content"
+            keyboardType="numeric"
+            placeholder="MM"
+            placeholderTextColor={colors[theme].surfaceContent + '80'}
+            value={(formState.entraceTime % 60).toString().padStart(2, '0')}
+            onChangeText={(text) => {
+              const minutes = Number(text.replace(/[^0-9]/g, '')) || 0
+              const hours = Math.floor(formState.entraceTime / 60)
+              handleChange('entraceTime', hours * 60 + Math.min(59, minutes))
+            }}
+            accessibilityLabel="Minuto de entrada"
+            accessibilityHint="Digite o minuto de entrada"
+          />
+        </View>
+      </View>
+
+      {/* Entrada para o almoço */}
+      <View>
+        <Text className="mb-1 text-sm font-medium text-background-content">
+          Entrada para o Almoço
+        </Text>
+        <View className="flex-row gap-x-2">
+          <TextInput
+            className="flex-1 px-4 py-3 rounded-lg border bg-surface border-surface-content text-background-content"
+            keyboardType="numeric"
+            placeholder="HH"
+            placeholderTextColor={colors[theme].surfaceContent + '80'}
+            value={Math.floor(formState.entraceBufferTime / 60)
+              .toString()
+              .padStart(2, '0')}
+            onChangeText={(text) => {
+              const hours = Number(text.replace(/[^0-9]/g, '')) || 0
+              const minutes = formState.entraceBufferTime % 60
+              handleChange('entraceBufferTime', hours * 60 + minutes)
+            }}
+            accessibilityLabel="Hora de entrada para o almoço"
+            accessibilityHint="Digite a hora de entrada para o almoço"
+          />
+          <TextInput
+            className="flex-1 px-4 py-3 rounded-lg border bg-surface border-surface-content text-background-content"
+            keyboardType="numeric"
+            placeholder="MM"
+            placeholderTextColor={colors[theme].surfaceContent + '80'}
+            value={(formState.entraceBufferTime % 60).toString().padStart(2, '0')}
+            onChangeText={(text) => {
+              const minutes = Number(text.replace(/[^0-9]/g, '')) || 0
+              const hours = Math.floor(formState.entraceBufferTime / 60)
+              handleChange('entraceBufferTime', hours * 60 + Math.min(59, minutes))
+            }}
+            accessibilityLabel="Minuto de entrada para o almoço"
+            accessibilityHint="Digite o minuto de entrada para o almoço"
+          />
+        </View>
+      </View>
+
+      {/* Saída para o almoço */}
+      <View>
+        <Text className="mb-1 text-sm font-medium text-background-content">
+          Saída para o Almoço
+        </Text>
+        <View className="flex-row gap-x-2">
+          <TextInput
+            className="flex-1 px-4 py-3 rounded-lg border bg-surface border-surface-content text-background-content"
+            keyboardType="numeric"
+            placeholder="HH"
+            placeholderTextColor={colors[theme].surfaceContent + '80'}
+            value={Math.floor(formState.exitBufferTime / 60)
+              .toString()
+              .padStart(2, '0')}
+            onChangeText={(text) => {
+              const hours = Number(text.replace(/[^0-9]/g, '')) || 0
+              const minutes = formState.exitBufferTime % 60
+              handleChange('exitBufferTime', hours * 60 + minutes)
+            }}
+            accessibilityLabel="Hora de saída para o almoço"
+            accessibilityHint="Digite a hora de saída para o almoço"
+          />
+          <TextInput
+            className="flex-1 px-4 py-3 rounded-lg border bg-surface border-surface-content text-background-content"
+            keyboardType="numeric"
+            placeholder="MM"
+            placeholderTextColor={colors[theme].surfaceContent + '80'}
+            value={(formState.exitBufferTime % 60).toString().padStart(2, '0')}
+            onChangeText={(text) => {
+              const minutes = Number(text.replace(/[^0-9]/g, '')) || 0
+              const hours = Math.floor(formState.exitBufferTime / 60)
+              handleChange('exitBufferTime', hours * 60 + Math.min(59, minutes))
+            }}
+            accessibilityLabel="Minuto de saída para o almoço"
+            accessibilityHint="Digite o minuto de saída para o almoço"
+          />
+        </View>
+      </View>
+
+      {/* Saída */}
+      <View>
+        <Text className="mb-1 text-sm font-medium text-background-content">Saída</Text>
+        <View className="flex-row gap-x-2">
+          <TextInput
+            className="flex-1 px-4 py-3 rounded-lg border bg-surface border-surface-content text-background-content"
+            keyboardType="numeric"
+            placeholder="HH"
+            placeholderTextColor={colors[theme].surfaceContent + '80'}
+            value={Math.floor(formState.exitTime / 60)
+              .toString()
+              .padStart(2, '0')}
+            onChangeText={(text) => {
+              const hours = Number(text.replace(/[^0-9]/g, '')) || 0
+              const minutes = formState.exitTime % 60
+              handleChange('exitTime', hours * 60 + minutes)
+            }}
+            accessibilityLabel="Hora de saída"
+            accessibilityHint="Digite a hora de saída"
+          />
+          <TextInput
+            className="flex-1 px-4 py-3 rounded-lg border bg-surface border-surface-content text-background-content"
+            keyboardType="numeric"
+            placeholder="MM"
+            placeholderTextColor={colors[theme].surfaceContent + '80'}
+            value={(formState.exitTime % 60).toString().padStart(2, '0')}
+            onChangeText={(text) => {
+              const minutes = Number(text.replace(/[^0-9]/g, '')) || 0
+              const hours = Math.floor(formState.exitTime / 60)
+              handleChange('exitTime', hours * 60 + Math.min(59, minutes))
+            }}
+            accessibilityLabel="Minuto de saída"
+            accessibilityHint="Digite o minuto de saída"
+          />
+        </View>
+      </View>
     </View>
   )
 
@@ -134,10 +273,10 @@ export default function ConfigPage() {
         keyboardType="numeric"
         placeholder="Ex: 15"
         placeholderTextColor={colors[theme].surfaceContent + '80'}
-        value={isNaN(tolerance) ? '' : tolerance.toString()}
+        value={formState.tolerance.toString()}
         onChangeText={(text) => {
           const numericValue = text.replace(/[^0-9]/g, '')
-          setTolerance(numericValue === '' ? 0 : Number(numericValue))
+          handleChange('tolerance', Number(numericValue))
         }}
         accessibilityLabel="Tolerância em minutos"
         accessibilityHint="Digite o número de minutos de tolerância"
@@ -150,48 +289,42 @@ export default function ConfigPage() {
       <Text className="mb-1 text-sm font-medium text-background-content">Saldo Inicial</Text>
       <View className="flex-row items-center gap-x-2">
         <TouchableOpacity
-          className={`px-4 py-2 rounded-lg ${initialBalanceSign === 'positive' ? 'bg-primary' : 'bg-surface'}`}
-          onPress={() => setInitialBalanceSign('positive')}
+          className={`px-4 py-2 rounded-lg ${sign === '+' ? 'bg-primary' : 'bg-surface'}`}
+          onPress={() => handleSignPress('+')}
         >
-          <Text
-            className={`${initialBalanceSign === 'positive' ? 'text-primary-content' : 'text-surface-content'}`}
-          >
+          <Text className={`${sign === '+' ? 'text-primary-content' : 'text-surface-content'}`}>
             +
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          className={`px-4 py-2 rounded-lg ${initialBalanceSign === 'negative' ? 'bg-primary' : 'bg-surface'}`}
-          onPress={() => setInitialBalanceSign('negative')}
+          className={`px-4 py-2 rounded-lg ${sign === '-' ? 'bg-primary' : 'bg-surface'}`}
+          onPress={() => handleSignPress('-')}
         >
-          <Text
-            className={`${initialBalanceSign === 'negative' ? 'text-primary-content' : 'text-surface-content'}`}
-          >
+          <Text className={`${sign === '-' ? 'text-primary-content' : 'text-surface-content'}`}>
             -
           </Text>
         </TouchableOpacity>
+      </View>
+      <View className="flex-col items-start gap-x-2">
+        <Text className="font-bold text-background-content">Horas</Text>
         <TextInput
-          className="px-4 py-3 w-20 rounded-lg border bg-surface border-surface-content text-background-content text-center"
+          className="px-4 py-3 rounded-lg border bg-surface border-surface-content text-background-content text-center"
           keyboardType="numeric"
           placeholder="HH"
-          maxLength={3}
-          value={initialBalanceHours.toString()}
-          onChangeText={(text) => {
-            const numericValue = text.replace(/[^0-9]/g, '')
-            setInitialBalanceHours(numericValue === '' ? 0 : Number(numericValue))
-          }}
+          value={Math.floor(Math.abs(formState.initialBalanceInMinutes) / 60)
+            .toString()
+            .padStart(2, '0')}
+          onChangeText={handleHoursChange}
         />
-        <Text className="font-bold text-background-content">:</Text>
+      </View>
+      <View className="flex-col items-start gap-x-2">
+        <Text className="font-bold text-background-content">Minutos</Text>
         <TextInput
-          className="px-4 py-3 w-20 rounded-lg border bg-surface border-surface-content text-background-content text-center"
+          className="px-4 py-3 rounded-lg border bg-surface border-surface-content text-background-content text-center"
           keyboardType="numeric"
           placeholder="MM"
-          maxLength={2}
-          value={initialBalanceMinutes.toString().padStart(2, '0')}
-          onChangeText={(text) => {
-            const numericValue = text.replace(/[^0-9]/g, '')
-            const minutes = Number(numericValue)
-            setInitialBalanceMinutes(minutes > 59 ? 59 : minutes)
-          }}
+          value={(Math.abs(formState.initialBalanceInMinutes) % 60).toString().padStart(2, '0')}
+          onChangeText={handleMinutesChange}
         />
       </View>
     </View>
@@ -207,33 +340,10 @@ export default function ConfigPage() {
         className="px-4 py-3 w-full rounded-lg border bg-surface border-surface-content text-background-content"
         placeholder="Ex: Empresa XYZ"
         placeholderTextColor={colors[theme].surfaceContent + '80'}
-        value={companyName}
-        onChangeText={setCompanyName}
+        value={formState.companyName}
+        onChangeText={(text) => handleChange('companyName', text)}
         accessibilityLabel="Nome da empresa"
         accessibilityHint="Digite o nome da empresa"
-      />
-    </View>
-  )
-
-  /**
-   * Renderiza o campo de entrada para intervalo de trabalho
-   */
-  const renderBreakTimeInput = () => (
-    <View>
-      <Text className="mb-1 text-sm font-medium text-background-content">
-        Intervalo de Trabalho (em minutos)
-      </Text>
-      <TextInput
-        className="px-4 py-3 w-full rounded-lg border bg-surface border-surface-content text-background-content"
-        keyboardType="numeric"
-        placeholder="Ex: 15"
-        placeholderTextColor={colors[theme].surfaceContent + '80'}
-        value={isNaN(breakTime) ? '' : breakTime.toString()}
-        onChangeText={(text) => {
-          const numericValue = text.replace(/[^0-9]/g, '')
-          setBreakTime(numericValue === '' ? 0 : Number(numericValue))
-        }}
-        accessibilityLabel="Intervalo de trabalho em minutos"
       />
     </View>
   )
@@ -247,38 +357,37 @@ export default function ConfigPage() {
         Dias da Semana Trabalhados
       </Text>
       <View className="flex flex-row flex-wrap gap-2 font-medium text-background-content">
-        {['segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado', 'domingo'].map((day) => (
-          <CheckBox
-            key={day}
-            title={day}
-            checked={workDays.includes(day)}
+        {[
+          { label: 'Segunda', value: 1 },
+          { label: 'Terça', value: 2 },
+          { label: 'Quarta', value: 3 },
+          { label: 'Quinta', value: 4 },
+          { label: 'Sexta', value: 5 },
+          { label: 'Sábado', value: 6 },
+          { label: 'Domingo', value: 0 },
+        ].map((day) => (
+          <TouchableOpacity
+            key={day.value}
             onPress={() =>
-              setWorkDays((prev) =>
-                prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day],
+              handleChange(
+                'workDays',
+                formState.workDays.includes(day.value)
+                  ? formState.workDays.filter((d) => d !== day.value)
+                  : [...formState.workDays, day.value],
               )
             }
-            containerStyle={{
-              backgroundColor: 'transparent',
-              borderWidth: 0,
-              padding: 8,
-              margin: 0,
-            }}
-            textStyle={{
-              color: colors[theme].backgroundColor,
-              fontWeight: '500',
-            }}
-            checkedColor={colors[theme].primary}
-            uncheckedColor={colors[theme].secondary}
-          />
+            className={`px-3 py-2 rounded-lg border ${formState.workDays.includes(day.value) ? 'bg-primary border-primary' : 'bg-transparent border-surface-content'}`}
+          >
+            <Text
+              className={`text-sm font-medium ${formState.workDays.includes(day.value) ? 'text-primary-content' : 'text-background-content'}`}
+            >
+              {day.label}
+            </Text>
+          </TouchableOpacity>
         ))}
       </View>
     </View>
   )
-
-  const handlePasteApiKey = async () => {
-    const text = await Clipboard.getStringAsync()
-    setGeminiApiKey(text)
-  }
 
   const renderToggleTheme = () => (
     <View>
@@ -287,33 +396,18 @@ export default function ConfigPage() {
     </View>
   )
 
-  const renderGeminiApiKeyInput = () => (
+  const renderNotificationsToggle = () => (
     <View>
-      <Text className="mb-1 text-sm font-medium text-background-content">Gemini API Key</Text>
-      <View className="flex-row items-center">
-        <TextInput
-          className="flex-1 px-4 py-3 w-full rounded-lg border bg-surface border-surface-content text-background-content"
-          placeholder="Insira sua API Key do Gemini"
-          placeholderTextColor={colors[theme].surfaceContent + '80'}
-          value={geminiApiKey}
-          onChangeText={setGeminiApiKey}
-          accessibilityLabel="Gemini API Key"
-          accessibilityHint="Insira sua API Key do Gemini"
+      <Text className="mb-1 text-sm font-medium text-background-content">Notificações</Text>
+      <View className="flex-row items-center justify-between p-4 rounded-lg bg-surface">
+        <Text className="text-background-content">Ativar lembretes de ponto</Text>
+        <Switch
+          trackColor={{ false: '#767577', true: colors[theme].primary }}
+          thumbColor={formState.notifications ? '#f4f3f4' : '#f4f3f4'}
+          onValueChange={(value) => handleChange('notifications', value)}
+          value={formState.notifications}
         />
-        {isPasteAvailable && (
-          <TouchableOpacity onPress={handlePasteApiKey} className="p-2 ml-2 rounded-lg bg-primary">
-            <Text className="text-sm font-medium text-primary-content">Colar</Text>
-          </TouchableOpacity>
-        )}
       </View>
-      <TouchableOpacity
-        onPress={() => Linking.openURL('https://aistudio.google.com/app/apikey')}
-        className="mt-2"
-      >
-        <Text className="text-sm font-medium underline text-primary">
-          Obtenha sua chave de API aqui
-        </Text>
-      </TouchableOpacity>
     </View>
   )
 
@@ -341,9 +435,10 @@ export default function ConfigPage() {
         <View className="space-y-6">
           <View>
             <Text className="mb-2 text-lg font-semibold text-background-content">
-              Configuração de Horas de Trabalho
+              Configurações iniciais
             </Text>
             <Text className="mb-4 text-sm font-medium text-background-content">
+              {currentStep === 0 && 'Selecione o Tema'}
               {currentStep === 1 && 'Passo 1: Horas de Trabalho'}
               {currentStep === 2 && 'Passo 2: Detalhes da Empresa'}
               {currentStep === 3 && 'Passo 3: Integrações'}
@@ -351,12 +446,12 @@ export default function ConfigPage() {
           </View>
 
           <View className="flex flex-col gap-y-4">
+            {currentStep === 0 && <>{renderToggleTheme()}</>}
             {currentStep === 1 && (
               <>
-                {renderToggleTheme()}
                 {renderWorkHoursInput()}
                 {renderWorkDaysInput()}
-                {renderBreakTimeInput()}
+                {renderNotificationsToggle()}
               </>
             )}
 
@@ -367,8 +462,6 @@ export default function ConfigPage() {
                 {renderInitialBalanceInput()}
               </>
             )}
-
-            {currentStep === 3 && <>{renderGeminiApiKeyInput()}</>}
 
             <View className="flex flex-row gap-x-4 justify-center mt-6">
               {currentStep > 1 && (
@@ -382,7 +475,7 @@ export default function ConfigPage() {
                 </TouchableOpacity>
               )}
 
-              {currentStep < 3 && (
+              {currentStep < 2 && (
                 <TouchableOpacity
                   className="p-3 w-28 rounded-lg bg-primary"
                   onPress={nextStep}
@@ -393,7 +486,7 @@ export default function ConfigPage() {
                 </TouchableOpacity>
               )}
 
-              {currentStep === 3 && (
+              {currentStep === 2 && (
                 <TouchableOpacity
                   className="p-3 w-28 rounded-lg bg-primary"
                   onPress={handleSaveConfig}

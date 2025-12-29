@@ -28,7 +28,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   name: getAppName(),
   slug: `registra-la`,
   owner: 'nexcorp',
-  version: '1.2.1',
+  version: '1.2.2',
   orientation: 'portrait',
   icon: './assets/images/icon.png',
   scheme: 'registrala',
@@ -36,6 +36,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   newArchEnabled: true,
   ios: {
     supportsTablet: true,
+    requireFullScreen: false,
   },
   android: {
     adaptiveIcon: {
@@ -44,6 +45,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     },
     package: getUniqueIdentifier(),
     edgeToEdgeEnabled: true,
+    newArchEnabled: true,
+    runtimeVersion: {
+      policy: 'appVersion',
+    },
+    playStoreUrl: 'https://play.google.com/store/apps/details?id=com.nexcorp.registrala',
   },
   web: {
     bundler: 'metro',
@@ -69,6 +75,13 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         android: {
           // usesCleartextTraffic: true,
           minSdkVersion: 25,
+          compileSdkVersion: 35,
+          targetSdkVersion: 35,
+          enableProguardInReleaseBuilds: true,
+          enableShrinkResourcesInReleaseBuilds: true,
+          // Configurações para migração Android 15
+          newArchEnabled: true,
+          unstable_networkInspector: false,
         },
       },
     ],
@@ -83,7 +96,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     [
       'expo-image-picker',
       {
-        photosPermission: 'The app accesses your photos to let you share them with your friends.',
+        photosPermission:
+          'Permitir $(PRODUCT_NAME) a acessar suas fotos para registrar seus pontos.',
       },
     ],
     [
@@ -94,8 +108,15 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         ios: {
           customBuildFlags: ['-DSQLITE_ENABLE_DBSTAT_VTAB=1 -DSQLITE_ENABLE_SNAPSHOT=1'],
         },
+        android: {
+          enableFTS: false,
+          useSQLCipher: false,
+        },
       },
     ],
+    [
+      'expo-notifications', 
+    ]
   ],
   experiments: {
     typedRoutes: true,

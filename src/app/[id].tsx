@@ -1,150 +1,135 @@
-import * as ImagePicker from "expo-image-picker";
-import { router, useLocalSearchParams } from "expo-router";
-import { useEffect, useState } from "react";
-import {
-  ActivityIndicator,
-  Image,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import * as ImagePicker from 'expo-image-picker'
+import { router, useLocalSearchParams } from 'expo-router'
+import { useEffect, useState } from 'react'
+import { ActivityIndicator, Image, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
-import { DateInput } from "@/components/DateInput";
-import { Header } from "@/components/Header";
-import { HourInput } from "@/components/HourInput";
-import { RegisterInsert } from "@/db/schema";
-import { useConfig } from "@/hooks/useConfig";
-import { useRegister } from "@/hooks/useRegister";
-import { useTheme } from "@/providers/ThemeProvider";
-import { colors } from "@/utils/colorThemes";
-import { Entypo } from "@expo/vector-icons";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { DateInput } from '@/components/DateInput'
+import { Header } from '@/components/Header'
+import { HourInput } from '@/components/HourInput'
+import { RegisterInsert } from '@/db/schema/registers'
+import { useConfig } from '@/hooks/useConfig'
+import { useRegister } from '@/hooks/useRegister'
+import { useTheme } from '@/providers/ThemeProvider'
+import { colors } from '@/utils/colorThemes'
+import { convertMinutesToTime, convertTimeToMinutes } from '@/utils/convert'
+import { Entypo } from '@expo/vector-icons'
 
 /**
  * Página de registro de ponto
  * Permite o usuário registrar o seu ponto
  */
 export default function RegisterEdit() {
-  const { id } = useLocalSearchParams();
+  const { id } = useLocalSearchParams()
 
   const [register, setRegister] = useState<RegisterInsert>({
-    date: new Date().toLocaleDateString("pt-BR"),
-    time: new Date().toLocaleTimeString("pt-BR", {
-      hour: "2-digit",
-      minute: "2-digit",
-    }),
-    type: "trabalho",
-    nsr: "",
-    location: "",
-    photo: "",
+    date: new Date().toLocaleDateString('pt-BR'),
+    timeInMinutes: new Date().getHours() * 60 + new Date().getMinutes(),
+    type: 'trabalho',
+    nsr: '',
+    location: '',
+    photo: '',
     isFullDay: false,
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-  });
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  })
 
-  const { config } = useConfig();
-  const { editRegister, findById, deleteRegister, extractDataPhoto, loading } =
-    useRegister();
-  const { theme } = useTheme();
+  const { config } = useConfig()
+  const { editRegister, findById, deleteRegister, extractDataPhoto, loading } = useRegister()
+  const { theme } = useTheme()
 
   useEffect(() => {
     async function fetchData() {
-      const data = await findById(Number(id));
-      setRegister(data);
+      const data = await findById(Number(id))
+      console.log(data)
+      setRegister(data)
     }
 
     if (!Array.isArray(id)) {
-      fetchData();
+      fetchData()
     }
-  }, [findById, id]);
+  }, [findById, id])
 
   const handleTakePhoto = async () => {
     if (!config) {
-      return;
+      return
     }
-    const { status } = await ImagePicker.requestCameraPermissionsAsync();
-    if (status !== "granted") {
-      alert("Permissão de câmera negada!");
-      return;
+    const { status } = await ImagePicker.requestCameraPermissionsAsync()
+    if (status !== 'granted') {
+      alert('Permissão de câmera negada!')
+      return
     }
 
     const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: "images",
+      mediaTypes: 'images',
       allowsEditing: false,
       aspect: [4, 3],
-      quality: 1,
-      base64: true,
-    });
+      quality: 0.5,
+    })
 
     if (!result.canceled || result.assets) {
-      const formData = new FormData();
-      formData.append("file", {
-        uri: result.assets[0].uri,
-        type: "image/jpeg",
-        name: "photo.jpg",
-      } as unknown as File);
+      const formData = new FormData()
+      const file = {
+        uri: result.assets[0].uri, // A URI do arquivo (caminho local)
+        name: result.assets[0].fileName || result.assets[0].uri.split('/').pop(), // Nome do arquivo. Use o nome retornado ou extraia da URI
+        type: 'image/jpeg', // O tipo MIME. O ImagePicker não retorna o tipo MIME no iOS/Android/Web de forma confiável, então defina-o
+      }
+
+      formData.append('file', file as any as File)
+
       setRegister({
         ...register,
         photo: result.assets[0].uri,
-      });
-
-      if (
-        config.geminiApiKey &&
-        config.geminiApiKey.length > 0 &&
-        result.assets[0].base64
-      ) {
-        const { date, nsr, time } = await extractDataPhoto(
-          result.assets[0].base64,
-          config.geminiApiKey
-        );
+      })
+      if (register.type === 'trabalho') {
+        const { date, time, nsr } = await extractDataPhoto(formData)
 
         setRegister((prev) => ({
           ...prev,
-          date: date,
-          time: time,
-          nsr: nsr,
-        }));
+          date,
+          timeInMinutes: convertTimeToMinutes(time),
+          nsr,
+        }))
       }
     }
-    return;
-  };
+    return
+  }
 
   const handleInputChange = (
-    field: keyof typeof register,
-    value: string | Date | boolean
+    field: keyof RegisterInsert,
+    value: string | Date | boolean | number,
   ) => {
     setRegister((prev) => ({
       ...prev,
       [field]: value,
-    }));
-  };
+    }))
+  }
 
   async function handleUpdateRegister() {
     try {
-      const result = await editRegister(Number(id), register);
+      const result = await editRegister(Number(id), register)
       if (result) {
-        alert("Registro atualizado com sucesso!");
-        router.back();
-        return;
+        alert('Registro atualizado com sucesso!')
+        router.back()
+        return
       }
-      console.error(register);
-      alert("Não foi possível atualizar o registro!");
-      return;
+      console.error(register)
+      alert('Não foi possível atualizar o registro!')
+      return
     } catch (error) {
-      console.error(error);
-      alert("Erro ao atualizar registro!");
+      console.error(error)
+      alert('Erro ao atualizar registro!')
     }
   }
 
   async function handleDeleteRegister() {
-    const result = await deleteRegister(Number(id));
+    const result = await deleteRegister(Number(id))
     if (result) {
-      alert("Registro deletado com sucesso!");
-      router.back();
-      return;
+      alert('Registro deletado com sucesso!')
+      router.back()
+      return
     }
-    alert("Não foi possível deletar o registro!");
+    alert('Não foi possível deletar o registro!')
   }
 
   if (loading) {
@@ -155,38 +140,30 @@ export default function RegisterEdit() {
           Processando dados da foto...
         </Text>
       </View>
-    );
+    )
   }
 
   function renderRegisterForm() {
     switch (register.type) {
-      case "trabalho":
+      case 'trabalho':
         return (
           <View className="flex-1 gap-y-5 mt-4 space-y-4 w-full">
             <View className="w-full">
-              <Text className="mb-1 text-lg font-medium text-background-content">
-                Data
-              </Text>
+              <Text className="mb-1 text-lg font-medium text-background-content">Data</Text>
               <DateInput
                 mode="date"
-                value={
-                  new Date(
-                    register.date.split("/").reverse().join("-") + "T00:00:00"
-                  )
-                }
-                onChange={(value) =>
-                  handleInputChange("date", value.toLocaleDateString("pt-BR"))
-                }
+                value={new Date(register.date.split('/').reverse().join('-') + 'T00:00:00')}
+                onChange={(value) => handleInputChange('date', value.toLocaleDateString('pt-BR'))}
               />
             </View>
 
             <View className="w-full">
-              <Text className="mb-1 text-lg font-medium text-background-content">
-                Hora
-              </Text>
+              <Text className="mb-1 text-lg font-medium text-background-content">Hora</Text>
               <HourInput
-                onChange={(value) => handleInputChange("time", value)}
-                value={register.time || "00:00"}
+                onChange={(value) =>
+                  handleInputChange('timeInMinutes', convertTimeToMinutes(value))
+                }
+                value={convertMinutesToTime(register.timeInMinutes || 0)}
               />
             </View>
 
@@ -203,8 +180,6 @@ export default function RegisterEdit() {
                     source={{ uri: `${register.photo}` }}
                     className="w-full h-full rounded-lg bg-surface"
                     resizeMode="contain"
-                    width={500}
-                    height={500}
                   />
                 </TouchableOpacity>
               ) : (
@@ -212,46 +187,32 @@ export default function RegisterEdit() {
                   onPress={handleTakePhoto}
                   className="justify-center items-center p-3 w-full h-48 rounded-lg bg-surface"
                 >
-                  <Entypo
-                    name="camera"
-                    size={50}
-                    color={colors[theme].surfaceContent}
-                  />
+                  <Entypo name="camera" size={50} color={colors[theme].surfaceContent} />
                 </TouchableOpacity>
               )}
             </View>
 
             <View className="w-full">
-              <Text className="mb-1 text-lg font-medium text-background-content">
-                NSR
-              </Text>
+              <Text className="mb-1 text-lg font-medium text-background-content">NSR</Text>
               <TextInput
-                value={register.nsr || ""}
-                onChangeText={(value) => handleInputChange("nsr", value)}
+                value={register.nsr || ''}
+                onChangeText={(value) => handleInputChange('nsr', value)}
                 className="p-2 rounded-md bg-surface text-surface-content"
                 placeholder="Digite o NSR (Opcional)"
-                placeholderTextColor={colors[theme].surfaceContent + "60"}
+                placeholderTextColor={colors[theme].surfaceContent + '60'}
               />
             </View>
           </View>
-        );
+        )
       default:
         return (
           <View className="flex-1 gap-y-5 mt-4 space-y-4 w-full">
             <View className="w-full">
-              <Text className="mb-1 text-lg font-medium text-background-content">
-                Data
-              </Text>
+              <Text className="mb-1 text-lg font-medium text-background-content">Data</Text>
               <DateInput
                 mode="date"
-                value={
-                  new Date(
-                    register.date.split("/").reverse().join("-") + "T00:00:00"
-                  )
-                }
-                onChange={(value) =>
-                  handleInputChange("date", value.toLocaleDateString("pt-BR"))
-                }
+                value={new Date(register.date.split('/').reverse().join('-') + 'T00:00:00')}
+                onChange={(value) => handleInputChange('date', value.toLocaleDateString('pt-BR'))}
               />
             </View>
             <View className="w-full">
@@ -260,37 +221,30 @@ export default function RegisterEdit() {
               </Text>
               <View className="flex-row gap-x-2 mb-4">
                 <TouchableOpacity
-                  className={`flex-1 items-center p-3 rounded-lg ${register.isFullDay ? "bg-primary" : "bg-surface"
+                  className={`flex-1 items-center p-3 rounded-lg ${register.isFullDay ? 'bg-primary' : 'bg-surface'
                     }`}
                   onPress={() => {
-                    handleInputChange("isFullDay", true);
-                    handleInputChange(
-                      "time",
-                      `${config?.workHours || "08"}:00`
-                    );
+                    handleInputChange('isFullDay', true)
+                    handleInputChange('timeInMinutes', (config?.workHours || 8) * 60)
                   }}
                 >
                   <Text
-                    className={`text-base font-medium ${register.isFullDay
-                      ? "text-primary-content"
-                      : "text-surface-content"
+                    className={`text-base font-medium ${register.isFullDay ? 'text-primary-content' : 'text-surface-content'
                       }`}
                   >
                     Dia Todo
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  className={`flex-1 items-center p-3 rounded-lg ${!register.isFullDay ? "bg-primary" : "bg-surface"
+                  className={`flex-1 items-center p-3 rounded-lg ${!register.isFullDay ? 'bg-primary' : 'bg-surface'
                     }`}
                   onPress={() => {
-                    handleInputChange("isFullDay", false);
-                    handleInputChange("time", "00:00");
+                    handleInputChange('isFullDay', false)
+                    handleInputChange('timeInMinutes', 0)
                   }}
                 >
                   <Text
-                    className={`text-base font-medium ${!register.isFullDay
-                      ? "text-primary-content"
-                      : "text-surface-content"
+                    className={`text-base font-medium ${!register.isFullDay ? 'text-primary-content' : 'text-surface-content'
                       }`}
                   >
                     Horas
@@ -299,35 +253,30 @@ export default function RegisterEdit() {
               </View>
               {!register.isFullDay && (
                 <HourInput
-                  value={register.time?.toString() || "00:00"}
-                  onChange={(value) => handleInputChange("time", value)}
-                  max={
-                    `${String(config?.workHours).padStart(2, "0") || "09"
-                    }:00` || "23:59"
+                  value={convertMinutesToTime(register.timeInMinutes || 0)}
+                  onChange={(value) =>
+                    handleInputChange('timeInMinutes', convertTimeToMinutes(value))
                   }
+                  max={`${String(config?.workHours).padStart(2, '0') || '09'}:00` || '23:59'}
                 />
               )}
             </View>
 
             <View className="w-full">
-              <Text className="mb-1 text-lg font-medium text-background-content">
-                Descrição
-              </Text>
+              <Text className="mb-1 text-lg font-medium text-background-content">Descrição</Text>
               <TextInput
-                value={register.location || ""}
-                onChangeText={(value) => handleInputChange("location", value)}
+                value={register.location || ''}
+                onChangeText={(value) => handleInputChange('location', value)}
                 className="p-2 rounded-md bg-surface text-surface-content"
-                placeholder="Digite a descrição do atestado"
-                placeholderTextColor={colors[theme].surfaceContent + "60"}
+                placeholder="Digite a descrição"
+                placeholderTextColor={colors[theme].surfaceContent + '60'}
                 multiline
                 numberOfLines={3}
               />
             </View>
 
             <View className="w-full">
-              <Text className="mb-1 text-lg font-medium text-background-content">
-                Foto do Atestado
-              </Text>
+              <Text className="mb-1 text-lg font-medium text-background-content">Foto</Text>
               {register.photo ? (
                 <TouchableOpacity
                   className="items-center w-full h-40 rounded-lg"
@@ -337,8 +286,6 @@ export default function RegisterEdit() {
                     source={{ uri: `${register.photo}` }}
                     className="w-full h-full rounded-lg bg-surface"
                     resizeMode="contain"
-                    width={500}
-                    height={500}
                   />
                 </TouchableOpacity>
               ) : (
@@ -346,16 +293,12 @@ export default function RegisterEdit() {
                   onPress={handleTakePhoto}
                   className="justify-center items-center p-3 w-full h-48 rounded-lg bg-surface"
                 >
-                  <Entypo
-                    name="camera"
-                    size={50}
-                    color={colors[theme].surfaceContent}
-                  />
+                  <Entypo name="camera" size={50} color={colors[theme].surfaceContent} />
                 </TouchableOpacity>
               )}
             </View>
           </View>
-        );
+        )
     }
   }
 
@@ -366,9 +309,7 @@ export default function RegisterEdit() {
           className="flex-1 items-center p-4 mt-6 rounded-lg bg-secondary"
           onPress={() => router.back()}
         >
-          <Text className="text-lg font-bold text-secondary-content">
-            Voltar
-          </Text>
+          <Text className="text-lg font-bold text-secondary-content">Voltar</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -384,33 +325,29 @@ export default function RegisterEdit() {
           disabled={loading}
         >
           <Text className="text-lg font-bold text-success-content">
-            {loading ? "Atualizando..." : "Atualizar"}
+            {loading ? 'Atualizando...' : 'Atualizar'}
           </Text>
         </TouchableOpacity>
       </View>
-    );
+    )
   }
 
   function renderTypesForm() {
-    const types = ["trabalho", "folga", "atestado"];
+    const types = ['trabalho', 'folga', 'atestado']
 
     return (
       <View className="w-full">
-        <Text className="mb-1 text-lg font-medium text-background-content">
-          Tipo de Registro
-        </Text>
+        <Text className="mb-1 text-lg font-medium text-background-content">Tipo de Registro</Text>
         <View className="flex-row gap-x-2">
           {types.map((type) => (
             <TouchableOpacity
               key={type}
-              className={`flex-1 items-center p-3 rounded-lg ${register.type === type ? "bg-primary" : "bg-surface"
+              className={`flex-1 items-center p-3 rounded-lg ${register.type === type ? 'bg-primary' : 'bg-surface'
                 }`}
-              onPress={() => handleInputChange("type", type)}
+              onPress={() => handleInputChange('type', type)}
             >
               <Text
-                className={`text-base font-medium ${register.type === type
-                  ? "text-primary-content"
-                  : "text-surface-content"
+                className={`text-base font-medium ${register.type === type ? 'text-primary-content' : 'text-surface-content'
                   }`}
               >
                 {type.charAt(0).toUpperCase() + type.slice(1)}
@@ -419,7 +356,7 @@ export default function RegisterEdit() {
           ))}
         </View>
       </View>
-    );
+    )
   }
 
   return (
@@ -429,5 +366,6 @@ export default function RegisterEdit() {
       {renderRegisterForm()}
       {renderFooter()}
     </SafeAreaView>
-  );
+  )
 }
+

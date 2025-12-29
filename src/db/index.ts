@@ -1,7 +1,12 @@
 import { drizzle } from 'drizzle-orm/expo-sqlite'
 import * as SQLite from 'expo-sqlite'
-const expo = SQLite.openDatabaseSync('db.db')
-const database = drizzle(expo)
+import { schema } from './schema'
+const expo = SQLite.openDatabaseSync('registra_la.db')
+
+const database = drizzle(expo, {
+  schema,
+  casing: 'snake_case',
+})
 
 export { database }
 

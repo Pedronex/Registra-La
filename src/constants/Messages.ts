@@ -2,7 +2,6 @@
  * Centralização de mensagens utilizadas no aplicativo.
  * Facilita a manutenção e padronização de textos.
  */
-
 export const Messages = {
   errors: {
     database: {

@@ -4,7 +4,9 @@
  */
 
 import { database } from '@/db'
-import { ConfigInsert, configTable } from '@/db/schema'
+import { schema } from '@/db/schema'
+import { ConfigData, ConfigInsert } from '@/db/schema/config'
+import { scheduleWorkdayNotifications } from '@/lib/notifications'
 import { desc } from 'drizzle-orm'
 import { useCallback, useEffect, useState } from 'react'
 
@@ -12,7 +14,7 @@ import { useCallback, useEffect, useState } from 'react'
  * Hook para gerenciar configurações do aplicativo
  */
 export function useConfig() {
-  const [config, setConfig] = useState<ConfigInsert | null>(null)
+  const [config, setConfig] = useState<ConfigData | null>(null)
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -27,10 +29,11 @@ export function useConfig() {
 
       const [config] = await database
         .select()
-        .from(configTable)
+        .from(schema.config)
         .limit(1)
-        .orderBy(desc(configTable.id))
-      setConfig(config)
+        .orderBy(desc(schema.config.id))
+
+      setConfig({...config, workDays: Array.isArray(config.workDays) ? config.workDays : []})
 
       return config
     } catch (err) {
@@ -45,17 +48,47 @@ export function useConfig() {
   /**
    * Salva as configurações do aplicativo
    */
-  const saveConfig = useCallback(async (configData: ConfigInsert) => {
+  const saveConfig = useCallback(async (configData: Omit<ConfigInsert, 'workHours' | 'id'>) => {
     try {
       setLoading(true)
       setError(null)
 
-      await database.insert(configTable).values(configData).onConflictDoUpdate({
-        target: configTable.id,
-        set: configData,
-      })
+      /* 
+        example fulltime:
+        entraceTime = 480 (08:00)
+        entraceBufferTime = 720 (12:00)
+        exitBufferTime = 840 (14:00)
+        exitTime = 1800 (18:00)
 
-      setConfig(configData)
+        (1800 - 800) + (720 - 840)
+        600 + -120
+        480 (08:00)
+
+        example halftime:
+
+        entraceTime = 480 (08:00)
+        entraceBufferTime = 0 (undefined)
+        exitBufferTime = 0 (undefined)
+        exitTime = 720 (12:00)
+
+        (720 - 480) + (0 - 0)
+        240 + 0
+        240 (04:00)
+      */
+
+      const calculateWorkHours = (configData.exitTime - configData.entraceTime) + ((configData.entraceBufferTime || 0) - (configData.exitBufferTime || 0))
+
+      const [config] = await database.insert(schema.config).values({
+        ...configData,
+        workHours: calculateWorkHours,
+      }).onConflictDoUpdate({
+        target: schema.config.id,
+        set: configData,
+      }).returning()
+
+      scheduleWorkdayNotifications({...config, workDays: Array.isArray(config.workDays) ? config.workDays : []})
+
+      setConfig({...config, workDays: Array.isArray(config.workDays) ? config.workDays : []})
 
       return true
     } catch (err) {
