@@ -13,8 +13,6 @@ import { SafeAreaProvider } from 'react-native-safe-area-context'
 
 import { database } from '@/db'
 import migrations from '@/db/migrations/migrations'
-import { useConfig } from '@/hooks/useConfig'
-import { scheduleWorkdayNotifications, useNotificationObserver } from '@/lib/notifications'
 import { ThemeProvider } from '@/providers/ThemeProvider'
 import * as Notifications from 'expo-notifications'
 import * as SQLite from 'expo-sqlite'
@@ -29,7 +27,6 @@ const expo = SQLite.openDatabaseSync('registra_la.db')
  * Gerencia atualizações e inicialização do aplicativo
  */
 export default function Layout() {
-  const { config } = useConfig()
 
   const { success, error } = useMigrations(database, migrations)
   if (process.env.NODE_ENV === 'development') {
@@ -74,14 +71,6 @@ export default function Layout() {
       initializeApp()
     }
   }, [])
-
-  // Agenda as notificações quando a configuração é carregada ou alterada
-  useEffect(() => {
-    if (config) {
-      scheduleWorkdayNotifications(config)
-    }
-    useNotificationObserver()
-  }, [config])
   
 
   // Componente de notificação de atualização foi movido para a página inicial

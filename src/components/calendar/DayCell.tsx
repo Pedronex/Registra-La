@@ -1,4 +1,3 @@
-import { useConfig } from '@/hooks/useConfig'
 import { useTheme } from '@/providers/ThemeProvider'
 import { colors } from '@/utils/colorThemes'
 import { convertMinutesToTime } from '@/utils/convert'
@@ -9,10 +8,11 @@ interface DayCellProps {
   day: Date | null
   balance?: number
   isWorked?: boolean
+  isWorkDay?: boolean
   onPress: (day: Date) => void
 }
 
-export function DayCell({ day, balance, isWorked, onPress }: DayCellProps) {
+export function DayCell({ day, balance, isWorked, isWorkDay, onPress }: DayCellProps) {
   const { theme } = useTheme()
 
   if (!day) {
@@ -24,10 +24,6 @@ export function DayCell({ day, balance, isWorked, onPress }: DayCellProps) {
     day.getDate() === today.getDate() &&
     day.getMonth() === today.getMonth() &&
     day.getFullYear() === today.getFullYear()
-
-  const { config } = useConfig()
-
-  const isWorkDay = Array.isArray(config?.workDays) && config?.workDays.includes(day.getDay())
 
   function cellStyle() {
     if(balance !== undefined) {

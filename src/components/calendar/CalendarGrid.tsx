@@ -1,3 +1,4 @@
+import { ConfigData } from "@/db/schema/config";
 import { Text, View } from "react-native";
 import { DayCell } from "./DayCell";
 
@@ -6,9 +7,10 @@ interface CalendarGridProps {
   dailyBalances: Record<string, number>;
   workedDays: Set<string>;
   onDayPress: (day: Date) => void;
+  config?: ConfigData
 }
 
-export function CalendarGrid({ date, dailyBalances, workedDays, onDayPress }: CalendarGridProps) {
+export function CalendarGrid({ date, dailyBalances, workedDays, onDayPress, config }: CalendarGridProps) {
   const year = date.getFullYear();
   const month = date.getMonth();
   const firstDay = new Date(year, month, 1).getDay();
@@ -50,7 +52,7 @@ export function CalendarGrid({ date, dailyBalances, workedDays, onDayPress }: Ca
                 balance={balance}
                 isWorked={isWorked}
                 onPress={onDayPress}
-
+                isWorkDay={config?.workDays?.includes(day?.getDay() || 0)}
               />
             );
           })}

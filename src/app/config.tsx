@@ -8,7 +8,7 @@ import { colors } from '@/utils/colorThemes'
 import { Entypo } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import { useEffect, useState } from 'react'
-import { ScrollView, Text, TextInput, TouchableOpacity, View, Switch } from 'react-native'
+import { ScrollView, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 /**

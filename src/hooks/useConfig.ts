@@ -6,6 +6,7 @@
 import { database } from '@/db'
 import { schema } from '@/db/schema'
 import { ConfigData, ConfigInsert } from '@/db/schema/config'
+import { scheduleWorkdayNotifications } from '@/lib/notifications'
 import { desc } from 'drizzle-orm'
 import { useCallback, useEffect, useState } from 'react'
 
@@ -31,7 +32,8 @@ export function useConfig() {
         .from(schema.config)
         .limit(1)
         .orderBy(desc(schema.config.id))
-      setConfig(config)
+
+      setConfig({...config, workDays: Array.isArray(config.workDays) ? config.workDays : []})
 
       return config
     } catch (err) {
@@ -84,7 +86,9 @@ export function useConfig() {
         set: configData,
       }).returning()
 
-      setConfig(config)
+      scheduleWorkdayNotifications({...config, workDays: Array.isArray(config.workDays) ? config.workDays : []})
+
+      setConfig({...config, workDays: Array.isArray(config.workDays) ? config.workDays : []})
 
       return true
     } catch (err) {

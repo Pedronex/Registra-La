@@ -7,6 +7,7 @@ import {
 import { Header } from '@/components/Header'
 import { RegisterData } from '@/db/schema/registers'
 import { useCalendar } from '@/hooks/useCalendar'
+import { useConfig } from '@/hooks/useConfig'
 import { useTheme } from '@/providers/ThemeProvider'
 import { colors } from '@/utils/colorThemes'
 import { Entypo } from '@expo/vector-icons'
@@ -33,6 +34,7 @@ export default function CalendarPage() {
     workedDays,
     dailyRecords,
   } = useCalendar(date.getFullYear(), date.getMonth() + 1)
+  const { config } = useConfig()
 
   // --- Handlers ---
   const changeMonth = (amount: number) => {
@@ -75,6 +77,7 @@ export default function CalendarPage() {
               dailyBalances={dailyBalances}
               workedDays={workedDays}
               onDayPress={openDayDetails}
+              config={config?.workDays ? config : undefined}
             />
             <BalanceSummary
               previousMonthBalance={previousMonthBalance}
