@@ -50,6 +50,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       policy: 'appVersion',
     },
     playStoreUrl: 'https://play.google.com/store/apps/details?id=com.nexcorp.registrala',
+    permissions: ['permission.SCHEDULE_EXACT_ALARM'],
   },
   web: {
     bundler: 'metro',
@@ -114,9 +115,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         },
       },
     ],
-    [
-      'expo-notifications', 
-    ]
+    ['expo-notifications'],
   ],
   experiments: {
     typedRoutes: true,

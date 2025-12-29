@@ -2,15 +2,27 @@ import { ConfigData } from '@/db/schema/config'
 import * as Notifications from 'expo-notifications'
 import { Platform } from 'react-native'
 
+const defaultNotificationConfig = {
+  importance: Notifications.AndroidImportance.MAX,
+  enableVibrate: true,
+  vibrationPattern: [0, 500, 250, 1000, 250, 1000],
+  lightColor: '#FF231F',
+
+  lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
+}
+
 // Configura o handler de notificações para exibir alertas quando o app está em primeiro plano
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: false,
-    shouldSetBadge: false,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
     shouldShowBanner: true,
     shouldShowList: true,
+    priority: Notifications.AndroidNotificationPriority.MAX,
   }),
+  handleSuccess(notificationId) {
+    console.log(`Notificação ${notificationId} disparada com sucesso!`)
+  },
 })
 
 // Solicita permissão de notificação
@@ -30,11 +42,21 @@ async function requestPermissions() {
 
   // Específico para Android
   if (Platform.OS === 'android') {
-    await Notifications.setNotificationChannelAsync('default', {
-      name: 'default',
-      importance: Notifications.AndroidImportance.MAX,
-      vibrationPattern: [0, 250, 250, 250],
-      lightColor: '#FF231F',
+    await Notifications.setNotificationChannelAsync('entrance', {
+      name: 'Entrada',
+      ...defaultNotificationConfig,
+    })
+    await Notifications.setNotificationChannelAsync('lunch', {
+      name: 'Almoço',
+      ...defaultNotificationConfig,
+    })
+    await Notifications.setNotificationChannelAsync('returnLunch', {
+      name: 'Retorno',
+      ...defaultNotificationConfig,
+    })
+    await Notifications.setNotificationChannelAsync('exit', {
+      name: 'Saída',
+      ...defaultNotificationConfig,
     })
   }
 
@@ -70,25 +92,25 @@ export async function scheduleWorkdayNotifications(config: ConfigData) {
 
   const notificationPoints: NotificationPoint[] = [
     {
-      id: 'entrada',
+      id: 'entrance',
       totalMinutes: config.entraceTime,
       title: 'Hora de bater o ponto!',
       body: 'Não se esqueça de registrar sua entrada.',
     },
     {
-      id: 'almoco',
+      id: 'lunch',
       totalMinutes: config.entraceBufferTime || 0,
       title: 'Hora do almoço!',
       body: 'Não se esqueça de registrar sua saída para o almoço.',
     },
     {
-      id: 'retorno',
+      id: 'returnLunch',
       totalMinutes: config.exitBufferTime || 0,
       title: 'Fim do almoço!',
       body: 'Não se esqueça de registrar seu retorno do almoço.',
     },
     {
-      id: 'saida',
+      id: 'exit',
       totalMinutes: config.exitTime,
       title: 'Fim do expediente!',
       body: 'Não se esqueça de registrar sua saída.',
@@ -104,6 +126,7 @@ export async function scheduleWorkdayNotifications(config: ConfigData) {
 
     for (const day of workDays) {
       const expoWeekday = day === 0 ? 1 : day + 1
+
       await Notifications.scheduleNotificationAsync({
         content: {
           title: point.title,
@@ -111,20 +134,20 @@ export async function scheduleWorkdayNotifications(config: ConfigData) {
           vibrate: [200, 100, 200],
           data: {
             url: `/add`,
-          }
+          },
         },
         trigger: {
           type: Notifications.SchedulableTriggerInputTypes.WEEKLY,
           weekday: expoWeekday,
           hour,
           minute,
-        },
+          repeats: true,
+          channelId: point.id,
+        } as Notifications.WeeklyTriggerInput,
       })
     }
   }
   console.log('Notificações agendadas com sucesso!')
 }
 
-export function useNotificationObserver() {
-  
-}
+export function useNotificationObserver() {}
