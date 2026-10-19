@@ -155,4 +155,3 @@ export async function scheduleWorkdayNotifications(config: ConfigData) {
   console.log('Notificações agendadas com sucesso!')
 }
 
-export function useNotificationObserver() {}

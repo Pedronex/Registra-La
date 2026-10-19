@@ -11,12 +11,13 @@ import { useConfig } from "@/hooks/useConfig";
 import { useTheme } from "@/providers/ThemeProvider";
 import { colors } from "@/utils/colorThemes";
 import Entypo from "@react-native-vector-icons/entypo";
-import { router } from "expo-router";
+import { useRouter } from "expo-router";
 import { useState } from "react";
 import { ActivityIndicator, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function CalendarPage() {
+	const router = useRouter();
 	// --- State ---
 	const [date, setDate] = useState(new Date());
 	const [modalVisible, setModalVisible] = useState(false);

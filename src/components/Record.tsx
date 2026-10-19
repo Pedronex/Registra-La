@@ -3,7 +3,7 @@ import { useTheme } from "@/providers/ThemeProvider";
 import { colors } from "@/utils/colorThemes";
 import { convertMinutesToTime } from "@/utils/convert";
 import MaterialIcons from "@react-native-vector-icons/material-icons";
-import { router } from "expo-router";
+import { useRouter } from "expo-router";
 import { Text, TouchableOpacity, View } from "react-native";
 
 export type RecordProps = {
@@ -12,6 +12,7 @@ export type RecordProps = {
 };
 
 export function Record({ data, isEntry }: RecordProps) {
+	const router = useRouter();
 	const { theme } = useTheme();
 
 	function getIconName() {

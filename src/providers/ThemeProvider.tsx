@@ -1,5 +1,3 @@
-// import { StatusBar } from "expo-status-bar";
-
 import { Alert } from "@/lib/Alert";
 import { themes } from "@/utils/colorThemes";
 import { colorScheme } from "nativewind";
@@ -36,7 +34,6 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
 
   return (
     <ThemeContext.Provider value={{ theme: currentTheme, toggleTheme }}>
-      {/* <StatusBar style={currentTheme === "dark" ? "light" : "dark"} /> */}
       <View style={themes[currentTheme]} className="flex-1">
         {children}
       </View>

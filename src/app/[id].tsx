@@ -1,5 +1,5 @@
 import * as ImagePicker from "expo-image-picker";
-import { router, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
 	ActivityIndicator,
@@ -27,6 +27,7 @@ import Entypo from "@react-native-vector-icons/entypo";
  * Permite o usuário registrar o seu ponto
  */
 export default function RegisterEdit() {
+	const router = useRouter();
 	const { id } = useLocalSearchParams();
 
 	const [register, setRegister] = useState<RegisterInsert>({

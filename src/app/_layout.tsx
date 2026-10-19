@@ -13,17 +13,12 @@ import { useEffect } from "react";
 import { Text, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
-// const expo = SQLite.openDatabaseSync("registra_la.db");
-
 /**
  * Layout principal da aplicação
  * Gerencia atualizações e inicialização do aplicativo
  */
 export default function Layout() {
   const { success, error } = useMigrations(database, migrations);
-  if (process.env.NODE_ENV === "development") {
-    // useDrizzleStudio(expo);
-  }
 
   useEffect(() => {
     /**
