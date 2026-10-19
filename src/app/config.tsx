@@ -1,4 +1,5 @@
 import { Header } from "@/components/Header";
+import { TimeField } from "@/components/TimeField";
 import ThemeToggle from "@/components/ToggleTheme";
 import { Messages } from "@/constants/Messages";
 import { useConfig } from "@/hooks/useConfig";
@@ -129,168 +130,29 @@ export default function ConfigPage() {
 	 */
 	const renderWorkHoursInput = () => (
 		<View className="gap-y-4">
-			{/* Entrada */}
-			<View>
-				<Text className="mb-1 text-sm font-medium text-background-content">
-					Entrada
-				</Text>
-				<View className="flex-row gap-x-2">
-					<TextInput
-						className="flex-1 px-4 py-3 rounded-lg border bg-surface border-surface-content text-background-content"
-						keyboardType="numeric"
-						placeholder="HH"
-						placeholderTextColor={colors[theme].placeholder}
-						value={Math.floor(formState.entraceTime / 60)
-							.toString()
-							.padStart(2, "0")}
-						onChangeText={(text) => {
-							const hours = Number(text.replace(/[^0-9]/g, "")) || 0;
-							const minutes = formState.entraceTime % 60;
-							handleChange("entraceTime", hours * 60 + minutes);
-						}}
-						accessibilityLabel="Hora de entrada"
-						accessibilityHint="Digite a hora de entrada"
-					/>
-					<TextInput
-						className="flex-1 px-4 py-3 rounded-lg border bg-surface border-surface-content text-background-content"
-						keyboardType="numeric"
-						placeholder="MM"
-						placeholderTextColor={colors[theme].placeholder}
-						value={(formState.entraceTime % 60).toString().padStart(2, "0")}
-						onChangeText={(text) => {
-							const minutes = Number(text.replace(/[^0-9]/g, "")) || 0;
-							const hours = Math.floor(formState.entraceTime / 60);
-							handleChange("entraceTime", hours * 60 + Math.min(59, minutes));
-						}}
-						accessibilityLabel="Minuto de entrada"
-						accessibilityHint="Digite o minuto de entrada"
-					/>
-				</View>
+			<View className="flex-row gap-3">
+				<TimeField
+					label="Entrada"
+					minutes={formState.entraceTime}
+					onChange={(value) => handleChange("entraceTime", value)}
+				/>
+				<TimeField
+					label="Saída"
+					minutes={formState.exitTime}
+					onChange={(value) => handleChange("exitTime", value)}
+				/>
 			</View>
-
-			{/* Entrada para o almoço */}
-			<View>
-				<Text className="mb-1 text-sm font-medium text-background-content">
-					Início do almoço
-				</Text>
-				<View className="flex-row gap-x-2">
-					<TextInput
-						className="flex-1 px-4 py-3 rounded-lg border bg-surface border-surface-content text-background-content"
-						keyboardType="numeric"
-						placeholder="HH"
-						placeholderTextColor={colors[theme].placeholder}
-						value={Math.floor(formState.entraceBufferTime / 60)
-							.toString()
-							.padStart(2, "0")}
-						onChangeText={(text) => {
-							const hours = Number(text.replace(/[^0-9]/g, "")) || 0;
-							const minutes = formState.entraceBufferTime % 60;
-							handleChange("entraceBufferTime", hours * 60 + minutes);
-						}}
-						accessibilityLabel="Hora de entrada para o almoço"
-						accessibilityHint="Digite a hora de entrada para o almoço"
-					/>
-					<TextInput
-						className="flex-1 px-4 py-3 rounded-lg border bg-surface border-surface-content text-background-content"
-						keyboardType="numeric"
-						placeholder="MM"
-						placeholderTextColor={colors[theme].placeholder}
-						value={(formState.entraceBufferTime % 60)
-							.toString()
-							.padStart(2, "0")}
-						onChangeText={(text) => {
-							const minutes = Number(text.replace(/[^0-9]/g, "")) || 0;
-							const hours = Math.floor(formState.entraceBufferTime / 60);
-							handleChange(
-								"entraceBufferTime",
-								hours * 60 + Math.min(59, minutes),
-							);
-						}}
-						accessibilityLabel="Minuto de entrada para o almoço"
-						accessibilityHint="Digite o minuto de entrada para o almoço"
-					/>
-				</View>
-			</View>
-
-			{/* Saída para o almoço */}
-			<View>
-				<Text className="mb-1 text-sm font-medium text-background-content">
-					Fim do almoço
-				</Text>
-				<View className="flex-row gap-x-2">
-					<TextInput
-						className="flex-1 px-4 py-3 rounded-lg border bg-surface border-surface-content text-background-content"
-						keyboardType="numeric"
-						placeholder="HH"
-						placeholderTextColor={colors[theme].placeholder}
-						value={Math.floor(formState.exitBufferTime / 60)
-							.toString()
-							.padStart(2, "0")}
-						onChangeText={(text) => {
-							const hours = Number(text.replace(/[^0-9]/g, "")) || 0;
-							const minutes = formState.exitBufferTime % 60;
-							handleChange("exitBufferTime", hours * 60 + minutes);
-						}}
-						accessibilityLabel="Hora de saída para o almoço"
-						accessibilityHint="Digite a hora de saída para o almoço"
-					/>
-					<TextInput
-						className="flex-1 px-4 py-3 rounded-lg border bg-surface border-surface-content text-background-content"
-						keyboardType="numeric"
-						placeholder="MM"
-						placeholderTextColor={colors[theme].placeholder}
-						value={(formState.exitBufferTime % 60).toString().padStart(2, "0")}
-						onChangeText={(text) => {
-							const minutes = Number(text.replace(/[^0-9]/g, "")) || 0;
-							const hours = Math.floor(formState.exitBufferTime / 60);
-							handleChange(
-								"exitBufferTime",
-								hours * 60 + Math.min(59, minutes),
-							);
-						}}
-						accessibilityLabel="Minuto de saída para o almoço"
-						accessibilityHint="Digite o minuto de saída para o almoço"
-					/>
-				</View>
-			</View>
-
-			{/* Saída */}
-			<View>
-				<Text className="mb-1 text-sm font-medium text-background-content">
-					Saída
-				</Text>
-				<View className="flex-row gap-x-2">
-					<TextInput
-						className="flex-1 px-4 py-3 rounded-lg border bg-surface border-surface-content text-background-content"
-						keyboardType="numeric"
-						placeholder="HH"
-						placeholderTextColor={colors[theme].placeholder}
-						value={Math.floor(formState.exitTime / 60)
-							.toString()
-							.padStart(2, "0")}
-						onChangeText={(text) => {
-							const hours = Number(text.replace(/[^0-9]/g, "")) || 0;
-							const minutes = formState.exitTime % 60;
-							handleChange("exitTime", hours * 60 + minutes);
-						}}
-						accessibilityLabel="Hora de saída"
-						accessibilityHint="Digite a hora de saída"
-					/>
-					<TextInput
-						className="flex-1 px-4 py-3 rounded-lg border bg-surface border-surface-content text-background-content"
-						keyboardType="numeric"
-						placeholder="MM"
-						placeholderTextColor={colors[theme].placeholder}
-						value={(formState.exitTime % 60).toString().padStart(2, "0")}
-						onChangeText={(text) => {
-							const minutes = Number(text.replace(/[^0-9]/g, "")) || 0;
-							const hours = Math.floor(formState.exitTime / 60);
-							handleChange("exitTime", hours * 60 + Math.min(59, minutes));
-						}}
-						accessibilityLabel="Minuto de saída"
-						accessibilityHint="Digite o minuto de saída"
-					/>
-				</View>
+			<View className="flex-row gap-3">
+				<TimeField
+					label="Início do almoço"
+					minutes={formState.entraceBufferTime}
+					onChange={(value) => handleChange("entraceBufferTime", value)}
+				/>
+				<TimeField
+					label="Fim do almoço"
+					minutes={formState.exitBufferTime}
+					onChange={(value) => handleChange("exitBufferTime", value)}
+				/>
 			</View>
 		</View>
 	);
@@ -304,7 +166,7 @@ export default function ConfigPage() {
 				Tolerância (em minutos)
 			</Text>
 			<TextInput
-				className="px-4 py-3 w-full rounded-lg border bg-surface border-surface-content text-background-content"
+				className="px-4 py-3 w-full rounded-xl border bg-surface border-surface-content text-background-content"
 				keyboardType="numeric"
 				placeholder="Ex: 15"
 				placeholderTextColor={colors[theme].placeholder}
@@ -326,7 +188,7 @@ export default function ConfigPage() {
 			</Text>
 			<View className="flex-row items-center gap-x-2">
 				<TouchableOpacity
-					className={`px-4 py-2 rounded-lg ${sign === "+" ? "bg-primary" : "bg-surface"}`}
+					className={`px-4 py-2 rounded-xl ${sign === "+" ? "bg-primary" : "bg-surface"}`}
 					onPress={() => handleSignPress("+")}
 				>
 					<Text
@@ -336,7 +198,7 @@ export default function ConfigPage() {
 					</Text>
 				</TouchableOpacity>
 				<TouchableOpacity
-					className={`px-4 py-2 rounded-lg ${sign === "-" ? "bg-primary" : "bg-surface"}`}
+					className={`px-4 py-2 rounded-xl ${sign === "-" ? "bg-primary" : "bg-surface"}`}
 					onPress={() => handleSignPress("-")}
 				>
 					<Text
@@ -352,7 +214,7 @@ export default function ConfigPage() {
 					Horas
 				</Text>
 				<TextInput
-					className="px-4 py-3 w-full text-xl text-center rounded-lg border bg-surface border-surface-content text-background-content"
+					className="px-4 py-3 w-full text-xl text-center rounded-xl border bg-surface border-surface-content text-background-content"
 					keyboardType="numeric"
 					placeholder="HH"
 					value={Math.floor(Math.abs(formState.initialBalanceInMinutes) / 60)
@@ -366,7 +228,7 @@ export default function ConfigPage() {
 					Minutos
 				</Text>
 				<TextInput
-					className="px-4 py-3 w-full text-xl text-center rounded-lg border bg-surface border-surface-content text-background-content"
+					className="px-4 py-3 w-full text-xl text-center rounded-xl border bg-surface border-surface-content text-background-content"
 					keyboardType="numeric"
 					placeholder="MM"
 					value={(Math.abs(formState.initialBalanceInMinutes) % 60)
@@ -388,7 +250,7 @@ export default function ConfigPage() {
 				Nome da Empresa
 			</Text>
 			<TextInput
-				className="px-4 py-3 w-full rounded-lg border bg-surface border-surface-content text-background-content"
+				className="px-4 py-3 w-full rounded-xl border bg-surface border-surface-content text-background-content"
 				placeholder="Ex: Empresa XYZ"
 				placeholderTextColor={colors[theme].placeholder}
 				value={formState.companyName}
@@ -427,7 +289,7 @@ export default function ConfigPage() {
 									: [...formState.workDays, day.value],
 							)
 						}
-						className={`px-3 py-2 rounded-lg border ${formState.workDays.includes(day.value) ? "bg-primary border-primary" : "bg-transparent border-surface-content"}`}
+						className={`px-3 py-2 rounded-xl border ${formState.workDays.includes(day.value) ? "bg-primary border-primary" : "bg-transparent border-surface-content"}`}
 					>
 						<Text
 							className={`text-sm font-medium ${formState.workDays.includes(day.value) ? "text-primary-content" : "text-background-content"}`}
@@ -454,7 +316,7 @@ export default function ConfigPage() {
 			<Text className="mb-1 text-sm font-medium text-background-content">
 				Notificações
 			</Text>
-			<View className="flex-row items-center justify-between p-4 rounded-lg bg-surface">
+			<View className="flex-row items-center justify-between p-4 rounded-xl bg-surface">
 				<Text className="text-background-content">
 					Ativar lembretes de ponto
 				</Text>
@@ -478,7 +340,7 @@ export default function ConfigPage() {
 						? () => (
 								<TouchableOpacity
 									onPress={() => router.back()}
-									className="rounded-lg"
+									className="rounded-xl"
 									accessibilityRole="button"
 									accessibilityLabel="Voltar"
 								>
@@ -536,7 +398,7 @@ export default function ConfigPage() {
 						<View className="flex flex-row gap-x-4 justify-center mt-6">
 							{currentStep > 1 && (
 								<TouchableOpacity
-									className="p-3 w-28 rounded-lg border bg-tertiary border-primary"
+									className="p-3 w-28 rounded-xl border bg-tertiary border-accent"
 									onPress={prevStep}
 									accessibilityLabel="Voltar"
 									accessibilityRole="button"
@@ -549,7 +411,7 @@ export default function ConfigPage() {
 
 							{currentStep < 2 && (
 								<TouchableOpacity
-									className="p-3 w-28 rounded-lg bg-primary"
+									className="p-3 w-28 rounded-xl bg-primary"
 									onPress={nextStep}
 									accessibilityLabel="Próximo"
 									accessibilityRole="button"
@@ -562,7 +424,7 @@ export default function ConfigPage() {
 
 							{currentStep === 2 && (
 								<TouchableOpacity
-									className="p-3 w-28 rounded-lg bg-primary"
+									className="p-3 w-28 rounded-xl bg-primary"
 									onPress={handleSaveConfig}
 									accessibilityLabel="Salvar configurações"
 									accessibilityRole="button"

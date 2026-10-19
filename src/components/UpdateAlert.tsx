@@ -9,7 +9,7 @@ export function UpdateAlert() {
     <View className="flex-row justify-between items-center px-4 py-2 w-screen bg-success">
       <Text className="font-medium text-success-content">Atualização disponível</Text>
       <TouchableOpacity
-        className="px-4 py-1 rounded-lg bg-success-content"
+        className="px-4 py-1 rounded-xl bg-success-content"
         onPress={async () => {
           try {
             await updateApp()

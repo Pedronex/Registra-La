@@ -58,7 +58,7 @@ export function Record({ data, isEntry }: RecordProps) {
 	return (
 		<TouchableOpacity
 			key={`record-${data.id}`}
-			className="flex-row items-center p-3 mb-4 rounded-lg bg-secondary-focus active:opacity-80 justify-between"
+			className="flex-row items-center p-3 mb-4 rounded-xl bg-secondary-focus active:opacity-80 justify-between"
 			onPress={() => router.push(`/${data.id}`)}
 			accessibilityRole="button"
 			accessibilityLabel={`${getDescriptionText()}, ${getTimeText()}. Toque para editar`}

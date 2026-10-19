@@ -59,7 +59,7 @@ export function DayRecordsModal({
 					)}
 					<View className="mt-4 flex-row gap-x-2">
 						<Link
-							className="bg-primary p-3 rounded-lg items-center justify-center flex-row"
+							className="bg-primary p-3 rounded-xl items-center justify-center flex-row"
 							href="/add"
 						>
 							<Entypo
@@ -73,7 +73,7 @@ export function DayRecordsModal({
 							</Text>
 						</Link>
 						<Pressable
-							className="flex-1 rounded-lg p-2 bg-primary"
+							className="flex-1 rounded-xl p-2 bg-primary"
 							onPress={onClose}
 						>
 							<Text className="text-primary-content font-bold text-center">

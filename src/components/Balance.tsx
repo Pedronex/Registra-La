@@ -171,7 +171,7 @@ export function Balance({
 			]}
 			start={{ x: 1, y: 1 }}
 			end={{ x: 0, y: 0 }}
-			style={{ borderRadius: 8 }}
+			style={{ borderRadius: 16 }}
 			className="p-4 shadow-md flex-row flex-wrap justify-between"
 		>
 			<View className="flex-col justify-between items-start w-1/2">

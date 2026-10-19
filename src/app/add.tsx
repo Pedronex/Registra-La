@@ -171,14 +171,14 @@ export default function RegisterPage() {
 							</Text>
 							{register.photo ? (
 								<TouchableOpacity
-									className="items-center p-3 w-full h-48 rounded-lg"
+									className="items-center p-3 w-full h-48 rounded-xl"
 									onPress={handleTakePhoto}
 									accessibilityRole="button"
 									accessibilityLabel="Tirar foto do ponto"
 								>
 									<Image
 										source={{ uri: `${register.photo}` }}
-										className="w-full h-full rounded-lg bg-surface"
+										className="w-full h-full rounded-xl bg-surface"
 										resizeMode="contain"
 										width={500}
 										height={500}
@@ -207,7 +207,7 @@ export default function RegisterPage() {
 							<TextInput
 								value={register.nsr || ""}
 								onChangeText={(value) => handleInputChange("nsr", value)}
-								className="p-2 rounded-md bg-surface text-surface-content"
+								className="p-2 rounded-xl bg-surface text-surface-content"
 								placeholder="Digite o NSR (Opcional)"
 								placeholderTextColor={colors[theme].placeholder}
 							/>
@@ -266,7 +266,7 @@ export default function RegisterPage() {
 							</Text>
 							<View className="flex-row gap-x-2 mb-4">
 								<TouchableOpacity
-									className={`flex-1 items-center p-3 rounded-lg ${
+									className={`flex-1 items-center p-3 rounded-xl ${
 										register.isFullDay ? "bg-primary" : "bg-surface"
 									}`}
 									onPress={() => {
@@ -288,7 +288,7 @@ export default function RegisterPage() {
 									</Text>
 								</TouchableOpacity>
 								<TouchableOpacity
-									className={`flex-1 items-center p-3 rounded-lg ${
+									className={`flex-1 items-center p-3 rounded-xl ${
 										!register.isFullDay ? "bg-primary" : "bg-surface"
 									}`}
 									onPress={() => {
@@ -331,7 +331,7 @@ export default function RegisterPage() {
 							<TextInput
 								value={register.location || ""}
 								onChangeText={(value) => handleInputChange("location", value)}
-								className="p-2 rounded-md bg-surface text-surface-content"
+								className="p-2 rounded-xl bg-surface text-surface-content"
 								placeholder="Digite a descrição"
 								placeholderTextColor={colors[theme].placeholder}
 								multiline
@@ -345,14 +345,14 @@ export default function RegisterPage() {
 							</Text>
 							{register.photo ? (
 								<TouchableOpacity
-									className="items-center w-full h-40 rounded-lg"
+									className="items-center w-full h-40 rounded-xl"
 									onPress={handleTakePhoto}
 									accessibilityRole="button"
 									accessibilityLabel="Tirar foto do ponto"
 								>
 									<Image
 										source={{ uri: `${register.photo}` }}
-										className="w-full h-full rounded-lg bg-surface"
+										className="w-full h-full rounded-xl bg-surface"
 										resizeMode="contain"
 										width={500}
 										height={500}
@@ -390,7 +390,7 @@ export default function RegisterPage() {
 					{types.map((type) => (
 						<TouchableOpacity
 							key={type}
-							className={`flex-1 items-center p-3 rounded-lg ${
+							className={`flex-1 items-center p-3 rounded-xl ${
 								register.type === type ? "bg-primary" : "bg-surface"
 							}`}
 							onPress={() => handleInputChange("type", type)}
@@ -417,7 +417,7 @@ export default function RegisterPage() {
 		return (
 			<View className="flex-row gap-x-2 w-full">
 				<TouchableOpacity
-					className="flex-1 items-center p-4 mt-4 rounded-2xl border border-primary"
+					className="flex-1 items-center p-4 mt-4 rounded-2xl border border-accent"
 					onPress={() => router.push("/(tabs)/")}
 				>
 					<Text className="text-lg font-semibold text-surface-content">Voltar</Text>
@@ -437,7 +437,7 @@ export default function RegisterPage() {
 	}
 
 	return (
-		<SafeAreaView className="flex-1 justify-between items-center pl-3 pr-3 pb-5 bg-background">
+		<SafeAreaView className="flex-1 justify-between items-center pl-4 pr-4 pb-5 bg-background">
 			<Header title="Novo registro" showConfig={false} />
 			{renderTypesForm()}
 			{renderRegisterForm()}

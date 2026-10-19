@@ -184,7 +184,7 @@ export function History({
 				onPress={handleAutoSavePhoto}
 				accessibilityRole="button"
 				accessibilityLabel="Registrar ponto por foto"
-				className="flex-row justify-center items-center h-12 rounded-2xl border border-primary"
+				className="flex-row justify-center items-center h-12 rounded-2xl border border-accent"
 			>
 				<Octicons
 					name="sparkles-fill"
@@ -306,7 +306,7 @@ export function History({
 				end={{ x: 1, y: 1 }}
 				style={{
 					justifyContent: "space-between",
-					borderRadius: 8,
+					borderRadius: 16,
 				}}
 			>
 				{registerLoading ? (
@@ -364,7 +364,7 @@ export function History({
 
 	if (loading) {
 		return (
-			<View className="flex-1 w-full rounded-lg h-fit">
+			<View className="flex-1 w-full rounded-xl h-fit">
 				<View className="flex-1 justify-center items-center">
 					<ActivityIndicator
 						size="large"

@@ -17,7 +17,7 @@ export function DateInput({ mode, onChange, value }: Props) {
         onPress={() => setShowDatePicker(true)}
         accessibilityRole="button"
         accessibilityLabel={mode === 'date' ? 'Selecionar data' : 'Selecionar hora'}
-        className="p-2 rounded-md bg-surface"
+        className="p-2 rounded-xl bg-surface"
       >
         <Text className="text-surface-content">
           {mode === 'date'

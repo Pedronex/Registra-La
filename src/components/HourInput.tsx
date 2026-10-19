@@ -134,7 +134,7 @@ export function HourInput({
 	return (
 		<View className="flex-row gap-x-4 justify-between items-center p-2 w-full rounded-2xl bg-surface elevation">
 			<TouchableOpacity
-				className="justify-center items-center w-12 h-12 rounded-full border bg-tertiary border-primary"
+				className="justify-center items-center w-12 h-12 rounded-full border bg-tertiary border-accent"
 				onPress={handleRemoveMinute}
 				accessibilityRole="button"
 				accessibilityLabel="Diminuir minutos"
@@ -159,7 +159,7 @@ export function HourInput({
 				/>
 			</View>
 			<TouchableOpacity
-				className="justify-center items-center w-12 h-12 rounded-full border bg-tertiary border-primary"
+				className="justify-center items-center w-12 h-12 rounded-full border bg-tertiary border-accent"
 				onPress={handleAddMinutes}
 				accessibilityRole="button"
 				accessibilityLabel="Aumentar minutos"
