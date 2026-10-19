@@ -198,6 +198,8 @@ export default function RegisterEdit() {
 								<TouchableOpacity
 									className="items-center p-3 w-full h-48 rounded-lg"
 									onPress={handleTakePhoto}
+									accessibilityRole="button"
+									accessibilityLabel="Tirar foto do ponto"
 								>
 									<Image
 										source={{ uri: `${register.photo}` }}
@@ -208,6 +210,8 @@ export default function RegisterEdit() {
 							) : (
 								<TouchableOpacity
 									onPress={handleTakePhoto}
+									accessibilityRole="button"
+									accessibilityLabel="Tirar foto do ponto"
 									className="justify-center items-center p-3 w-full h-48 rounded-lg bg-surface"
 								>
 									<Entypo
@@ -228,7 +232,7 @@ export default function RegisterEdit() {
 								onChangeText={(value) => handleInputChange("nsr", value)}
 								className="p-2 rounded-md bg-surface text-surface-content"
 								placeholder="Digite o NSR (Opcional)"
-								placeholderTextColor={colors[theme].surfaceContent + "60"}
+								placeholderTextColor={colors[theme].placeholder}
 							/>
 						</View>
 					</View>
@@ -325,7 +329,7 @@ export default function RegisterEdit() {
 								onChangeText={(value) => handleInputChange("location", value)}
 								className="p-2 rounded-md bg-surface text-surface-content"
 								placeholder="Digite a descrição"
-								placeholderTextColor={colors[theme].surfaceContent + "60"}
+								placeholderTextColor={colors[theme].placeholder}
 								multiline
 								numberOfLines={3}
 							/>
@@ -339,6 +343,8 @@ export default function RegisterEdit() {
 								<TouchableOpacity
 									className="items-center w-full h-40 rounded-lg"
 									onPress={handleTakePhoto}
+									accessibilityRole="button"
+									accessibilityLabel="Tirar foto do ponto"
 								>
 									<Image
 										source={{ uri: `${register.photo}` }}
@@ -349,6 +355,8 @@ export default function RegisterEdit() {
 							) : (
 								<TouchableOpacity
 									onPress={handleTakePhoto}
+									accessibilityRole="button"
+									accessibilityLabel="Tirar foto do ponto"
 									className="justify-center items-center p-3 w-full h-48 rounded-lg bg-surface"
 								>
 									<Entypo
@@ -412,6 +420,8 @@ export default function RegisterEdit() {
 								register.type === type ? "bg-primary" : "bg-surface"
 							}`}
 							onPress={() => handleInputChange("type", type)}
+							accessibilityRole="button"
+							accessibilityState={{ selected: register.type === type }}
 						>
 							<Text
 								className={`text-base font-medium ${

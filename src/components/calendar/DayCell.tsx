@@ -89,7 +89,13 @@ export function DayCell({
 	}
 
 	return (
-		<TouchableOpacity onPress={() => onPress(day)}>
+		<TouchableOpacity
+			onPress={() => onPress(day)}
+			accessibilityRole="button"
+			accessibilityLabel={`Dia ${day.getDate()}${
+				balance !== undefined ? `, saldo ${convertMinutesToTime(balance)}` : ""
+			}`}
+		>
 			<View
 				className={`w-12 h-16 items-center justify-center rounded-lg ${cellStyle()}`}
 			>

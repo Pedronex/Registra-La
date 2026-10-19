@@ -1,4 +1,6 @@
 import DateTimePicker from '@react-native-community/datetimepicker'
+import { useTheme } from '@/providers/ThemeProvider'
+import { colors } from '@/utils/colorThemes'
 import { useEffect, useRef, useState } from 'react'
 import { Text, TextInput, type TextInputInstance, TouchableOpacity, View } from 'react-native'
 
@@ -18,6 +20,7 @@ export function BalanceInput({ onChange, value }: BalanceInputProps) {
   const [showDatePicker, setShowDatePicker] = useState(false)
   const [hours, setHours] = useState<string>(value.hours || '00')
   const [minutes, setMinutes] = useState<string>(value.minutes || '00')
+  const { theme } = useTheme()
 
   // Refs para os campos de horas e minutos
   const hoursRef = useRef<TextInputInstance>(null)
@@ -100,7 +103,7 @@ export function BalanceInput({ onChange, value }: BalanceInputProps) {
             value={hours}
             onChangeText={handleHoursChange}
             placeholder="00"
-            placeholderTextColor="#A0A0A0"
+            placeholderTextColor={colors[theme].placeholder}
             returnKeyType="next"
             blurOnSubmit={false}
             onSubmitEditing={() => minutesRef.current?.focus()}
@@ -114,7 +117,7 @@ export function BalanceInput({ onChange, value }: BalanceInputProps) {
             value={minutes}
             onChangeText={handleMinutesChange}
             placeholder="00"
-            placeholderTextColor="#A0A0A0"
+            placeholderTextColor={colors[theme].placeholder}
             returnKeyType="done"
           />
           <Text className="ml-2 text-lg font-bold text-surface-content">h</Text>

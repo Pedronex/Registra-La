@@ -137,7 +137,7 @@ export default function ConfigPage() {
 						className="flex-1 px-4 py-3 rounded-lg border bg-surface border-surface-content text-background-content"
 						keyboardType="numeric"
 						placeholder="HH"
-						placeholderTextColor={colors[theme].surfaceContent + "80"}
+						placeholderTextColor={colors[theme].placeholder}
 						value={Math.floor(formState.entraceTime / 60)
 							.toString()
 							.padStart(2, "0")}
@@ -153,7 +153,7 @@ export default function ConfigPage() {
 						className="flex-1 px-4 py-3 rounded-lg border bg-surface border-surface-content text-background-content"
 						keyboardType="numeric"
 						placeholder="MM"
-						placeholderTextColor={colors[theme].surfaceContent + "80"}
+						placeholderTextColor={colors[theme].placeholder}
 						value={(formState.entraceTime % 60).toString().padStart(2, "0")}
 						onChangeText={(text) => {
 							const minutes = Number(text.replace(/[^0-9]/g, "")) || 0;
@@ -176,7 +176,7 @@ export default function ConfigPage() {
 						className="flex-1 px-4 py-3 rounded-lg border bg-surface border-surface-content text-background-content"
 						keyboardType="numeric"
 						placeholder="HH"
-						placeholderTextColor={colors[theme].surfaceContent + "80"}
+						placeholderTextColor={colors[theme].placeholder}
 						value={Math.floor(formState.entraceBufferTime / 60)
 							.toString()
 							.padStart(2, "0")}
@@ -192,7 +192,7 @@ export default function ConfigPage() {
 						className="flex-1 px-4 py-3 rounded-lg border bg-surface border-surface-content text-background-content"
 						keyboardType="numeric"
 						placeholder="MM"
-						placeholderTextColor={colors[theme].surfaceContent + "80"}
+						placeholderTextColor={colors[theme].placeholder}
 						value={(formState.entraceBufferTime % 60)
 							.toString()
 							.padStart(2, "0")}
@@ -220,7 +220,7 @@ export default function ConfigPage() {
 						className="flex-1 px-4 py-3 rounded-lg border bg-surface border-surface-content text-background-content"
 						keyboardType="numeric"
 						placeholder="HH"
-						placeholderTextColor={colors[theme].surfaceContent + "80"}
+						placeholderTextColor={colors[theme].placeholder}
 						value={Math.floor(formState.exitBufferTime / 60)
 							.toString()
 							.padStart(2, "0")}
@@ -236,7 +236,7 @@ export default function ConfigPage() {
 						className="flex-1 px-4 py-3 rounded-lg border bg-surface border-surface-content text-background-content"
 						keyboardType="numeric"
 						placeholder="MM"
-						placeholderTextColor={colors[theme].surfaceContent + "80"}
+						placeholderTextColor={colors[theme].placeholder}
 						value={(formState.exitBufferTime % 60).toString().padStart(2, "0")}
 						onChangeText={(text) => {
 							const minutes = Number(text.replace(/[^0-9]/g, "")) || 0;
@@ -262,7 +262,7 @@ export default function ConfigPage() {
 						className="flex-1 px-4 py-3 rounded-lg border bg-surface border-surface-content text-background-content"
 						keyboardType="numeric"
 						placeholder="HH"
-						placeholderTextColor={colors[theme].surfaceContent + "80"}
+						placeholderTextColor={colors[theme].placeholder}
 						value={Math.floor(formState.exitTime / 60)
 							.toString()
 							.padStart(2, "0")}
@@ -278,7 +278,7 @@ export default function ConfigPage() {
 						className="flex-1 px-4 py-3 rounded-lg border bg-surface border-surface-content text-background-content"
 						keyboardType="numeric"
 						placeholder="MM"
-						placeholderTextColor={colors[theme].surfaceContent + "80"}
+						placeholderTextColor={colors[theme].placeholder}
 						value={(formState.exitTime % 60).toString().padStart(2, "0")}
 						onChangeText={(text) => {
 							const minutes = Number(text.replace(/[^0-9]/g, "")) || 0;
@@ -305,7 +305,7 @@ export default function ConfigPage() {
 				className="px-4 py-3 w-full rounded-lg border bg-surface border-surface-content text-background-content"
 				keyboardType="numeric"
 				placeholder="Ex: 15"
-				placeholderTextColor={colors[theme].surfaceContent + "80"}
+				placeholderTextColor={colors[theme].placeholder}
 				value={formState.tolerance.toString()}
 				onChangeText={(text) => {
 					const numericValue = text.replace(/[^0-9]/g, "");
@@ -382,7 +382,7 @@ export default function ConfigPage() {
 			<TextInput
 				className="px-4 py-3 w-full rounded-lg border bg-surface border-surface-content text-background-content"
 				placeholder="Ex: Empresa XYZ"
-				placeholderTextColor={colors[theme].surfaceContent + "80"}
+				placeholderTextColor={colors[theme].placeholder}
 				value={formState.companyName}
 				onChangeText={(text) => handleChange("companyName", text)}
 				accessibilityLabel="Nome da empresa"
@@ -477,7 +477,7 @@ export default function ConfigPage() {
 									<Entypo
 										name="chevron-left"
 										size={35}
-										color={colors[theme].primary}
+										color={colors[theme].accent}
 									/>
 								</TouchableOpacity>
 							)

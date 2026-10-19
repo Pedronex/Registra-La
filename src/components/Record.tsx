@@ -60,6 +60,8 @@ export function Record({ data, isEntry }: RecordProps) {
 			key={`record-${data.id}`}
 			className="flex-row items-center p-3 mb-4 rounded-lg bg-secondary-focus active:opacity-80 justify-between"
 			onPress={() => router.push(`/${data.id}`)}
+			accessibilityRole="button"
+			accessibilityLabel={`${getDescriptionText()}, ${getTimeText()}. Toque para editar`}
 		>
 			<View
 				className={`justify-center items-center w-12 h-12 rounded-xl bg-${isEntry ? "success" : "error"} opacity-80`}
@@ -79,12 +81,12 @@ export function Record({ data, isEntry }: RecordProps) {
 				</Text>
 
 				{data.location && data.type !== "trabalho" && (
-					<Text className="text-xs opacity-60 text-secondary-content mt-1">
+					<Text className="text-xs text-secondary-content mt-1">
 						{data.location}
 					</Text>
 				)}
 				{data.nsr && (
-					<Text className="text-xs opacity-60 text-secondary-content mt-1">
+					<Text className="text-xs text-secondary-content mt-1">
 						NSR: {data.nsr}
 					</Text>
 				)}

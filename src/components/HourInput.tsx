@@ -136,6 +136,8 @@ export function HourInput({
 			<TouchableOpacity
 				className="justify-center items-center w-14 h-14 rounded-full border bg-tertiary border-primary"
 				onPress={handleRemoveMinute}
+				accessibilityRole="button"
+				accessibilityLabel="Diminuir minutos"
 			>
 				<Entypo name="minus" size={32} color={colors[theme].surfaceContent} />
 			</TouchableOpacity>
@@ -159,6 +161,8 @@ export function HourInput({
 			<TouchableOpacity
 				className="justify-center items-center w-14 h-14 rounded-full border bg-tertiary border-primary"
 				onPress={handleAddMinutes}
+				accessibilityRole="button"
+				accessibilityLabel="Aumentar minutos"
 			>
 				<Entypo name="plus" size={32} color={colors[theme].surfaceContent} />
 			</TouchableOpacity>

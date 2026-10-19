@@ -23,6 +23,7 @@
   --color-surface-content: #1c1b1f;
   --color-success: #6bff8e;
   --color-success-content: #194a25;
+  --color-accent: #52276c;
 }
 
 :root {
@@ -40,6 +41,7 @@
   --color-surface-content: #1c1b1f;
   --color-success: #6bff8e;
   --color-success-content: #194a25;
+  --color-accent: #52276c;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -58,5 +60,6 @@
     --color-surface-content: #e6e1e5;
     --color-success: #194a25;
     --color-success-content: #6bff8e;
+    --color-accent: #d0bcff;
   }
 }

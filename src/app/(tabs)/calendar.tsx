@@ -64,11 +64,15 @@ export default function CalendarPage() {
 			<Header
 				title="Calendário"
 				back={() => (
-					<TouchableOpacity onPress={() => router.back()}>
+					<TouchableOpacity
+						onPress={() => router.back()}
+						accessibilityRole="button"
+						accessibilityLabel="Voltar"
+					>
 						<Entypo
 							name="chevron-left"
 							size={30}
-							color={colors[theme].primary}
+							color={colors[theme].accent}
 						/>
 					</TouchableOpacity>
 				)}

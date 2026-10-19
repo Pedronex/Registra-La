@@ -154,6 +154,15 @@ export function Balance({
 		return convertSecondsToTime(diffSeconds);
 	}, [records, config, isClockedIn, currentTimeInSeconds]);
 
+	const isNegative = hourBalance.includes("-");
+	// Claro: texto escuro sobre o gradiente (contraste); escuro: cor semântica legível
+	const balanceTextClass =
+		theme === "dark"
+			? isNegative
+				? "text-error-content"
+				: "text-success-content"
+			: "text-tertiary-content";
+
 	return (
 		<LinearGradient
 			colors={[
@@ -186,7 +195,7 @@ export function Balance({
 			<View className="flex-row justify-between items-center col-span-2">
 				<Text className="text-sm text-tertiary-content">Banco de Horas:</Text>
 				<Text
-					className={`text-2xl ml-2 text-${hourBalance.includes("-") ? "error-content" : "success-content"}`}
+					className={`text-2xl ml-2 font-bold ${balanceTextClass}`}
 				>
 					{hourBalance}
 				</Text>

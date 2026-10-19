@@ -11,12 +11,12 @@ export default function TabsLayout() {
 		<Tabs
 			screenOptions={{
 				headerShown: false,
-				tabBarActiveBackgroundColor: colors[theme].primaryContent,
+				tabBarActiveBackgroundColor: colors[theme].surface,
 				tabBarStyle: {
 					backgroundColor: colors[theme].background,
 				},
 				tabBarHideOnKeyboard: true,
-				tabBarActiveTintColor: colors[theme].primary,
+				tabBarActiveTintColor: colors[theme].accent,
 				tabBarInactiveTintColor: colors[theme].surfaceContent,
 			}}
 		>

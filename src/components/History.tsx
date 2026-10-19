@@ -116,16 +116,20 @@ export function History({
 			<View className="flex-row justify-between items-center p-4 rounded-lg bg-secondary border border-primary mb-2">
 				<TouchableOpacity
 					onPress={() => setDate(subDays(date, 1))}
+					accessibilityRole="button"
+					accessibilityLabel="Dia anterior"
 					className="p-3 rounded-full bg-primary-focus"
 				>
 					<Entypo
 						name="chevron-left"
 						size={24}
-						color={colors[theme].primaryContent}
+						color={colors[theme].secondaryContent}
 					/>
 				</TouchableOpacity>
 				<TouchableOpacity
 					className="items-center"
+					accessibilityRole="button"
+					accessibilityLabel="Selecionar data"
 					onPress={() => {
 						DateTimePickerAndroid.open({
 							value: date,
@@ -138,21 +142,23 @@ export function History({
 						});
 					}}
 				>
-					<Text className="text-2xl font-bold text-primary-content">
+					<Text className="text-2xl font-bold text-secondary-content">
 						{format(date, "dd 'de' MMMM", { locale: ptBR })}
 					</Text>
-					<Text className="text-sm opacity-80 text-primary-content">
+					<Text className="text-sm text-secondary-content">
 						{format(date, "yyyy", { locale: ptBR })}
 					</Text>
 				</TouchableOpacity>
 				<TouchableOpacity
 					onPress={() => setDate(addDays(date, 1))}
+					accessibilityRole="button"
+					accessibilityLabel="Próximo dia"
 					className="p-3 rounded-full bg-primary-focus"
 				>
 					<Entypo
 						name="chevron-right"
 						size={24}
-						color={colors[theme].primaryContent}
+						color={colors[theme].secondaryContent}
 					/>
 				</TouchableOpacity>
 			</View>
