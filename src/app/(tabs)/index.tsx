@@ -6,7 +6,7 @@ import { useTheme } from '@/providers/ThemeProvider'
 import { colors } from '@/utils/colorThemes'
 import { useState } from 'react'
 import { ActivityIndicator, Text, View } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { SafeAreaView } from "@/components/styled"
 
 /**
  * Página principal do aplicativo após login

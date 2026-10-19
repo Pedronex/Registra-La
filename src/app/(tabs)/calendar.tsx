@@ -14,7 +14,7 @@ import Entypo from "@react-native-vector-icons/entypo";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { ActivityIndicator, TouchableOpacity, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView } from "@/components/styled";
 
 export default function CalendarPage() {
 	const router = useRouter();

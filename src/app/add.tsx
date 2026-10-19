@@ -10,7 +10,7 @@ import {
 	TouchableOpacity,
 	View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView } from "@/components/styled";
 
 import { BalanceInput } from "@/components/BalanceInput";
 import { DateInput } from "@/components/DateInput";

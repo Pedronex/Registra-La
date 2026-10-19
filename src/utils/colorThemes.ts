@@ -1,5 +1,3 @@
-import { vars } from 'nativewind'
-
 export const colors = {
   light: {
     primary: '#52276C',
@@ -36,7 +34,7 @@ export const colors = {
 }
 
 export const themes = {
-  light: vars({
+  light: {
     /* Cores principais da marca */
     '--color-primary': '#52276C',
     '--color-primary-content': '#FFFFFF',
@@ -60,8 +58,8 @@ export const themes = {
     '--color-background-content': '#4A4A4A',
     '--color-surface': '#FFFFFF',
     '--color-surface-content': '#4A4A4A',
-  }),
-  dark: vars({
+  },
+  dark: {
     /* Cores principais da marca */
     '--color-primary': '#52276C',
     '--color-primary-content': '#FFFFFF',
@@ -85,5 +83,5 @@ export const themes = {
     '--color-background-content': '#E0E0E0',
     '--color-surface': '#1E1E1E',
     '--color-surface-content': '#E0E0E0',
-  }),
+  },
 }
