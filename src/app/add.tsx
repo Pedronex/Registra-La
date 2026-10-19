@@ -1,27 +1,27 @@
-import Entypo from "@react-native-vector-icons/entypo";
 import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import {
 	ActivityIndicator,
-	Image,
+	KeyboardAvoidingView,
+	ScrollView,
 	Text,
-	TextInput,
 	TouchableOpacity,
 	View,
 } from "react-native";
 import { SafeAreaView } from "@/components/styled";
 
-import { BalanceInput } from "@/components/BalanceInput";
-import { DateInput } from "@/components/DateInput";
+import { BackButton } from "@/components/BackButton";
 import { Header } from "@/components/Header";
-import { HourInput } from "@/components/HourInput";
+import { RegisterForm } from "@/components/RegisterForm";
+import { RegisterInsert } from "@/db/schema/registers";
 import { useConfig } from "@/hooks/useConfig";
 import { useRegister } from "@/hooks/useRegister";
 import { useTheme } from "@/providers/ThemeProvider";
 import { colors } from "@/utils/colorThemes";
-import { convertMinutesToTime, convertTimeToMinutes } from "@/utils/convert";
-import { RegisterInsert } from "@/db/schema/registers";
+import { convertTimeToMinutes } from "@/utils/convert";
+
+const TYPES = ["trabalho", "folga", "atestado", "saldo"];
 
 /**
  * Página de registro de ponto
@@ -96,7 +96,7 @@ export default function RegisterPage() {
 	};
 
 	const handleInputChange = (
-		field: keyof typeof register,
+		field: keyof RegisterInsert,
 		value: string | Date | boolean | number,
 	) => {
 		setRegister((prev) => ({
@@ -128,320 +128,39 @@ export default function RegisterPage() {
 		);
 	}
 
-	function renderRegisterForm() {
-		switch (register.type) {
-			case "trabalho":
-				return (
-					<View className="flex-1 gap-y-5 mt-4 space-y-4 w-full">
-						<View className="w-full">
-							<Text className="mb-1 text-lg font-medium text-background-content">
-								Data
-							</Text>
-							<DateInput
-								mode="date"
-								value={
-									new Date(
-										register.date.split("/").reverse().join("-") + "T00:00:00",
-									)
-								}
-								onChange={(value) =>
-									handleInputChange("date", value.toLocaleDateString("pt-BR"))
-								}
-							/>
-						</View>
-
-						<View className="w-full">
-							<Text className="mb-1 text-lg font-medium text-background-content">
-								Hora
-							</Text>
-							<HourInput
-								onChange={(value) =>
-									handleInputChange(
-										"timeInMinutes",
-										convertTimeToMinutes(value),
-									)
-								}
-								value={convertMinutesToTime(register.timeInMinutes || 0)}
-							/>
-						</View>
-
-						<View className="w-full elevation">
-							<Text className="mb-1 text-lg font-medium text-background-content">
-								Foto do Ponto
-							</Text>
-							{register.photo ? (
-								<TouchableOpacity
-									className="items-center p-3 w-full h-48 rounded-xl"
-									onPress={handleTakePhoto}
-									accessibilityRole="button"
-									accessibilityLabel="Tirar foto do ponto"
-								>
-									<Image
-										source={{ uri: `${register.photo}` }}
-										className="w-full h-full rounded-xl bg-surface"
-										resizeMode="contain"
-										width={500}
-										height={500}
-									/>
-								</TouchableOpacity>
-							) : (
-								<TouchableOpacity
-									onPress={handleTakePhoto}
-									accessibilityRole="button"
-									accessibilityLabel="Tirar foto do ponto"
-									className="justify-center items-center p-3 w-full h-32 rounded-2xl border bg-surface border-secondary"
-								>
-									<Entypo
-										name="camera"
-										size={36}
-										color={colors[theme].surfaceContent}
-									/>
-								</TouchableOpacity>
-							)}
-						</View>
-
-						<View className="w-full">
-							<Text className="mb-1 text-lg font-medium text-background-content">
-								NSR
-							</Text>
-							<TextInput
-								value={register.nsr || ""}
-								onChangeText={(value) => handleInputChange("nsr", value)}
-								className="p-2 rounded-xl bg-surface text-surface-content"
-								placeholder="Digite o NSR (Opcional)"
-								placeholderTextColor={colors[theme].placeholder}
-							/>
-						</View>
-					</View>
-				);
-			case "saldo":
-				return (
-					<View className="flex-1 gap-y-5 mt-4 space-y-4 w-full">
-						<BalanceInput
-							value={{
-								hours: register.timeInMinutes
-									? Math.floor(register.timeInMinutes / 60).toString()
-									: "0",
-								minutes: register.timeInMinutes
-									? (register.timeInMinutes % 60).toString()
-									: "0",
-								date: new Date(
-									register.date.split("/").reverse().join("-") + "T00:00:00",
-								),
-								operation: register.isFullDay ? "increase" : "decrease",
-							}}
-							onChange={(hours, minutes, date, operation) => {
-								handleInputChange(
-									"timeInMinutes",
-									parseInt(hours) * 60 + parseInt(minutes),
-								);
-								handleInputChange("date", date.toLocaleDateString("pt-BR"));
-								handleInputChange("isFullDay", operation === "increase");
-							}}
-						/>
-					</View>
-				);
-			default:
-				return (
-					<View className="flex-1 gap-y-5 mt-4 space-y-4 w-full">
-						<View className="w-full">
-							<Text className="mb-1 text-lg font-medium text-background-content">
-								Data
-							</Text>
-							<DateInput
-								mode="date"
-								value={
-									new Date(
-										register.date.split("/").reverse().join("-") + "T00:00:00",
-									)
-								}
-								onChange={(value) =>
-									handleInputChange("date", value.toLocaleDateString("pt-BR"))
-								}
-							/>
-						</View>
-						<View className="w-full">
-							<Text className="mb-1 text-lg font-medium text-background-content">
-								Tipo de Abono
-							</Text>
-							<View className="flex-row gap-x-2 mb-4">
-								<TouchableOpacity
-									className={`flex-1 items-center p-3 rounded-xl ${
-										register.isFullDay ? "bg-primary" : "bg-surface"
-									}`}
-									onPress={() => {
-										handleInputChange("isFullDay", true);
-										handleInputChange(
-											"timeInMinutes",
-											(config?.workHours || 8) * 60,
-										);
-									}}
-								>
-									<Text
-										className={`text-base font-medium ${
-											register.isFullDay
-												? "text-primary-content"
-												: "text-surface-content"
-										}`}
-									>
-										Dia Todo
-									</Text>
-								</TouchableOpacity>
-								<TouchableOpacity
-									className={`flex-1 items-center p-3 rounded-xl ${
-										!register.isFullDay ? "bg-primary" : "bg-surface"
-									}`}
-									onPress={() => {
-										handleInputChange("isFullDay", false);
-										handleInputChange("timeInMinutes", 0);
-									}}
-								>
-									<Text
-										className={`text-base font-medium ${
-											!register.isFullDay
-												? "text-primary-content"
-												: "text-surface-content"
-										}`}
-									>
-										Horas
-									</Text>
-								</TouchableOpacity>
-							</View>
-							{!register.isFullDay && (
-								<HourInput
-									value={convertMinutesToTime(register.timeInMinutes || 0)}
-									onChange={(value) =>
-										handleInputChange(
-											"timeInMinutes",
-											convertTimeToMinutes(value),
-										)
-									}
-									max={
-										`${String(config?.workHours).padStart(2, "0") || "09"}:00` ||
-										"23:59"
-									}
-								/>
-							)}
-						</View>
-
-						<View className="w-full">
-							<Text className="mb-1 text-lg font-medium text-background-content">
-								Descrição
-							</Text>
-							<TextInput
-								value={register.location || ""}
-								onChangeText={(value) => handleInputChange("location", value)}
-								className="p-2 rounded-xl bg-surface text-surface-content"
-								placeholder="Digite a descrição"
-								placeholderTextColor={colors[theme].placeholder}
-								multiline
-								numberOfLines={3}
-							/>
-						</View>
-
-						<View className="w-full">
-							<Text className="mb-1 text-lg font-medium text-background-content">
-								Foto
-							</Text>
-							{register.photo ? (
-								<TouchableOpacity
-									className="items-center w-full h-40 rounded-xl"
-									onPress={handleTakePhoto}
-									accessibilityRole="button"
-									accessibilityLabel="Tirar foto do ponto"
-								>
-									<Image
-										source={{ uri: `${register.photo}` }}
-										className="w-full h-full rounded-xl bg-surface"
-										resizeMode="contain"
-										width={500}
-										height={500}
-									/>
-								</TouchableOpacity>
-							) : (
-								<TouchableOpacity
-									onPress={handleTakePhoto}
-									accessibilityRole="button"
-									accessibilityLabel="Tirar foto do ponto"
-									className="justify-center items-center p-3 w-full h-32 rounded-2xl border bg-surface border-secondary"
-								>
-									<Entypo
-										name="camera"
-										size={36}
-										color={colors[theme].surfaceContent}
-									/>
-								</TouchableOpacity>
-							)}
-						</View>
-					</View>
-				);
-		}
-	}
-
-	function renderTypesForm() {
-		const types = ["trabalho", "folga", "atestado", "saldo"];
-
-		return (
-			<View className="w-full">
-				<Text className="mb-1 text-lg font-medium text-background-content">
-					Tipo de Registro
-				</Text>
-				<View className="flex-row gap-x-2">
-					{types.map((type) => (
-						<TouchableOpacity
-							key={type}
-							className={`flex-1 items-center p-3 rounded-xl ${
-								register.type === type ? "bg-primary" : "bg-surface"
-							}`}
-							onPress={() => handleInputChange("type", type)}
-							accessibilityRole="button"
-							accessibilityState={{ selected: register.type === type }}
-						>
-							<Text
-								className={`text-base font-medium ${
-									register.type === type
-										? "text-primary-content"
-										: "text-surface-content"
-								}`}
-							>
-								{type.charAt(0).toUpperCase() + type.slice(1)}
-							</Text>
-						</TouchableOpacity>
-					))}
-				</View>
-			</View>
-		);
-	}
-
-	function renderFooter() {
-		return (
-			<View className="flex-row gap-x-2 w-full">
-				<TouchableOpacity
-					className="flex-1 items-center p-4 mt-4 rounded-2xl border border-accent"
-					onPress={() => router.push("/(tabs)/")}
+	return (
+		<SafeAreaView className="flex-1 items-center pl-4 pr-4 pb-5 bg-background">
+			<Header
+				title="Novo registro"
+				showConfig={false}
+				back={() => <BackButton />}
+			/>
+			<KeyboardAvoidingView behavior="padding" className="flex-1 w-full">
+				<ScrollView
+					className="flex-1"
+					keyboardShouldPersistTaps="handled"
+					contentContainerStyle={{ paddingBottom: 16 }}
 				>
-					<Text className="text-lg font-semibold text-surface-content">Voltar</Text>
-				</TouchableOpacity>
-
+					<RegisterForm
+						register={register}
+						types={TYPES}
+						onChange={handleInputChange}
+						onTakePhoto={handleTakePhoto}
+						workHours={config?.workHours}
+					/>
+				</ScrollView>
 				<TouchableOpacity
-					className="flex-1 items-center p-4 mt-4 rounded-2xl bg-primary"
+					className="justify-center items-center h-14 rounded-2xl bg-primary"
 					onPress={handleRegister}
 					disabled={loading}
+					accessibilityRole="button"
+					accessibilityLabel="Registrar"
 				>
 					<Text className="text-lg font-bold text-primary-content">
 						{loading ? "Salvando..." : "Registrar"}
 					</Text>
 				</TouchableOpacity>
-			</View>
-		);
-	}
-
-	return (
-		<SafeAreaView className="flex-1 justify-between items-center pl-4 pr-4 pb-5 bg-background">
-			<Header title="Novo registro" showConfig={false} />
-			{renderTypesForm()}
-			{renderRegisterForm()}
-			{renderFooter()}
+			</KeyboardAvoidingView>
 		</SafeAreaView>
 	);
 }
