@@ -5,7 +5,7 @@ import { colors } from "@/utils/colorThemes";
 import { convertSecondsToTime } from "@/utils/convert";
 import Entypo from "@react-native-vector-icons/entypo";
 import { isToday } from "date-fns";
-import { LinearGradient } from "expo-linear-gradient";
+import { LinearGradient } from "@/components/styled";
 import { useEffect, useMemo, useState } from "react";
 import { Text, View } from "react-native";
 
