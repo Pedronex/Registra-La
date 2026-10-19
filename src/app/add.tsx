@@ -427,7 +427,7 @@ export default function RegisterPage() {
 	}
 
 	return (
-		<SafeAreaView className="flex-1 justify-between items-center px-3 pb-5 bg-background">
+		<SafeAreaView className="flex-1 justify-between items-center pl-3 pr-3 pb-5 bg-background">
 			<Header />
 			{renderTypesForm()}
 			{renderRegisterForm()}
