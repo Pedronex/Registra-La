@@ -1,4 +1,5 @@
 import { RegisterData } from "@/db/schema/registers";
+import { Alert } from "@/lib/Alert";
 import { useConfig } from "@/hooks/useConfig";
 import { useRegister } from "@/hooks/useRegister";
 import { useTimeRecords } from "@/hooks/useTimeRecords";
@@ -23,6 +24,7 @@ import {
 } from "react-native";
 import { Balance } from "./Balance";
 import { Loading } from "./Loading";
+import { UndoBar } from "./UndoBar";
 import { Record } from "./Record";
 
 /**
@@ -41,6 +43,10 @@ export function History({
 	const [internalDate, setInternalDate] = useState(new Date());
 	const date = controlledDate ?? internalDate;
 	const setDate = onDateChange ?? setInternalDate;
+	const [lastPunch, setLastPunch] = useState<{
+		id: number;
+		message: string;
+	} | null>(null);
 
 	// Hooks
 	const { records, loading, loadRecords } = useTimeRecords(
@@ -50,6 +56,7 @@ export function History({
 	const { theme } = useTheme();
 	const {
 		saveRegister,
+		deleteRegister,
 		extractDataPhoto,
 		loading: registerLoading,
 	} = useRegister();
@@ -159,62 +166,164 @@ export function History({
 	);
 
 	/**
-	 * Ação principal (registrar agora) e secundária (registrar por foto)
+	 * Pontos esperados do dia, com base nos horários configurados
+	 */
+	const expectedPoints = useMemo(() => {
+		if (!config) return [];
+		return [
+			{ label: "entrada", time: config.entraceTime },
+			{ label: "saída para o almoço", time: config.entraceBufferTime },
+			{ label: "volta do almoço", time: config.exitBufferTime },
+			{ label: "saída", time: config.exitTime },
+		].filter((point) => !!point.time) as { label: string; time: number }[];
+	}, [config]);
+
+	const isTodaySelected = isToday(date);
+	const workRecordsCount = records.filter((r) => r.type === "trabalho").length;
+	const nextExpected = expectedPoints[workRecordsCount];
+	const punchLabel = nextExpected
+		? `Registrar ${nextExpected.label}`
+		: "Registrar ponto";
+
+	/**
+	 * Registra o ponto agora, com um toque (hoje, tipo trabalho)
+	 */
+	const handlePunch = async () => {
+		if (registerLoading) return;
+		const now = new Date();
+		try {
+			const id = await saveRegister({
+				date: format(now, "dd/MM/yyyy"),
+				timeInMinutes: now.getHours() * 60 + now.getMinutes(),
+				type: "trabalho",
+				isFullDay: false,
+				location: "",
+				photo: "",
+				nsr: "",
+				createdAt: now,
+				updatedAt: now,
+			});
+			await loadRecords();
+			setLastPunch({
+				id,
+				message: `${
+					nextExpected
+						? `${nextExpected.label.charAt(0).toUpperCase()}${nextExpected.label.slice(1)} registrada`
+						: "Ponto registrado"
+				} às ${format(now, "HH:mm")}`,
+			});
+		} catch {
+			Alert.error("Não foi possível registrar o ponto. Tente novamente.");
+		}
+	};
+
+	/**
+	 * Desfaz o último ponto registrado com um toque
+	 */
+	const handleUndo = async () => {
+		if (!lastPunch) return;
+		const { id } = lastPunch;
+		setLastPunch(null);
+		try {
+			await deleteRegister(id);
+			await loadRecords();
+		} catch {
+			Alert.error("Não foi possível desfazer o registro.");
+		}
+	};
+
+	const addHref = {
+		pathname: "/add" as const,
+		params: { date: format(date, "dd/MM/yyyy") },
+	};
+
+	/**
+	 * Ação principal (um toque para registrar) e opções secundárias
 	 */
 	const renderActions = () => (
 		<View className="gap-3">
-			<Link href="/add" asChild>
+			{isTodaySelected ? (
 				<TouchableOpacity
+					onPress={handlePunch}
+					disabled={registerLoading}
 					accessibilityRole="button"
-					accessibilityLabel="Registrar ponto agora"
-					className="flex-row justify-center items-center h-14 rounded-2xl bg-primary"
+					accessibilityLabel={punchLabel}
+					className="flex-row justify-center items-center h-16 rounded-2xl bg-primary"
 				>
 					<Entypo
-						name="plus"
-						size={24}
+						name="check"
+						size={26}
 						color={colors[theme].primaryContent}
-						style={{ marginRight: 8 }}
+						style={{ marginRight: 10 }}
 					/>
-					<Text className="text-lg font-bold text-primary-content">
-						Registrar ponto agora
+					<Text className="text-xl font-bold text-primary-content">
+						{registerLoading ? "Registrando..." : punchLabel}
 					</Text>
 				</TouchableOpacity>
-			</Link>
-			<TouchableOpacity
-				onPress={handleAutoSavePhoto}
-				accessibilityRole="button"
-				accessibilityLabel="Registrar ponto por foto"
-				className="flex-row justify-center items-center h-12 rounded-2xl border border-accent"
-			>
-				<Octicons
-					name="sparkles-fill"
-					size={18}
-					color={colors[theme].accent}
-					style={{ marginRight: 8 }}
-				/>
-				<Text className="font-semibold text-surface-content">
-					Registrar por foto
-				</Text>
-			</TouchableOpacity>
+			) : (
+				<Link href={addHref} asChild>
+					<TouchableOpacity
+						accessibilityRole="button"
+						accessibilityLabel="Registrar ponto neste dia"
+						className="flex-row justify-center items-center h-16 rounded-2xl bg-primary"
+					>
+						<Entypo
+							name="plus"
+							size={26}
+							color={colors[theme].primaryContent}
+							style={{ marginRight: 10 }}
+						/>
+						<Text className="text-xl font-bold text-primary-content">
+							Registrar ponto neste dia
+						</Text>
+					</TouchableOpacity>
+				</Link>
+			)}
+			<View className="flex-row gap-3">
+				<TouchableOpacity
+					onPress={handleAutoSavePhoto}
+					accessibilityRole="button"
+					accessibilityLabel="Registrar ponto por foto"
+					className="flex-row flex-1 justify-center items-center h-12 rounded-2xl border border-accent"
+				>
+					<Octicons
+						name="sparkles-fill"
+						size={18}
+						color={colors[theme].accent}
+						style={{ marginRight: 8 }}
+					/>
+					<Text className="font-semibold text-surface-content">Por foto</Text>
+				</TouchableOpacity>
+				{isTodaySelected && (
+					<Link href={addHref} asChild>
+						<TouchableOpacity
+							accessibilityRole="button"
+							accessibilityLabel="Registrar em outro horário"
+							className="flex-row flex-1 justify-center items-center h-12 rounded-2xl border border-accent"
+						>
+							<Entypo
+								name="clock"
+								size={18}
+								color={colors[theme].accent}
+								style={{ marginRight: 8 }}
+							/>
+							<Text className="font-semibold text-surface-content">
+								Outro horário
+							</Text>
+						</TouchableOpacity>
+					</Link>
+				)}
+			</View>
 		</View>
 	);
 
 	/**
-	 * Próximo ponto esperado do dia, com base nos horários configurados
+	 * Próximo ponto esperado do dia, com o horário configurado
 	 */
-	const nextPoint = useMemo(() => {
-		if (!config || !isToday(date)) return null;
-		const done = records.filter((r) => r.type === "trabalho").length;
-		const points = [
-			{ label: "Entrada", time: config.entraceTime },
-			{ label: "Saída para o almoço", time: config.entraceBufferTime },
-			{ label: "Retorno do almoço", time: config.exitBufferTime },
-			{ label: "Saída", time: config.exitTime },
-		];
-		const next = points[done];
-		if (!next?.time) return null;
-		return `Próximo ponto: ${next.label} às ${convertMinutesToTime(next.time)}`;
-	}, [config, date, records]);
+	const nextPoint =
+		isTodaySelected && nextExpected
+			? `Previsto: ${nextExpected.label} às ${convertMinutesToTime(nextExpected.time)}`
+			: null;
 
 	/**
 	 */
@@ -388,6 +497,13 @@ export function History({
 			<View className="flex-1">
 				<ScrollView>{renderHistoryItems()}</ScrollView>
 			</View>
+			{lastPunch && (
+				<UndoBar
+					message={lastPunch.message}
+					onUndo={handleUndo}
+					onDismiss={() => setLastPunch(null)}
+				/>
+			)}
 		</View>
 	);
 }
