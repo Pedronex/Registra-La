@@ -1,8 +1,8 @@
 import { Alert } from "@/lib/Alert";
 import { themes } from "@/utils/colorThemes";
-import { StatusBar } from "expo-status-bar";
 import { colorScheme } from "nativewind";
-import React, { createContext, useContext, useState } from "react";
+import type React from "react";
+import { createContext, useContext, useState } from "react";
 import { useColorScheme, View } from "react-native";
 
 interface ThemeProviderProps {
@@ -23,7 +23,7 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
   const colorSchemeNative = useColorScheme();
 
   const [currentTheme, setCurrentTheme] = useState<"light" | "dark">(
-    colorSchemeNative ?? "light"
+    colorSchemeNative === "dark" ? "dark" : "light",
   );
 
   const toggleTheme = () => {
@@ -34,7 +34,6 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
 
   return (
     <ThemeContext.Provider value={{ theme: currentTheme, toggleTheme }}>
-      <StatusBar style={currentTheme === "dark" ? "light" : "dark"} />
       <View style={themes[currentTheme]} className="flex-1">
         {children}
       </View>

@@ -1,6 +1,6 @@
 import DateTimePicker from '@react-native-community/datetimepicker'
 import { useEffect, useRef, useState } from 'react'
-import { Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { Text, TextInput, type TextInputInstance, TouchableOpacity, View } from 'react-native'
 
 interface BalanceInputProps {
   onChange: (hours: string, minutes: string, date: Date, operation: 'increase' | 'decrease') => void
@@ -20,8 +20,8 @@ export function BalanceInput({ onChange, value }: BalanceInputProps) {
   const [minutes, setMinutes] = useState<string>(value.minutes || '00')
 
   // Refs para os campos de horas e minutos
-  const hoursRef = useRef<TextInput>(null)
-  const minutesRef = useRef<TextInput>(null)
+  const hoursRef = useRef<TextInputInstance>(null)
+  const minutesRef = useRef<TextInputInstance>(null)
 
   useEffect(() => {
     onChange(hours, minutes, date, operation)

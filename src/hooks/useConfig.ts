@@ -22,20 +22,25 @@ export function useConfig() {
   /**
    * Carrega as configurações do aplicativo
    */
+  const fetchConfig = useCallback(async (): Promise<ConfigData> => {
+    const [config] = await database
+      .select()
+      .from(schema.config)
+      .limit(1)
+      .orderBy(desc(schema.config.id))
+
+    return { ...config, workDays: Array.isArray(config.workDays) ? config.workDays : [] }
+  }, [])
+
   const loadConfig = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
 
-      const [config] = await database
-        .select()
-        .from(schema.config)
-        .limit(1)
-        .orderBy(desc(schema.config.id))
+      const loaded = await fetchConfig()
+      setConfig(loaded)
 
-      setConfig({...config, workDays: Array.isArray(config.workDays) ? config.workDays : []})
-
-      return config
+      return loaded
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro ao carregar configurações'
       setError(errorMessage)
@@ -43,7 +48,7 @@ export function useConfig() {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [fetchConfig])
 
   /**
    * Salva as configurações do aplicativo
@@ -102,8 +107,24 @@ export function useConfig() {
 
   // Carrega as configurações ao montar o componente
   useEffect(() => {
-    loadConfig()
-  }, [loadConfig])
+    let ignore = false
+    fetchConfig()
+      .then((loaded) => {
+        if (!ignore) {
+          setConfig(loaded)
+          setError(null)
+        }
+      })
+      .catch((err) => {
+        if (!ignore) setError(err instanceof Error ? err.message : 'Erro ao carregar configurações')
+      })
+      .finally(() => {
+        if (!ignore) setLoading(false)
+      })
+    return () => {
+      ignore = true
+    }
+  }, [fetchConfig])
 
   return {
     config,

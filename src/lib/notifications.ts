@@ -1,14 +1,19 @@
 import { ConfigData } from '@/db/schema/config'
 import * as Notifications from 'expo-notifications'
+// import/namespace não resolve estes enums via re-export `export *` do índice
+import {
+  AndroidImportance,
+  AndroidNotificationVisibility,
+} from 'expo-notifications/build/NotificationChannelManager.types'
 import { Platform } from 'react-native'
 
 const defaultNotificationConfig = {
-  importance: Notifications.AndroidImportance.MAX,
+  importance: AndroidImportance.MAX,
   enableVibrate: true,
   vibrationPattern: [0, 500, 250, 1000, 250, 1000],
   lightColor: '#FF231F',
 
-  lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
+  lockscreenVisibility: AndroidNotificationVisibility.PUBLIC,
 }
 
 // Configura o handler de notificações para exibir alertas quando o app está em primeiro plano
@@ -150,4 +155,3 @@ export async function scheduleWorkdayNotifications(config: ConfigData) {
   console.log('Notificações agendadas com sucesso!')
 }
 
-export function useNotificationObserver() {}
