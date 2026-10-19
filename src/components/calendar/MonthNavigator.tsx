@@ -1,4 +1,6 @@
 import { useTheme } from "@/providers/ThemeProvider";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { colors } from "@/utils/colorThemes";
 import Entypo from "@react-native-vector-icons/entypo";
 import { Text, TouchableOpacity, View } from "react-native";
@@ -13,18 +15,30 @@ export function MonthNavigator({ date, onChangeMonth }: MonthNavigatorProps) {
 
 	return (
 		<View className="flex-row justify-between items-center mb-4">
-			<TouchableOpacity onPress={() => onChangeMonth(-1)}>
+			<TouchableOpacity
+				onPress={() => onChangeMonth(-1)}
+				hitSlop={12}
+				accessibilityRole="button"
+				accessibilityLabel="Mês anterior"
+			>
 				<Entypo
 					name="chevron-left"
 					size={30}
 					color={colors[theme].backgroundColor}
 				/>
 			</TouchableOpacity>
-			<Text className="text-xl text-background-content">{`${date.toLocaleString(
-				"default",
-				{ month: "long" },
-			)} ${date.getFullYear()}`}</Text>
-			<TouchableOpacity onPress={() => onChangeMonth(1)}>
+			<Text
+				className="text-xl text-background-content"
+				accessibilityRole="header"
+			>
+				{format(date, "MMMM yyyy", { locale: ptBR })}
+			</Text>
+			<TouchableOpacity
+				onPress={() => onChangeMonth(1)}
+				hitSlop={12}
+				accessibilityRole="button"
+				accessibilityLabel="Próximo mês"
+			>
 				<Entypo
 					name="chevron-right"
 					size={30}

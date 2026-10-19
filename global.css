@@ -1,24 +1,51 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/preflight.css" layer(base);
+@import "tailwindcss/utilities.css";
+@import "nativewind/theme";
 
-@layer base {
+/*
+ * Cores semânticas: @theme gera as utilities (bg-primary, text-surface-content...)
+ * e :root define os valores padrão. Em runtime os valores reais vêm de
+ * src/utils/colorThemes.ts (vars() aplicado pelo ThemeProvider).
+ */
+@theme {
+  --color-primary: #6750a4;
+  --color-primary-content: #ffffff;
+  --color-secondary: #625b71;
+  --color-secondary-content: #ffffff;
+  --color-tertiary: #7d5260;
+  --color-tertiary-content: #ffffff;
+  --color-error: #b3261e;
+  --color-error-content: #ffffff;
+  --color-background: #fffbfe;
+  --color-background-content: #1c1b1f;
+  --color-surface: #fffbfe;
+  --color-surface-content: #1c1b1f;
+  --color-success: #6bff8e;
+  --color-success-content: #194a25;
+  --color-accent: #52276c;
+}
+
+:root {
+  --color-primary: #6750a4;
+  --color-primary-content: #ffffff;
+  --color-secondary: #625b71;
+  --color-secondary-content: #ffffff;
+  --color-tertiary: #7d5260;
+  --color-tertiary-content: #ffffff;
+  --color-error: #b3261e;
+  --color-error-content: #ffffff;
+  --color-background: #fffbfe;
+  --color-background-content: #1c1b1f;
+  --color-surface: #fffbfe;
+  --color-surface-content: #1c1b1f;
+  --color-success: #6bff8e;
+  --color-success-content: #194a25;
+  --color-accent: #52276c;
+}
+
+@media (prefers-color-scheme: dark) {
   :root {
-    --color-primary: #6750a4;
-    --color-primary-content: #ffffff;
-    --color-secondary: #625b71;
-    --color-secondary-content: #ffffff;
-    --color-tertiary: #7d5260;
-    --color-tertiary-content: #ffffff;
-    --color-error: #b3261e;
-    --color-error-content: #ffffff;
-    --color-background: #fffbfe;
-    --color-background-content: #1c1b1f;
-    --color-surface: #fffbfe;
-    --color-surface-content: #1c1b1f;
-  }
-
-  .dark {
     --color-primary: #d0bcff;
     --color-primary-content: #381e72;
     --color-secondary: #ccc2dc;
@@ -31,5 +58,8 @@
     --color-background-content: #e6e1e5;
     --color-surface: #1c1b1f;
     --color-surface-content: #e6e1e5;
+    --color-success: #194a25;
+    --color-success-content: #6bff8e;
+    --color-accent: #d0bcff;
   }
 }

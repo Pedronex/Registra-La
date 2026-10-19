@@ -30,6 +30,9 @@ const ThemeToggle = () => {
 	return (
 		<Pressable
 			onPress={toggleTheme}
+			accessibilityRole="switch"
+			accessibilityLabel="Tema escuro"
+			accessibilityState={{ checked: isDark }}
 			className="relative flex-row justify-between items-center p-1 w-24 h-12 rounded-full bg-secondary"
 		>
 			<Icon icon="sun" />

@@ -1,9 +1,9 @@
 import { Alert } from "@/lib/Alert";
 import { themes } from "@/utils/colorThemes";
-import { colorScheme } from "nativewind";
+import { VariableContextProvider } from "nativewind";
 import type React from "react";
 import { createContext, useContext, useState } from "react";
-import { useColorScheme, View } from "react-native";
+import { Appearance, useColorScheme, View } from "react-native";
 
 interface ThemeProviderProps {
   children: React.ReactNode;
@@ -29,14 +29,14 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
   const toggleTheme = () => {
     const newTheme = currentTheme === "light" ? "dark" : "light";
     setCurrentTheme(newTheme);
-    colorScheme.set(newTheme);
+    Appearance.setColorScheme(newTheme);
   };
 
   return (
     <ThemeContext.Provider value={{ theme: currentTheme, toggleTheme }}>
-      <View style={themes[currentTheme]} className="flex-1">
-        {children}
-      </View>
+      <VariableContextProvider value={themes[currentTheme]}>
+        <View className="flex-1">{children}</View>
+      </VariableContextProvider>
     </ThemeContext.Provider>
   );
 };

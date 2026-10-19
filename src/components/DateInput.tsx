@@ -15,6 +15,8 @@ export function DateInput({ mode, onChange, value }: Props) {
     <View>
       <TouchableOpacity
         onPress={() => setShowDatePicker(true)}
+        accessibilityRole="button"
+        accessibilityLabel={mode === 'date' ? 'Selecionar data' : 'Selecionar hora'}
         className="p-2 rounded-md bg-surface"
       >
         <Text className="text-surface-content">

@@ -14,7 +14,7 @@ import Entypo from "@react-native-vector-icons/entypo";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { ActivityIndicator, TouchableOpacity, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView } from "@/components/styled";
 
 export default function CalendarPage() {
 	const router = useRouter();
@@ -64,11 +64,15 @@ export default function CalendarPage() {
 			<Header
 				title="Calendário"
 				back={() => (
-					<TouchableOpacity onPress={() => router.back()}>
+					<TouchableOpacity
+						onPress={() => router.back()}
+						accessibilityRole="button"
+						accessibilityLabel="Voltar"
+					>
 						<Entypo
 							name="chevron-left"
 							size={30}
-							color={colors[theme].primary}
+							color={colors[theme].accent}
 						/>
 					</TouchableOpacity>
 				)}

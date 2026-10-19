@@ -55,7 +55,7 @@ export function Header({
 						accessibilityRole="button"
 						accessibilityLabel="Configurar aplicativo"
 					>
-						<Entypo name="cog" size={35} color={colors[theme].primary} />
+						<Entypo name="cog" size={35} color={colors[theme].accent} />
 					</TouchableOpacity>
 				</Link>
 			)}

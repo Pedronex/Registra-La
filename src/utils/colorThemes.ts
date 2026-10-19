@@ -1,5 +1,3 @@
-import { vars } from 'nativewind'
-
 export const colors = {
   light: {
     primary: '#52276C',
@@ -16,6 +14,10 @@ export const colors = {
     backgroundColor: '#4A4A4A',
     surface: '#FFFFFF',
     surfaceContent: '#4A4A4A',
+    /* Cor de destaque legível sobre background/surface (≥ 4.5:1) */
+    accent: '#52276C',
+    /* Texto de placeholder (≥ 4.5:1 sobre surface) */
+    placeholder: '#6B6B6B',
   },
   dark: {
     primary: '#52276C',
@@ -32,11 +34,13 @@ export const colors = {
     backgroundColor: '#E0E0E0',
     surface: '#1E1E1E',
     surfaceContent: '#E0E0E0',
+    accent: '#D0BCFF',
+    placeholder: '#A0A0A0',
   },
 }
 
 export const themes = {
-  light: vars({
+  light: {
     /* Cores principais da marca */
     '--color-primary': '#52276C',
     '--color-primary-content': '#FFFFFF',
@@ -60,8 +64,9 @@ export const themes = {
     '--color-background-content': '#4A4A4A',
     '--color-surface': '#FFFFFF',
     '--color-surface-content': '#4A4A4A',
-  }),
-  dark: vars({
+    '--color-accent': '#52276C',
+  },
+  dark: {
     /* Cores principais da marca */
     '--color-primary': '#52276C',
     '--color-primary-content': '#FFFFFF',
@@ -85,5 +90,6 @@ export const themes = {
     '--color-background-content': '#E0E0E0',
     '--color-surface': '#1E1E1E',
     '--color-surface-content': '#E0E0E0',
-  }),
+    '--color-accent': '#D0BCFF',
+  },
 }
