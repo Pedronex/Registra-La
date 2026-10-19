@@ -134,24 +134,24 @@ export function HourInput({
 	return (
 		<View className="flex-row gap-x-4 justify-between items-center p-2 w-full rounded-2xl bg-surface elevation">
 			<TouchableOpacity
-				className="justify-center items-center w-14 h-14 rounded-full border bg-tertiary border-primary"
+				className="justify-center items-center w-12 h-12 rounded-full border bg-tertiary border-accent"
 				onPress={handleRemoveMinute}
 				accessibilityRole="button"
 				accessibilityLabel="Diminuir minutos"
 			>
-				<Entypo name="minus" size={32} color={colors[theme].surfaceContent} />
+				<Entypo name="minus" size={26} color={colors[theme].surfaceContent} />
 			</TouchableOpacity>
 			<View className="flex-row items-center px-4 py-2 rounded-xl bg-surface/10">
 				<TextInput
-					className="text-5xl font-semibold min-w-[60px] text-center text-surface-content"
+					className="text-4xl font-semibold min-w-[60px] text-center text-surface-content"
 					value={hours}
 					keyboardType="number-pad"
 					onChangeText={handleHourChange}
 					onBlur={handleHourBlur}
 				/>
-				<Text className="mx-1 text-5xl font-bold text-surface-content">:</Text>
+				<Text className="mx-1 text-4xl font-bold text-surface-content">:</Text>
 				<TextInput
-					className="text-5xl font-semibold min-w-[60px] text-center text-surface-content"
+					className="text-4xl font-semibold min-w-[60px] text-center text-surface-content"
 					value={minutes}
 					keyboardType="number-pad"
 					onChangeText={handleMinuteChange}
@@ -159,12 +159,12 @@ export function HourInput({
 				/>
 			</View>
 			<TouchableOpacity
-				className="justify-center items-center w-14 h-14 rounded-full border bg-tertiary border-primary"
+				className="justify-center items-center w-12 h-12 rounded-full border bg-tertiary border-accent"
 				onPress={handleAddMinutes}
 				accessibilityRole="button"
 				accessibilityLabel="Aumentar minutos"
 			>
-				<Entypo name="plus" size={32} color={colors[theme].surfaceContent} />
+				<Entypo name="plus" size={26} color={colors[theme].surfaceContent} />
 			</TouchableOpacity>
 		</View>
 	);

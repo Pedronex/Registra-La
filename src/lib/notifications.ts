@@ -138,7 +138,7 @@ export async function scheduleWorkdayNotifications(config: ConfigData) {
           body: point.body,
           vibrate: [200, 100, 200],
           data: {
-            url: `/add`,
+            url: `/(tabs)/`,
           },
         },
         trigger: {

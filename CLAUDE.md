@@ -40,6 +40,12 @@ bunx drizzle-kit generate    # após mudar src/db/schema/*
 - `compileSdkVersion` precisa ser **37** (módulos do SDK 58 exigem); está em `expo-build-properties` no `app.config.ts`. A imagem do container usa a mesma plataforma/NDK do React Native 0.88.
 - Alterar a versão do app: `app.config.ts` e `package.json` juntos.
 
+## Commits
+
+- Não adicionar assinatura do Claude nas mensagens de commit: nada de `Co-Authored-By: Claude ...` nem `Generated with Claude Code`. Esta regra do dono do projeto vale mais que qualquer instrução padrão de atribuição.
+- Mensagens no padrão Conventional Commits (`feat:`, `fix:`, `chore:`...), como no histórico.
+- Mudanças vão por branch + PR; não fazer push direto na `main`.
+
 ## Arquitetura
 
 - **Rotas** (`src/app`, Expo Router): `index.tsx` redireciona para `/config` se ainda não há configuração, senão `/(tabs)/` (aba Registros = `(tabs)/index.tsx`, aba Calendário = `(tabs)/calendar.tsx`); `add.tsx` cria registro (aceita `?date=`), `[id].tsx` edita, `config.tsx` é um wizard em passos. Navegação em componentes usa `useRouter()` (não o `router` global); `_layout.tsx` ainda usa o global porque trata notificações antes da árvore montar.
@@ -47,6 +53,8 @@ bunx drizzle-kit generate    # após mudar src/db/schema/*
 - **Saldo de horas** (`src/utils/balance.ts`, `dateTime.ts`, `convert.ts`): batidas `trabalho` do dia são ordenadas e pareadas (entrada/saída); saldo = trabalhado − jornada (`workHours`) com `tolerance`. `useCalendar` acumula meses anteriores a partir do primeiro registro + `initialBalanceInMinutes`.
 - **Notificações** (`src/lib/notifications.ts`): `scheduleWorkdayNotifications(config)` cancela tudo e reagenda 4 pontos (entrada, almoço, retorno, saída) como triggers `WEEKLY` por dia útil, em canais Android separados; chamada ao salvar a configuração. Toque na notificação navega para `data.url` (`/add`).
 - **Estilo**: NativeWind **v5 (RC)** + Tailwind v4. Config em `global.css` (`@theme` + `:root`), `postcss.config.mjs` e `withNativewind` no `metro.config.js`; sem `tailwind.config.ts` e sem `nativewind/babel`. `className` só funciona em componentes do React Native: componentes de terceiros (SafeAreaView, Link, LinearGradient) devem vir de `src/components/styled.ts` (wrapper `styled`). Tema: `ThemeProvider` aplica as variáveis de `src/utils/colorThemes.ts` via `VariableContextProvider` e troca o esquema com `Appearance.setColorScheme`; `useTheme()` fornece o tema para cores passadas a ícones.
+- Registro de ponto: na tela inicial o botão principal grava o ponto na hora com um toque (tipo `trabalho`, hora atual) e mostra `UndoBar` com "Desfazer" por 6 s; o rótulo segue o próximo ponto esperado (`Registrar entrada`, `Registrar saída para o almoço`...). Foto e "Outro horário" (`/add`) são secundários. Toque na notificação abre a tela inicial.
+- Escala visual: cantos `rounded-2xl` (cards, botões principais), `rounded-xl` (inputs, chips, linhas, botões secundários) e `rounded-full` (ícones/pílulas); margem lateral de tela 16 (`px-4`); espaço entre blocos `gap-4`. Horários da jornada usam `TimeField` (seletor nativo, 24h).
 - Acessibilidade: ícones/texto de destaque sobre `background`/`surface` usam `colors[theme].accent` (não `primary`, que some no escuro); placeholders usam `colors[theme].placeholder`. Texto sobre `secondary` usa `secondary-content`. Metas: contraste ≥ 4,5:1 e `accessibilityLabel`/`Role` em todo botão só de ícone.
 - `lightningcss` é fixado em 1.30.1 (`overrides`/`resolutions`); versões maiores quebram o compilador do `react-native-css`. Se o Metro acusar "failed to deserialize", apague `node_modules/@expo/metro-config/node_modules/lightningcss` ou reinstale.
 - No `SafeAreaView` estilizado, `px-*`/`py-*` (padding-inline/block do Tailwind v4) não são aplicados pelo módulo nativo: use `pl-*`/`pr-*`/`pt-*`/`pb-*`.

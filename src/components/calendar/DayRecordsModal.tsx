@@ -1,4 +1,5 @@
 import { RegisterData } from "@/db/schema/registers";
+import { format } from "date-fns";
 import { useTheme } from "@/providers/ThemeProvider";
 import { colors } from "@/utils/colorThemes";
 import Entypo from "@react-native-vector-icons/entypo";
@@ -59,8 +60,11 @@ export function DayRecordsModal({
 					)}
 					<View className="mt-4 flex-row gap-x-2">
 						<Link
-							className="bg-primary p-3 rounded-lg items-center justify-center flex-row"
-							href="/add"
+							className="bg-primary p-3 rounded-xl items-center justify-center flex-row"
+							href={{
+								pathname: "/add",
+								params: date ? { date: format(date, "dd/MM/yyyy") } : {},
+							}}
 						>
 							<Entypo
 								name="plus"
@@ -73,7 +77,7 @@ export function DayRecordsModal({
 							</Text>
 						</Link>
 						<Pressable
-							className="flex-1 rounded-lg p-2 bg-primary"
+							className="flex-1 rounded-xl p-2 bg-primary"
 							onPress={onClose}
 						>
 							<Text className="text-primary-content font-bold text-center">

@@ -1,14 +1,15 @@
 import { RegisterData } from "@/db/schema/registers";
+import { Alert } from "@/lib/Alert";
 import { useConfig } from "@/hooks/useConfig";
 import { useRegister } from "@/hooks/useRegister";
 import { useTimeRecords } from "@/hooks/useTimeRecords";
 import { useTheme } from "@/providers/ThemeProvider";
 import { colors } from "@/utils/colorThemes";
-import { convertTimeToMinutes } from "@/utils/convert";
+import { convertMinutesToTime, convertTimeToMinutes } from "@/utils/convert";
 import Entypo from "@react-native-vector-icons/entypo";
 import Octicons from "@react-native-vector-icons/octicons";
 import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
-import { addDays, format, subDays } from "date-fns";
+import { addDays, format, isToday, subDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import * as ImagePicker from "expo-image-picker";
 import { LinearGradient } from "expo-linear-gradient";
@@ -23,6 +24,7 @@ import {
 } from "react-native";
 import { Balance } from "./Balance";
 import { Loading } from "./Loading";
+import { UndoBar } from "./UndoBar";
 import { Record } from "./Record";
 
 /**
@@ -41,6 +43,10 @@ export function History({
 	const [internalDate, setInternalDate] = useState(new Date());
 	const date = controlledDate ?? internalDate;
 	const setDate = onDateChange ?? setInternalDate;
+	const [lastPunch, setLastPunch] = useState<{
+		id: number;
+		message: string;
+	} | null>(null);
 
 	// Hooks
 	const { records, loading, loadRecords } = useTimeRecords(
@@ -50,6 +56,7 @@ export function History({
 	const { theme } = useTheme();
 	const {
 		saveRegister,
+		deleteRegister,
 		extractDataPhoto,
 		loading: registerLoading,
 	} = useRegister();
@@ -109,92 +116,214 @@ export function History({
 	};
 
 	/**
-	 * Renderiza o cabeçalho com a data e os botões de navegação
+	 * Navegação de data (dia anterior / seletor de data / próximo dia)
 	 */
-	const renderHeader = () => (
-		<View className="mb-4">
-			<View className="flex-row justify-between items-center p-4 rounded-lg bg-secondary border border-primary mb-2">
-				<TouchableOpacity
-					onPress={() => setDate(subDays(date, 1))}
-					accessibilityRole="button"
-					accessibilityLabel="Dia anterior"
-					className="p-3 rounded-full bg-primary-focus"
-				>
-					<Entypo
-						name="chevron-left"
-						size={24}
-						color={colors[theme].secondaryContent}
-					/>
-				</TouchableOpacity>
-				<TouchableOpacity
-					className="items-center"
-					accessibilityRole="button"
-					accessibilityLabel="Selecionar data"
-					onPress={() => {
-						DateTimePickerAndroid.open({
-							value: date,
-							mode: "date",
-							onChange: (event, selectedDate) => {
-								if (event.type === "set" && selectedDate) {
-									setDate(selectedDate);
-								}
-							},
-						});
-					}}
-				>
-					<Text className="text-2xl font-bold text-secondary-content">
-						{format(date, "dd 'de' MMMM", { locale: ptBR })}
-					</Text>
-					<Text className="text-sm text-secondary-content">
-						{format(date, "yyyy", { locale: ptBR })}
-					</Text>
-				</TouchableOpacity>
-				<TouchableOpacity
-					onPress={() => setDate(addDays(date, 1))}
-					accessibilityRole="button"
-					accessibilityLabel="Próximo dia"
-					className="p-3 rounded-full bg-primary-focus"
-				>
-					<Entypo
-						name="chevron-right"
-						size={24}
-						color={colors[theme].secondaryContent}
-					/>
-				</TouchableOpacity>
-			</View>
+	const rawDateLabel = format(date, "EEEE, dd 'de' MMMM", { locale: ptBR });
+	const dateLabel = rawDateLabel.charAt(0).toUpperCase() + rawDateLabel.slice(1);
 
-			<View className="flex-row justify-between gap-4">
-				<Link
-					className="bg-primary p-3 rounded-lg items-center justify-center flex-row"
-					href="/add"
+	const renderDateNavigator = () => (
+		<View className="flex-row justify-between items-center p-2 rounded-2xl border bg-surface border-secondary">
+			<TouchableOpacity
+				onPress={() => setDate(subDays(date, 1))}
+				accessibilityRole="button"
+				accessibilityLabel="Dia anterior"
+				className="justify-center items-center w-12 h-12 rounded-full"
+			>
+				<Entypo name="chevron-left" size={26} color={colors[theme].accent} />
+			</TouchableOpacity>
+			<TouchableOpacity
+				className="items-center"
+				accessibilityRole="button"
+				accessibilityLabel="Selecionar data"
+				onPress={() => {
+					DateTimePickerAndroid.open({
+						value: date,
+						mode: "date",
+						onChange: (event, selectedDate) => {
+							if (event.type === "set" && selectedDate) {
+								setDate(selectedDate);
+							}
+						},
+					});
+				}}
+			>
+				<Text className="text-lg font-bold text-surface-content">
+					{dateLabel}
+				</Text>
+				<Text className="text-sm text-surface-content">
+					{format(date, "yyyy", { locale: ptBR })}
+				</Text>
+			</TouchableOpacity>
+			<TouchableOpacity
+				onPress={() => setDate(addDays(date, 1))}
+				accessibilityRole="button"
+				accessibilityLabel="Próximo dia"
+				className="justify-center items-center w-12 h-12 rounded-full"
+			>
+				<Entypo name="chevron-right" size={26} color={colors[theme].accent} />
+			</TouchableOpacity>
+		</View>
+	);
+
+	/**
+	 * Pontos esperados do dia, com base nos horários configurados
+	 */
+	const expectedPoints = useMemo(() => {
+		if (!config) return [];
+		return [
+			{ label: "entrada", time: config.entraceTime },
+			{ label: "saída para o almoço", time: config.entraceBufferTime },
+			{ label: "volta do almoço", time: config.exitBufferTime },
+			{ label: "saída", time: config.exitTime },
+		].filter((point) => !!point.time) as { label: string; time: number }[];
+	}, [config]);
+
+	const isTodaySelected = isToday(date);
+	const workRecordsCount = records.filter((r) => r.type === "trabalho").length;
+	const nextExpected = expectedPoints[workRecordsCount];
+	const punchLabel = nextExpected
+		? `Registrar ${nextExpected.label}`
+		: "Registrar ponto";
+
+	/**
+	 * Registra o ponto agora, com um toque (hoje, tipo trabalho)
+	 */
+	const handlePunch = async () => {
+		if (registerLoading) return;
+		const now = new Date();
+		try {
+			const id = await saveRegister({
+				date: format(now, "dd/MM/yyyy"),
+				timeInMinutes: now.getHours() * 60 + now.getMinutes(),
+				type: "trabalho",
+				isFullDay: false,
+				location: "",
+				photo: "",
+				nsr: "",
+				createdAt: now,
+				updatedAt: now,
+			});
+			await loadRecords();
+			setLastPunch({
+				id,
+				message: `${
+					nextExpected
+						? `${nextExpected.label.charAt(0).toUpperCase()}${nextExpected.label.slice(1)} registrada`
+						: "Ponto registrado"
+				} às ${format(now, "HH:mm")}`,
+			});
+		} catch {
+			Alert.error("Não foi possível registrar o ponto. Tente novamente.");
+		}
+	};
+
+	/**
+	 * Desfaz o último ponto registrado com um toque
+	 */
+	const handleUndo = async () => {
+		if (!lastPunch) return;
+		const { id } = lastPunch;
+		setLastPunch(null);
+		try {
+			await deleteRegister(id);
+			await loadRecords();
+		} catch {
+			Alert.error("Não foi possível desfazer o registro.");
+		}
+	};
+
+	const addHref = {
+		pathname: "/add" as const,
+		params: { date: format(date, "dd/MM/yyyy") },
+	};
+
+	/**
+	 * Ação principal (um toque para registrar) e opções secundárias
+	 */
+	const renderActions = () => (
+		<View className="gap-3">
+			{isTodaySelected ? (
+				<TouchableOpacity
+					onPress={handlePunch}
+					disabled={registerLoading}
+					accessibilityRole="button"
+					accessibilityLabel={punchLabel}
+					className="flex-row justify-center items-center h-16 rounded-2xl bg-primary"
 				>
 					<Entypo
-						name="plus"
-						size={20}
+						name="check"
+						size={26}
 						color={colors[theme].primaryContent}
-						style={{ marginRight: 8 }}
+						style={{ marginRight: 10 }}
 					/>
-					<Text className="text-primary-content font-bold">
-						Registro Manual
+					<Text className="text-xl font-bold text-primary-content">
+						{registerLoading ? "Registrando..." : punchLabel}
 					</Text>
+				</TouchableOpacity>
+			) : (
+				<Link href={addHref} asChild>
+					<TouchableOpacity
+						accessibilityRole="button"
+						accessibilityLabel="Registrar ponto neste dia"
+						className="flex-row justify-center items-center h-16 rounded-2xl bg-primary"
+					>
+						<Entypo
+							name="plus"
+							size={26}
+							color={colors[theme].primaryContent}
+							style={{ marginRight: 10 }}
+						/>
+						<Text className="text-xl font-bold text-primary-content">
+							Registrar ponto neste dia
+						</Text>
+					</TouchableOpacity>
 				</Link>
+			)}
+			<View className="flex-row gap-3">
 				<TouchableOpacity
 					onPress={handleAutoSavePhoto}
-					className="bg-primary p-3 rounded-lg items-center justify-center flex-row"
+					accessibilityRole="button"
+					accessibilityLabel="Registrar ponto por foto"
+					className="flex-row flex-1 justify-center items-center h-12 rounded-2xl border border-accent"
 				>
 					<Octicons
 						name="sparkles-fill"
-						size={20}
-						color={colors[theme].primaryContent}
+						size={18}
+						color={colors[theme].accent}
 						style={{ marginRight: 8 }}
 					/>
-					<Text className="text-primary-content font-bold">
-						Registro Automático
-					</Text>
+					<Text className="font-semibold text-surface-content">Por foto</Text>
 				</TouchableOpacity>
+				{isTodaySelected && (
+					<Link href={addHref} asChild>
+						<TouchableOpacity
+							accessibilityRole="button"
+							accessibilityLabel="Registrar em outro horário"
+							className="flex-row flex-1 justify-center items-center h-12 rounded-2xl border border-accent"
+						>
+							<Entypo
+								name="clock"
+								size={18}
+								color={colors[theme].accent}
+								style={{ marginRight: 8 }}
+							/>
+							<Text className="font-semibold text-surface-content">
+								Outro horário
+							</Text>
+						</TouchableOpacity>
+					</Link>
+				)}
 			</View>
 		</View>
 	);
+
+	/**
+	 * Próximo ponto esperado do dia, com o horário configurado
+	 */
+	const nextPoint =
+		isTodaySelected && nextExpected
+			? `Previsto: ${nextExpected.label} às ${convertMinutesToTime(nextExpected.time)}`
+			: null;
 
 	/**
 	 */
@@ -286,7 +415,7 @@ export function History({
 				end={{ x: 1, y: 1 }}
 				style={{
 					justifyContent: "space-between",
-					borderRadius: 8,
+					borderRadius: 16,
 				}}
 			>
 				{registerLoading ? (
@@ -344,7 +473,7 @@ export function History({
 
 	if (loading) {
 		return (
-			<View className="flex-1 w-full rounded-lg h-fit">
+			<View className="flex-1 w-full rounded-xl h-fit">
 				<View className="flex-1 justify-center items-center">
 					<ActivityIndicator
 						size="large"
@@ -356,12 +485,25 @@ export function History({
 	}
 
 	return (
-		<View className="flex-1 w-full rounded-lg h-fit justify-between">
-			{renderHeader()}
+		<View className="flex-1 gap-4 w-full">
+			{renderDateNavigator()}
+			<Balance date={controlledDate || new Date()} records={records} />
+			{renderActions()}
+			{nextPoint && (
+				<Text className="text-sm text-center text-background-content">
+					{nextPoint}
+				</Text>
+			)}
 			<View className="flex-1">
 				<ScrollView>{renderHistoryItems()}</ScrollView>
 			</View>
-			<Balance date={controlledDate || new Date()} records={records} />
+			{lastPunch && (
+				<UndoBar
+					message={lastPunch.message}
+					onUndo={handleUndo}
+					onDismiss={() => setLastPunch(null)}
+				/>
+			)}
 		</View>
 	);
 }

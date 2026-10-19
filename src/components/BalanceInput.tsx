@@ -58,7 +58,7 @@ export function BalanceInput({ onChange, value }: BalanceInputProps) {
       <Text className="text-lg font-semibold text-background-content mb-4">Ajustar saldo</Text>
       <View className="flex-row mb-4">
         <TouchableOpacity
-          className={`flex-1 items-center py-2 rounded-lg mr-2 border ${operation === 'increase' ? 'bg-primary border-primary' : 'bg-surface border-surface-content'}`}
+          className={`flex-1 items-center py-2 rounded-xl mr-2 border ${operation === 'increase' ? 'bg-primary border-primary' : 'bg-surface border-surface-content'}`}
           onPress={() => setOperation('increase')}
         >
           <Text
@@ -68,7 +68,7 @@ export function BalanceInput({ onChange, value }: BalanceInputProps) {
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          className={`flex-1 items-center py-2 rounded-lg ml-2 border ${operation === 'decrease' ? 'bg-primary border-primary' : 'bg-surface border-surface-content'}`}
+          className={`flex-1 items-center py-2 rounded-xl ml-2 border ${operation === 'decrease' ? 'bg-primary border-primary' : 'bg-surface border-surface-content'}`}
           onPress={() => setOperation('decrease')}
         >
           <Text
@@ -82,7 +82,7 @@ export function BalanceInput({ onChange, value }: BalanceInputProps) {
       <View className="mb-4">
         <Text className="text-base font-medium text-background-content mb-1">A partir de:</Text>
         <TouchableOpacity
-          className="px-4 py-2 rounded-lg bg-surface border border-surface-content"
+          className="px-4 py-2 rounded-xl bg-surface border border-surface-content"
           onPress={() => setShowDatePicker(true)}
         >
           <Text className="text-base text-surface-content">{date.toLocaleDateString()}</Text>
@@ -97,7 +97,7 @@ export function BalanceInput({ onChange, value }: BalanceInputProps) {
         <View className="flex-row items-center">
           <TextInput
             ref={hoursRef}
-            className="w-12 h-12 text-center text-lg font-bold bg-surface border border-surface-content rounded-lg text-surface-content"
+            className="w-12 h-12 text-center text-lg font-bold bg-surface border border-surface-content rounded-xl text-surface-content"
             keyboardType="number-pad"
             maxLength={2}
             value={hours}
@@ -111,7 +111,7 @@ export function BalanceInput({ onChange, value }: BalanceInputProps) {
           <Text className="mx-2 text-lg font-bold text-surface-content">:</Text>
           <TextInput
             ref={minutesRef}
-            className="w-12 h-12 text-center text-lg font-bold bg-surface border border-surface-content rounded-lg text-surface-content"
+            className="w-12 h-12 text-center text-lg font-bold bg-surface border border-surface-content rounded-xl text-surface-content"
             keyboardType="number-pad"
             maxLength={2}
             value={minutes}

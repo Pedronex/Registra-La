@@ -46,7 +46,7 @@ export function useRegister() {
   }, [])
 
   /**
-   * Salva um novo registro de ponto
+   * Salva um novo registro de ponto e retorna o id gerado
    */
   const saveRegister = useCallback(async (data: RegisterInsert) => {
     console.log(data)
@@ -55,11 +55,12 @@ export function useRegister() {
       setLoading(true)
       setError(null)
 
-      await database
+      const [inserted] = await database
         .insert(schema.registers)
         .values({ ...data, createdAt: new Date(), updatedAt: new Date() })
+        .returning({ id: schema.registers.id })
 
-      return true
+      return inserted.id
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro ao salvar registro'
       setError(errorMessage)

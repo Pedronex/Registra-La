@@ -13,6 +13,9 @@ interface MonthNavigatorProps {
 export function MonthNavigator({ date, onChangeMonth }: MonthNavigatorProps) {
 	const { theme } = useTheme();
 
+	const rawLabel = format(date, "MMMM yyyy", { locale: ptBR });
+	const monthLabel = rawLabel.charAt(0).toUpperCase() + rawLabel.slice(1);
+
 	return (
 		<View className="flex-row justify-between items-center mb-4">
 			<TouchableOpacity
@@ -31,7 +34,7 @@ export function MonthNavigator({ date, onChangeMonth }: MonthNavigatorProps) {
 				className="text-xl text-background-content"
 				accessibilityRole="header"
 			>
-				{format(date, "MMMM yyyy", { locale: ptBR })}
+				{monthLabel}
 			</Text>
 			<TouchableOpacity
 				onPress={() => onChangeMonth(1)}
