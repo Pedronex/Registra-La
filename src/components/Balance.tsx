@@ -93,12 +93,28 @@ export function Balance({
 		// Antes estava multiplicando por 3600 (tratando como horas)
 		const targetSeconds = (config?.workHours || 0) * 60;
 
+		// Ajustes de saldo: isFullDay = aumentar (+), caso contrário diminuir (−)
+		const adjustmentSeconds = records
+			.filter((r) => r.type === "saldo")
+			.reduce(
+				(sum, r) => sum + (r.isFullDay ? 1 : -1) * (r.timeInMinutes || 0) * 60,
+				0,
+			);
+
+		const finalize = (diffSeconds: number, toleranceSeconds: number) => {
+			const base = Math.abs(diffSeconds) <= toleranceSeconds ? 0 : diffSeconds;
+			const total = base + adjustmentSeconds;
+			return total === 0 ? "00:00" : convertSecondsToTime(total);
+		};
+
 		if (!config?.workHours || workRecords.length < 2) {
 			// Mesmo sem pares de trabalho suficientes, ainda podemos ter abono que zere o saldo
 			if (!config?.workHours) return "00:00";
 
 			let abonoSeconds = 0;
-			const abonos = records.filter((r) => r.type !== "trabalho");
+			const abonos = records.filter(
+				(r) => r.type !== "trabalho" && r.type !== "saldo",
+			);
 			for (const a of abonos) {
 				if (a.isFullDay) {
 					abonoSeconds += targetSeconds;
@@ -110,11 +126,7 @@ export function Balance({
 			const diffSeconds = abonoSeconds - targetSeconds;
 			const toleranceSeconds = (config.tolerance || 10) * 60;
 
-			if (Math.abs(diffSeconds) <= toleranceSeconds) {
-				return "00:00";
-			}
-			// Retorna com sinal
-			return convertSecondsToTime(diffSeconds);
+			return finalize(diffSeconds, toleranceSeconds);
 		}
 
 		let totalInSeconds = 0;
@@ -135,7 +147,9 @@ export function Balance({
 
 		// Soma de abonos (folga/atestado)
 		let abonoSeconds = 0;
-		const abonos = records.filter((r) => r.type !== "trabalho");
+		const abonos = records.filter(
+				(r) => r.type !== "trabalho" && r.type !== "saldo",
+			);
 		for (const a of abonos) {
 			if (a.isFullDay) {
 				abonoSeconds += targetSeconds;
@@ -147,11 +161,7 @@ export function Balance({
 		const diffSeconds = totalInSeconds + abonoSeconds - targetSeconds;
 		const toleranceSeconds = (config.tolerance || 10) * 60;
 
-		if (Math.abs(diffSeconds) <= toleranceSeconds) {
-			return "00:00";
-		}
-		// Retorna com sinal
-		return convertSecondsToTime(diffSeconds);
+		return finalize(diffSeconds, toleranceSeconds);
 	}, [records, config, isClockedIn, currentTimeInSeconds]);
 
 	const isNegative = hourBalance.includes("-");

@@ -115,14 +115,15 @@ function calculateBalancesFromDailyRecords(
 
     // Processa os ajustes de saldo
     for (const adj of balanceAdjustments) {
-      totalBalance += adj.timeInMinutes
+      // isFullDay = aumentar (+), caso contrário diminuir (−)
+      totalBalance += (adj.isFullDay ? 1 : -1) * adj.timeInMinutes
     }
 
     // Soma abonos do dia (folga/atestado)
     let abonoInMinutes = 0
     for (const a of abonos) {
       if (a.isFullDay) {
-        abonoInMinutes += (workHours || 0) * 3600
+        abonoInMinutes += workHours || 0
       } else if (a.timeInMinutes) {
         abonoInMinutes += a.timeInMinutes
       }

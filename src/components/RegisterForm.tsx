@@ -17,11 +17,13 @@ interface RegisterFormProps {
 	types: string[];
 	onChange: (field: keyof RegisterInsert, value: FieldValue) => void;
 	onTakePhoto: () => void;
-	/** Jornada diária em horas (limita as horas de abono) */
+	/** Jornada diária em minutos (limita as horas de abono) */
 	workHours?: number | null;
 }
 
 const LABEL_CLASS = "mb-1 text-sm font-medium text-background-content";
+
+const pad2 = (n: number) => String(n).padStart(2, "0");
 
 const parseDate = (date: string) =>
 	new Date(`${date.split("/").reverse().join("-")}T00:00:00`);
@@ -37,6 +39,23 @@ export function RegisterForm({
 	workHours,
 }: RegisterFormProps) {
 	const { theme } = useTheme();
+
+	// Ao trocar de tipo, aplica valores iniciais coerentes com o tipo escolhido
+	const selectType = (type: string) => {
+		if (type === register.type) return;
+		onChange("type", type);
+		if (type === "trabalho") {
+			const now = new Date();
+			onChange("isFullDay", false);
+			onChange("timeInMinutes", now.getHours() * 60 + now.getMinutes());
+		} else if (type === "saldo") {
+			onChange("isFullDay", true);
+			onChange("timeInMinutes", 0);
+		} else {
+			onChange("isFullDay", true);
+			onChange("timeInMinutes", workHours || 480);
+		}
+	};
 
 	const dateField = (
 		<View className="w-full">
@@ -61,7 +80,7 @@ export function RegisterForm({
 						className={`flex-1 items-center p-3 rounded-xl ${
 							register.type === type ? "bg-primary" : "bg-surface"
 						}`}
-						onPress={() => onChange("type", type)}
+						onPress={() => selectType(type)}
 						accessibilityRole="button"
 						accessibilityState={{ selected: register.type === type }}
 					>
@@ -118,19 +137,15 @@ export function RegisterForm({
 				return (
 					<BalanceInput
 						value={{
-							hours: register.timeInMinutes
-								? Math.floor(register.timeInMinutes / 60).toString()
-								: "0",
-							minutes: register.timeInMinutes
-								? (register.timeInMinutes % 60).toString()
-								: "0",
+							hours: pad2(Math.floor((register.timeInMinutes || 0) / 60)),
+							minutes: pad2((register.timeInMinutes || 0) % 60),
 							date: parseDate(register.date),
 							operation: register.isFullDay ? "increase" : "decrease",
 						}}
 						onChange={(hours, minutes, date, operation) => {
 							onChange(
 								"timeInMinutes",
-								parseInt(hours) * 60 + parseInt(minutes),
+								(parseInt(hours) || 0) * 60 + (parseInt(minutes) || 0),
 							);
 							onChange("date", date.toLocaleDateString("pt-BR"));
 							onChange("isFullDay", operation === "increase");
@@ -155,7 +170,7 @@ export function RegisterForm({
 										}`}
 										onPress={() => {
 											onChange("isFullDay", full);
-											onChange("timeInMinutes", full ? (workHours || 8) * 60 : 0);
+											onChange("timeInMinutes", full ? workHours || 480 : 0);
 										}}
 										accessibilityRole="button"
 										accessibilityState={{ selected: register.isFullDay === full }}
@@ -179,9 +194,7 @@ export function RegisterForm({
 										onChange("timeInMinutes", convertTimeToMinutes(value))
 									}
 									max={
-										workHours
-											? `${String(workHours).padStart(2, "0")}:00`
-											: "23:59"
+										workHours ? convertMinutesToTime(workHours) : "23:59"
 									}
 								/>
 							)}
