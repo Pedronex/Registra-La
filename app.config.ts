@@ -43,7 +43,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
 			backgroundColor: "#392840",
 		},
 		package: getUniqueIdentifier(),
-		edgeToEdgeEnabled: true,
 		runtimeVersion: {
 			policy: "appVersion",
 		},
@@ -114,6 +113,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
 		],
 		["expo-notifications"],
 		["@react-native-community/datetimepicker"],
+		"@react-native-vector-icons/entypo",
+		"@react-native-vector-icons/fontawesome",
+		"@react-native-vector-icons/feather",
+		"@react-native-vector-icons/material-icons",
+		"@react-native-vector-icons/octicons",
 	],
 	experiments: {
 		typedRoutes: true,

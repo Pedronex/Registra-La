@@ -183,50 +183,55 @@ export function useCalendar(year: number, month: number) {
     [config],
   )
 
+  const computeCalendarData = useCallback(async (): Promise<CalendarData | null> => {
+    if (!config) return null
+
+    const allRecords = await fetchAllRecords()
+
+    const firstRecord = allRecords.sort(
+      (a, b) => parseDateDDMMYYYY(a.date).getTime() - parseDateDDMMYYYY(b.date).getTime(),
+    )[0]
+
+    let previousMonthBalance = (config.initialBalanceInMinutes || 0)
+
+    if (firstRecord) {
+      const firstDate = parseDateDDMMYYYY(firstRecord.date)
+      let currentDate = new Date(firstDate.getFullYear(), firstDate.getMonth(), 1)
+      const targetDate = new Date(year, month - 1, 1)
+
+      while (currentDate < targetDate) {
+        const monthData = getMonthlyData(
+          allRecords,
+          currentDate.getFullYear(),
+          currentDate.getMonth() + 1,
+        )
+        console.info(monthData.totalBalance)
+        previousMonthBalance += monthData.totalBalance
+        currentDate.setMonth(currentDate.getMonth() + 1)
+      }
+    }
+
+    const currentMonthData = getMonthlyData(allRecords, year, month)
+    const monthBalance = currentMonthData.totalBalance
+    const currentBalance = previousMonthBalance + monthBalance
+
+    return {
+      dailyBalances: currentMonthData.dailyBalances,
+      monthBalance,
+      previousMonthBalance,
+      currentBalance,
+      workedDays: currentMonthData.workedDays,
+      dailyRecords: currentMonthData.dailyRecords,
+    }
+  }, [year, month, getMonthlyData, config])
+
   const loadCalendarData = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
 
-      if (!config) return
-
-      const allRecords = await fetchAllRecords()
-
-      const firstRecord = allRecords.sort(
-        (a, b) => parseDateDDMMYYYY(a.date).getTime() - parseDateDDMMYYYY(b.date).getTime(),
-      )[0]
-
-      let previousMonthBalance = (config.initialBalanceInMinutes || 0)
-
-      if (firstRecord) {
-        const firstDate = parseDateDDMMYYYY(firstRecord.date)
-        let currentDate = new Date(firstDate.getFullYear(), firstDate.getMonth(), 1)
-        const targetDate = new Date(year, month - 1, 1)
-
-        while (currentDate < targetDate) {
-          const monthData = getMonthlyData(
-            allRecords,
-            currentDate.getFullYear(),
-            currentDate.getMonth() + 1,
-          )
-          console.info(monthData.totalBalance)
-          previousMonthBalance += monthData.totalBalance
-          currentDate.setMonth(currentDate.getMonth() + 1)
-        }
-      }
-
-      const currentMonthData = getMonthlyData(allRecords, year, month)
-      const monthBalance = currentMonthData.totalBalance
-      const currentBalance = previousMonthBalance + monthBalance
-
-      setCalendarData({
-        dailyBalances: currentMonthData.dailyBalances,
-        monthBalance,
-        previousMonthBalance,
-        currentBalance,
-        workedDays: currentMonthData.workedDays,
-        dailyRecords: currentMonthData.dailyRecords,
-      })
+      const data = await computeCalendarData()
+      if (data) setCalendarData(data)
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : 'Erro ao carregar dados do calendário'
@@ -234,11 +239,29 @@ export function useCalendar(year: number, month: number) {
     } finally {
       setLoading(false)
     }
-  }, [year, month, getMonthlyData, config])
+  }, [computeCalendarData])
 
   useEffect(() => {
-    loadCalendarData()
-  }, [loadCalendarData])
+    let ignore = false
+    computeCalendarData()
+      .then((data) => {
+        if (!ignore) {
+          if (data) setCalendarData(data)
+          setError(null)
+        }
+      })
+      .catch((err) => {
+        if (!ignore) {
+          setError(err instanceof Error ? err.message : 'Erro ao carregar dados do calendário')
+        }
+      })
+      .finally(() => {
+        if (!ignore) setLoading(false)
+      })
+    return () => {
+      ignore = true
+    }
+  }, [computeCalendarData])
 
   return { loading, error, ...calendarData, reload: loadCalendarData }
 }

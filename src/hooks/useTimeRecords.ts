@@ -20,18 +20,23 @@ export function useTimeRecords(date: string) {
   /**
    * Carrega os registros de ponto para a data especificada
    */
+  const fetchRecords = useCallback(async () => {
+    const result = await database
+      .select()
+      .from(schema.registers)
+      .where(eq(schema.registers.date, date))
+    return result.sort((a, b) => a.timeInMinutes - b.timeInMinutes)
+  }, [date])
+
   const loadRecords = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
 
-      const result = await database
-        .select()
-        .from(schema.registers)
-        .where(eq(schema.registers.date, date))
-      setRecords(result.sort((a, b) => a.timeInMinutes - b.timeInMinutes))
+      const result = await fetchRecords()
+      setRecords(result)
 
-      return result.sort((a, b) => a.timeInMinutes - b.timeInMinutes)
+      return result
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro ao carregar registros'
       setError(errorMessage)
@@ -39,12 +44,28 @@ export function useTimeRecords(date: string) {
     } finally {
       setLoading(false)
     }
-  }, [date])
+  }, [fetchRecords])
 
   // Carrega os registros ao montar o componente ou quando a data muda
   useEffect(() => {
-    loadRecords()
-  }, [loadRecords])
+    let ignore = false
+    fetchRecords()
+      .then((result) => {
+        if (!ignore) {
+          setRecords(result)
+          setError(null)
+        }
+      })
+      .catch((err) => {
+        if (!ignore) setError(err instanceof Error ? err.message : 'Erro ao carregar registros')
+      })
+      .finally(() => {
+        if (!ignore) setLoading(false)
+      })
+    return () => {
+      ignore = true
+    }
+  }, [fetchRecords])
 
   return {
     records,
