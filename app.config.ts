@@ -72,7 +72,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
 				android: {
 					// usesCleartextTraffic: true,
 					minSdkVersion: 25,
-					compileSdkVersion: 36,
+					compileSdkVersion: 37,
 					targetSdkVersion: 36,
 					enableProguardInReleaseBuilds: true,
 					enableShrinkResourcesInReleaseBuilds: true,

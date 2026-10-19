@@ -1,11 +1,23 @@
-name: 'Build Android'
+name: 'registra-la-build'
 
+# Uso (na pasta builder/):
+#   docker compose run --rm android
+#   BUILD_TYPE=debug APP_VARIANT=development docker compose run --rm android
+# O APK é gravado em builder/out/.
 services:
   android:
     build:
       context: .
       dockerfile: Dockerfile
+    environment:
+      BUILD_TYPE: ${BUILD_TYPE:-release}
+      APP_VARIANT: ${APP_VARIANT:-preview}
     volumes:
-      - ../:/home/src/app
-    stdin_open: true
-    tty: true
+      - ../:/src:ro
+      - ./out:/out
+      - gradle-cache:/root/.gradle
+      - bun-cache:/root/.bun/install/cache
+
+volumes:
+  gradle-cache:
+  bun-cache:
