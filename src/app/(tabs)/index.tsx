@@ -4,6 +4,7 @@ import { useConfig } from '@/hooks/useConfig'
 import { useRegister } from '@/hooks/useRegister'
 import { useTheme } from '@/providers/ThemeProvider'
 import { colors } from '@/utils/colorThemes'
+import { isToday } from 'date-fns'
 import { useState } from 'react'
 import { ActivityIndicator, Text, View } from 'react-native'
 import { SafeAreaView } from "@/components/styled"
@@ -39,7 +40,7 @@ export default function HomePage() {
 
   return (
     <SafeAreaView className="flex-1 bg-background p-4 gap-4">
-      <Header title="Página Inicial" />
+      <Header title={isToday(selectedDate ?? new Date()) ? 'Hoje' : 'Registros'} />
 
       <History date={selectedDate ?? undefined} onDateChange={setSelectedDate} />
     </SafeAreaView>

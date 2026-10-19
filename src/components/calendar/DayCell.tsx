@@ -41,8 +41,10 @@ export function DayCell({
 		} else {
 			if (isToday) {
 				return "bg-primary";
+			} else if (isWorkDay) {
+				return "bg-surface border border-secondary";
 			} else {
-				return "bg-secondary";
+				return "opacity-50";
 			}
 		}
 	}
@@ -56,20 +58,12 @@ export function DayCell({
 		} else {
 			if (isToday) {
 				return "text-primary-content";
+			} else if (isWorkDay) {
+				return "text-surface-content";
 			} else {
-				return "text-secondary-content";
+				return "text-background-content";
 			}
 		}
-	}
-
-	function getWorkDayStatus() {
-		if (isWorked) {
-			return "check";
-		}
-		if (isWorkDay) {
-			return "clock";
-		}
-		return "minus";
 	}
 
 	function getWorkDayColor() {
@@ -97,7 +91,7 @@ export function DayCell({
 			}`}
 		>
 			<View
-				className={`w-12 h-16 items-center justify-center rounded-lg ${cellStyle()}`}
+				className={`w-12 h-16 items-center justify-center rounded-xl ${cellStyle()} ${isToday ? "border-2 border-accent" : ""}`}
 			>
 				<Text className={`font-bold ${textStyle()}`}>{day.getDate()}</Text>
 				{balance !== undefined && (
@@ -105,7 +99,9 @@ export function DayCell({
 						{convertMinutesToTime(balance)}
 					</Text>
 				)}
-				<Entypo name={getWorkDayStatus()} size={16} color={getWorkDayColor()} />
+				{isWorked && (
+					<Entypo name="check" size={16} color={getWorkDayColor()} />
+				)}
 			</View>
 		</TouchableOpacity>
 	);

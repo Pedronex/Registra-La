@@ -4,11 +4,11 @@ import { useRegister } from "@/hooks/useRegister";
 import { useTimeRecords } from "@/hooks/useTimeRecords";
 import { useTheme } from "@/providers/ThemeProvider";
 import { colors } from "@/utils/colorThemes";
-import { convertTimeToMinutes } from "@/utils/convert";
+import { convertMinutesToTime, convertTimeToMinutes } from "@/utils/convert";
 import Entypo from "@react-native-vector-icons/entypo";
 import Octicons from "@react-native-vector-icons/octicons";
 import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
-import { addDays, format, subDays } from "date-fns";
+import { addDays, format, isToday, subDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import * as ImagePicker from "expo-image-picker";
 import { LinearGradient } from "expo-linear-gradient";
@@ -109,92 +109,112 @@ export function History({
 	};
 
 	/**
-	 * Renderiza o cabeçalho com a data e os botões de navegação
+	 * Navegação de data (dia anterior / seletor de data / próximo dia)
 	 */
-	const renderHeader = () => (
-		<View className="mb-4">
-			<View className="flex-row justify-between items-center p-4 rounded-lg bg-secondary border border-primary mb-2">
-				<TouchableOpacity
-					onPress={() => setDate(subDays(date, 1))}
-					accessibilityRole="button"
-					accessibilityLabel="Dia anterior"
-					className="p-3 rounded-full bg-primary-focus"
-				>
-					<Entypo
-						name="chevron-left"
-						size={24}
-						color={colors[theme].secondaryContent}
-					/>
-				</TouchableOpacity>
-				<TouchableOpacity
-					className="items-center"
-					accessibilityRole="button"
-					accessibilityLabel="Selecionar data"
-					onPress={() => {
-						DateTimePickerAndroid.open({
-							value: date,
-							mode: "date",
-							onChange: (event, selectedDate) => {
-								if (event.type === "set" && selectedDate) {
-									setDate(selectedDate);
-								}
-							},
-						});
-					}}
-				>
-					<Text className="text-2xl font-bold text-secondary-content">
-						{format(date, "dd 'de' MMMM", { locale: ptBR })}
-					</Text>
-					<Text className="text-sm text-secondary-content">
-						{format(date, "yyyy", { locale: ptBR })}
-					</Text>
-				</TouchableOpacity>
-				<TouchableOpacity
-					onPress={() => setDate(addDays(date, 1))}
-					accessibilityRole="button"
-					accessibilityLabel="Próximo dia"
-					className="p-3 rounded-full bg-primary-focus"
-				>
-					<Entypo
-						name="chevron-right"
-						size={24}
-						color={colors[theme].secondaryContent}
-					/>
-				</TouchableOpacity>
-			</View>
+	const rawDateLabel = format(date, "EEEE, dd 'de' MMMM", { locale: ptBR });
+	const dateLabel = rawDateLabel.charAt(0).toUpperCase() + rawDateLabel.slice(1);
 
-			<View className="flex-row justify-between gap-4">
-				<Link
-					className="bg-primary p-3 rounded-lg items-center justify-center flex-row"
-					href="/add"
+	const renderDateNavigator = () => (
+		<View className="flex-row justify-between items-center p-2 rounded-2xl border bg-surface border-secondary">
+			<TouchableOpacity
+				onPress={() => setDate(subDays(date, 1))}
+				accessibilityRole="button"
+				accessibilityLabel="Dia anterior"
+				className="justify-center items-center w-12 h-12 rounded-full"
+			>
+				<Entypo name="chevron-left" size={26} color={colors[theme].accent} />
+			</TouchableOpacity>
+			<TouchableOpacity
+				className="items-center"
+				accessibilityRole="button"
+				accessibilityLabel="Selecionar data"
+				onPress={() => {
+					DateTimePickerAndroid.open({
+						value: date,
+						mode: "date",
+						onChange: (event, selectedDate) => {
+							if (event.type === "set" && selectedDate) {
+								setDate(selectedDate);
+							}
+						},
+					});
+				}}
+			>
+				<Text className="text-lg font-bold text-surface-content">
+					{dateLabel}
+				</Text>
+				<Text className="text-sm text-surface-content">
+					{format(date, "yyyy", { locale: ptBR })}
+				</Text>
+			</TouchableOpacity>
+			<TouchableOpacity
+				onPress={() => setDate(addDays(date, 1))}
+				accessibilityRole="button"
+				accessibilityLabel="Próximo dia"
+				className="justify-center items-center w-12 h-12 rounded-full"
+			>
+				<Entypo name="chevron-right" size={26} color={colors[theme].accent} />
+			</TouchableOpacity>
+		</View>
+	);
+
+	/**
+	 * Ação principal (registrar agora) e secundária (registrar por foto)
+	 */
+	const renderActions = () => (
+		<View className="gap-3">
+			<Link href="/add" asChild>
+				<TouchableOpacity
+					accessibilityRole="button"
+					accessibilityLabel="Registrar ponto agora"
+					className="flex-row justify-center items-center h-14 rounded-2xl bg-primary"
 				>
 					<Entypo
 						name="plus"
-						size={20}
+						size={24}
 						color={colors[theme].primaryContent}
 						style={{ marginRight: 8 }}
 					/>
-					<Text className="text-primary-content font-bold">
-						Registro Manual
-					</Text>
-				</Link>
-				<TouchableOpacity
-					onPress={handleAutoSavePhoto}
-					className="bg-primary p-3 rounded-lg items-center justify-center flex-row"
-				>
-					<Octicons
-						name="sparkles-fill"
-						size={20}
-						color={colors[theme].primaryContent}
-						style={{ marginRight: 8 }}
-					/>
-					<Text className="text-primary-content font-bold">
-						Registro Automático
+					<Text className="text-lg font-bold text-primary-content">
+						Registrar ponto agora
 					</Text>
 				</TouchableOpacity>
-			</View>
+			</Link>
+			<TouchableOpacity
+				onPress={handleAutoSavePhoto}
+				accessibilityRole="button"
+				accessibilityLabel="Registrar ponto por foto"
+				className="flex-row justify-center items-center h-12 rounded-2xl border border-primary"
+			>
+				<Octicons
+					name="sparkles-fill"
+					size={18}
+					color={colors[theme].accent}
+					style={{ marginRight: 8 }}
+				/>
+				<Text className="font-semibold text-surface-content">
+					Registrar por foto
+				</Text>
+			</TouchableOpacity>
 		</View>
 	);
+
+	/**
+	 * Próximo ponto esperado do dia, com base nos horários configurados
+	 */
+	const nextPoint = useMemo(() => {
+		if (!config || !isToday(date)) return null;
+		const done = records.filter((r) => r.type === "trabalho").length;
+		const points = [
+			{ label: "Entrada", time: config.entraceTime },
+			{ label: "Saída para o almoço", time: config.entraceBufferTime },
+			{ label: "Retorno do almoço", time: config.exitBufferTime },
+			{ label: "Saída", time: config.exitTime },
+		];
+		const next = points[done];
+		if (!next?.time) return null;
+		return `Próximo ponto: ${next.label} às ${convertMinutesToTime(next.time)}`;
+	}, [config, date, records]);
 
 	/**
 	 */
@@ -356,12 +376,18 @@ export function History({
 	}
 
 	return (
-		<View className="flex-1 w-full rounded-lg h-fit justify-between">
-			{renderHeader()}
+		<View className="flex-1 gap-4 w-full">
+			{renderDateNavigator()}
+			<Balance date={controlledDate || new Date()} records={records} />
+			{renderActions()}
+			{nextPoint && (
+				<Text className="text-sm text-center text-background-content">
+					{nextPoint}
+				</Text>
+			)}
 			<View className="flex-1">
 				<ScrollView>{renderHistoryItems()}</ScrollView>
 			</View>
-			<Balance date={controlledDate || new Date()} records={records} />
 		</View>
 	);
 }

@@ -83,17 +83,17 @@ export default function CalendarPage() {
 				) : (
 					<>
 						<MonthNavigator date={date} onChangeMonth={changeMonth} />
+						<BalanceSummary
+							previousMonthBalance={previousMonthBalance}
+							monthBalance={monthBalance}
+							currentBalance={currentBalance}
+						/>
 						<CalendarGrid
 							date={date}
 							dailyBalances={dailyBalances}
 							workedDays={workedDays}
 							onDayPress={openDayDetails}
 							config={config?.workDays ? config : undefined}
-						/>
-						<BalanceSummary
-							previousMonthBalance={previousMonthBalance}
-							monthBalance={monthBalance}
-							currentBalance={currentBalance}
 						/>
 					</>
 				)}

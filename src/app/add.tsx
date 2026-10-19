@@ -189,11 +189,11 @@ export default function RegisterPage() {
 									onPress={handleTakePhoto}
 									accessibilityRole="button"
 									accessibilityLabel="Tirar foto do ponto"
-									className="justify-center items-center p-3 w-full h-48 rounded-lg bg-surface"
+									className="justify-center items-center p-3 w-full h-32 rounded-2xl border bg-surface border-secondary"
 								>
 									<Entypo
 										name="camera"
-										size={50}
+										size={36}
 										color={colors[theme].surfaceContent}
 									/>
 								</TouchableOpacity>
@@ -363,11 +363,11 @@ export default function RegisterPage() {
 									onPress={handleTakePhoto}
 									accessibilityRole="button"
 									accessibilityLabel="Tirar foto do ponto"
-									className="justify-center items-center p-3 w-full h-48 rounded-lg bg-surface"
+									className="justify-center items-center p-3 w-full h-32 rounded-2xl border bg-surface border-secondary"
 								>
 									<Entypo
 										name="camera"
-										size={50}
+										size={36}
 										color={colors[theme].surfaceContent}
 									/>
 								</TouchableOpacity>
@@ -417,18 +417,18 @@ export default function RegisterPage() {
 		return (
 			<View className="flex-row gap-x-2 w-full">
 				<TouchableOpacity
-					className="flex-1 items-center p-4 mt-6 rounded-lg bg-error"
+					className="flex-1 items-center p-4 mt-4 rounded-2xl border border-primary"
 					onPress={() => router.push("/(tabs)/")}
 				>
-					<Text className="text-lg font-bold text-error-content">Voltar</Text>
+					<Text className="text-lg font-semibold text-surface-content">Voltar</Text>
 				</TouchableOpacity>
 
 				<TouchableOpacity
-					className="flex-1 items-center p-4 mt-6 rounded-lg bg-success"
+					className="flex-1 items-center p-4 mt-4 rounded-2xl bg-primary"
 					onPress={handleRegister}
 					disabled={loading}
 				>
-					<Text className="text-lg font-bold text-success-content">
+					<Text className="text-lg font-bold text-primary-content">
 						{loading ? "Salvando..." : "Registrar"}
 					</Text>
 				</TouchableOpacity>
@@ -438,7 +438,7 @@ export default function RegisterPage() {
 
 	return (
 		<SafeAreaView className="flex-1 justify-between items-center pl-3 pr-3 pb-5 bg-background">
-			<Header />
+			<Header title="Novo registro" showConfig={false} />
 			{renderTypesForm()}
 			{renderRegisterForm()}
 			{renderFooter()}

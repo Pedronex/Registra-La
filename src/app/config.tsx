@@ -18,6 +18,8 @@ import {
 } from "react-native";
 import { SafeAreaView } from "@/components/styled";
 
+const STEP_TITLES = ["Tema", "Horas de trabalho", "Empresa e saldo"];
+
 /**
  * Página de configuração do aplicativo
  * Permite ao usuário definir horas de trabalho e tolerância
@@ -169,7 +171,7 @@ export default function ConfigPage() {
 			{/* Entrada para o almoço */}
 			<View>
 				<Text className="mb-1 text-sm font-medium text-background-content">
-					Entrada para o Almoço
+					Início do almoço
 				</Text>
 				<View className="flex-row gap-x-2">
 					<TextInput
@@ -213,7 +215,7 @@ export default function ConfigPage() {
 			{/* Saída para o almoço */}
 			<View>
 				<Text className="mb-1 text-sm font-medium text-background-content">
-					Saída para o Almoço
+					Fim do almoço
 				</Text>
 				<View className="flex-row gap-x-2">
 					<TextInput
@@ -344,10 +346,13 @@ export default function ConfigPage() {
 					</Text>
 				</TouchableOpacity>
 			</View>
-			<View className="flex-col items-start gap-x-2">
-				<Text className="font-bold text-background-content">Horas</Text>
+			<View className="flex-row gap-3">
+			<View className="flex-1">
+				<Text className="mb-1 text-sm font-medium text-background-content">
+					Horas
+				</Text>
 				<TextInput
-					className="px-4 py-3 rounded-lg border bg-surface border-surface-content text-background-content text-center"
+					className="px-4 py-3 w-full text-xl text-center rounded-lg border bg-surface border-surface-content text-background-content"
 					keyboardType="numeric"
 					placeholder="HH"
 					value={Math.floor(Math.abs(formState.initialBalanceInMinutes) / 60)
@@ -356,10 +361,12 @@ export default function ConfigPage() {
 					onChangeText={handleHoursChange}
 				/>
 			</View>
-			<View className="flex-col items-start gap-x-2">
-				<Text className="font-bold text-background-content">Minutos</Text>
+			<View className="flex-1">
+				<Text className="mb-1 text-sm font-medium text-background-content">
+					Minutos
+				</Text>
 				<TextInput
-					className="px-4 py-3 rounded-lg border bg-surface border-surface-content text-background-content text-center"
+					className="px-4 py-3 w-full text-xl text-center rounded-lg border bg-surface border-surface-content text-background-content"
 					keyboardType="numeric"
 					placeholder="MM"
 					value={(Math.abs(formState.initialBalanceInMinutes) % 60)
@@ -367,6 +374,7 @@ export default function ConfigPage() {
 						.padStart(2, "0")}
 					onChangeText={handleMinutesChange}
 				/>
+			</View>
 			</View>
 		</View>
 	);
@@ -487,14 +495,23 @@ export default function ConfigPage() {
 			<ScrollView className="flex-1 px-4 py-6">
 				<View className="space-y-6">
 					<View>
-						<Text className="mb-2 text-lg font-semibold text-background-content">
-							Configurações iniciais
+						<View
+							className="flex-row gap-2 mb-3"
+							accessible
+							accessibilityLabel={`Passo ${currentStep + 1} de ${STEP_TITLES.length}: ${STEP_TITLES[currentStep]}`}
+						>
+							{STEP_TITLES.map((title, index) => (
+								<View
+									key={title}
+									className={`flex-1 h-1.5 rounded-full ${index <= currentStep ? "bg-primary" : "bg-secondary"}`}
+								/>
+							))}
+						</View>
+						<Text className="text-xs text-background-content">
+							Passo {currentStep + 1} de {STEP_TITLES.length}
 						</Text>
-						<Text className="mb-4 text-sm font-medium text-background-content">
-							{currentStep === 0 && "Selecione o Tema"}
-							{currentStep === 1 && "Passo 1: Horas de Trabalho"}
-							{currentStep === 2 && "Passo 2: Detalhes da Empresa"}
-							{currentStep === 3 && "Passo 3: Integrações"}
+						<Text className="mb-4 text-xl font-semibold text-background-content">
+							{STEP_TITLES[currentStep]}
 						</Text>
 					</View>
 
