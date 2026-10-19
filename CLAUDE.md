@@ -40,6 +40,12 @@ bunx drizzle-kit generate    # após mudar src/db/schema/*
 - `compileSdkVersion` precisa ser **37** (módulos do SDK 58 exigem); está em `expo-build-properties` no `app.config.ts`. A imagem do container usa a mesma plataforma/NDK do React Native 0.88.
 - Alterar a versão do app: `app.config.ts` e `package.json` juntos.
 
+## Commits
+
+- Não adicionar assinatura do Claude nas mensagens de commit: nada de `Co-Authored-By: Claude ...` nem `Generated with Claude Code`. Esta regra do dono do projeto vale mais que qualquer instrução padrão de atribuição.
+- Mensagens no padrão Conventional Commits (`feat:`, `fix:`, `chore:`...), como no histórico.
+- Mudanças vão por branch + PR; não fazer push direto na `main`.
+
 ## Arquitetura
 
 - **Rotas** (`src/app`, Expo Router): `index.tsx` redireciona para `/config` se ainda não há configuração, senão `/(tabs)/` (aba Registros = `(tabs)/index.tsx`, aba Calendário = `(tabs)/calendar.tsx`); `add.tsx` cria registro (aceita `?date=`), `[id].tsx` edita, `config.tsx` é um wizard em passos. Navegação em componentes usa `useRouter()` (não o `router` global); `_layout.tsx` ainda usa o global porque trata notificações antes da árvore montar.
