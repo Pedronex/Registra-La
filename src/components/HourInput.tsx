@@ -1,168 +1,85 @@
 import { useTheme } from "@/providers/ThemeProvider";
 import { colors } from "@/utils/colorThemes";
+import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
 import Entypo from "@react-native-vector-icons/entypo";
-import { useState } from "react";
-import { Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
 
 interface HourInputProps {
 	onChange: (hour: string) => void;
+	/** Horário no formato HH:MM */
 	value: string;
 	min?: string;
 	max?: string;
 }
 
+const pad = (n: number) => n.toString().padStart(2, "0");
+
+/**
+ * Seletor de horário: toque no horário abre o seletor nativo (24h);
+ * `−`/`+` ajustam 1 minuto (toque longo ajusta 15).
+ */
 export function HourInput({
 	onChange,
 	value,
 	min = "00:00",
 	max = "23:59",
 }: HourInputProps) {
-	const [initialHours, initialMinutes] = value.split(":");
-	const [minutes, setMinutes] = useState(initialMinutes);
-	const [hours, setHours] = useState(initialHours);
-	const [syncedValue, setSyncedValue] = useState(value);
 	const { theme } = useTheme();
+	const [hours, minutes] = value.split(":").map((part) => Number(part) || 0);
+	const current = hours * 60 + minutes;
 
-	if (value !== syncedValue) {
-		setSyncedValue(value);
-		setHours(initialHours);
-		setMinutes(initialMinutes);
-	}
+	const clamp = (time: string) => (time > max ? max : time < min ? min : time);
 
-	const setTimeToLimit = (hours: string, minutes: string) => {
-		const time = `${hours.padStart(2, "0")}:${minutes.padStart(2, "0")}`;
-		if (time > max) {
-			const [maxHours, maxMinutes] = max.split(":");
-			setHours(maxHours);
-			setMinutes(maxMinutes);
-			onChange(max);
-		} else if (time < min) {
-			const [minHours, minMinutes] = min.split(":");
-			setHours(minHours);
-			setMinutes(minMinutes);
-			onChange(min);
-		}
+	const change = (time: string) => onChange(clamp(time));
+
+	const step = (delta: number) => {
+		const total = (((current + delta) % 1440) + 1440) % 1440;
+		change(`${pad(Math.floor(total / 60))}:${pad(total % 60)}`);
 	};
 
-	const handleHourChange = (text: string) => {
-		const val = text.replace(/[^0-9]/g, "");
-		if (val.length <= 2) {
-			const newTime = `${val}:${minutes}`;
-			setHours(val);
-			onChange(newTime);
-			setTimeToLimit(val, minutes);
-		}
-	};
-
-	const handleMinuteChange = (text: string) => {
-		const val = text.replace(/[^0-9]/g, "");
-		if (val.length <= 2) {
-			const newTime = `${hours}:${val}`;
-			setMinutes(val);
-			onChange(newTime);
-			setTimeToLimit(hours, val);
-		}
-	};
-
-	const handleMinuteBlur = () => {
-		let num = parseInt(minutes, 10);
-		if (isNaN(num)) num = 0;
-		if (num < 0) num = 0;
-		if (num > 59) num = 59;
-		const formattedMinutes = String(num).padStart(2, "0");
-		setMinutes(formattedMinutes);
-		setTimeToLimit(hours, formattedMinutes);
-	};
-
-	const handleHourBlur = () => {
-		let num = parseInt(hours, 10);
-		if (isNaN(num)) num = 0;
-		if (num < 0) num = 0;
-		if (num > 23) num = 23;
-		const formattedHours = String(num).padStart(2, "0");
-		setHours(formattedHours);
-		setTimeToLimit(formattedHours, minutes);
-	};
-
-	const handleAddMinutes = () => {
-		const currentHours = parseInt(hours) || 0;
-		const currentMinutes = parseInt(minutes) || 0;
-
-		let newMinutes = currentMinutes + 1;
-		let newHours = currentHours;
-
-		if (newMinutes >= 60) {
-			newMinutes = 0;
-			newHours = (newHours + 1) % 24;
-		}
-
-		const formattedHours = newHours.toString().padStart(2, "0");
-		const formattedMinutes = newMinutes.toString().padStart(2, "0");
-
-		setHours(formattedHours);
-		setMinutes(formattedMinutes);
-		onChange(`${formattedHours}:${formattedMinutes}`);
-		setTimeToLimit(formattedHours, formattedMinutes);
-	};
-
-	const handleRemoveMinute = () => {
-		const currentHours = parseInt(hours) || 0;
-		const currentMinutes = parseInt(minutes) || 0;
-
-		let newMinutes = currentMinutes;
-		let newHours = currentHours;
-
-		if (currentMinutes === 0) {
-			newMinutes = 59;
-			newHours = currentHours - 1;
-			if (newHours < 0) {
-				newHours = 23;
-			}
-		} else {
-			newMinutes = currentMinutes - 1;
-		}
-
-		const formattedHours = newHours.toString().padStart(2, "0");
-		const formattedMinutes = newMinutes.toString().padStart(2, "0");
-
-		setHours(formattedHours);
-		setMinutes(formattedMinutes);
-		onChange(`${formattedHours}:${formattedMinutes}`);
-		setTimeToLimit(formattedHours, formattedMinutes);
+	const openPicker = () => {
+		DateTimePickerAndroid.open({
+			value: new Date(2000, 0, 1, hours, minutes),
+			mode: "time",
+			is24Hour: true,
+			onChange: (event, selected) => {
+				if (event.type === "set" && selected) {
+					change(`${pad(selected.getHours())}:${pad(selected.getMinutes())}`);
+				}
+			},
+		});
 	};
 
 	return (
 		<View className="flex-row gap-x-4 justify-between items-center p-2 w-full rounded-2xl bg-surface elevation">
 			<TouchableOpacity
 				className="justify-center items-center w-12 h-12 rounded-full border bg-tertiary border-accent"
-				onPress={handleRemoveMinute}
+				onPress={() => step(-1)}
+				onLongPress={() => step(-15)}
 				accessibilityRole="button"
 				accessibilityLabel="Diminuir minutos"
+				accessibilityHint="Toque longo diminui 15 minutos"
 			>
 				<Entypo name="minus" size={26} color={colors[theme].surfaceContent} />
 			</TouchableOpacity>
-			<View className="flex-row items-center px-4 py-2 rounded-xl bg-surface/10">
-				<TextInput
-					className="text-4xl font-semibold min-w-[60px] text-center text-surface-content"
-					value={hours}
-					keyboardType="number-pad"
-					onChangeText={handleHourChange}
-					onBlur={handleHourBlur}
-				/>
-				<Text className="mx-1 text-4xl font-bold text-surface-content">:</Text>
-				<TextInput
-					className="text-4xl font-semibold min-w-[60px] text-center text-surface-content"
-					value={minutes}
-					keyboardType="number-pad"
-					onChangeText={handleMinuteChange}
-					onBlur={handleMinuteBlur}
-				/>
-			</View>
+			<TouchableOpacity
+				className="flex-1 items-center py-2 rounded-xl"
+				onPress={openPicker}
+				accessibilityRole="button"
+				accessibilityLabel={`Hora: ${value}`}
+				accessibilityHint="Toque para escolher o horário"
+			>
+				<Text className="text-5xl font-semibold text-surface-content">
+					{`${pad(hours)}:${pad(minutes)}`}
+				</Text>
+			</TouchableOpacity>
 			<TouchableOpacity
 				className="justify-center items-center w-12 h-12 rounded-full border bg-tertiary border-accent"
-				onPress={handleAddMinutes}
+				onPress={() => step(1)}
+				onLongPress={() => step(15)}
 				accessibilityRole="button"
 				accessibilityLabel="Aumentar minutos"
+				accessibilityHint="Toque longo aumenta 15 minutos"
 			>
 				<Entypo name="plus" size={26} color={colors[theme].surfaceContent} />
 			</TouchableOpacity>

@@ -24,6 +24,8 @@ interface HeaderProps {
 	 */
 	showLogo?: boolean;
 	back?: () => React.ReactNode;
+	/** Ação à direita (ex.: excluir); substitui o botão de configurações */
+	right?: () => React.ReactNode;
 }
 
 /**
@@ -35,6 +37,7 @@ export function Header({
 	showConfig = true,
 	showLogo = false,
 	back,
+	right,
 }: HeaderProps) {
 	const logoDark = require("@/assets/Relogio.png");
 	const { theme } = useTheme();
@@ -61,8 +64,9 @@ export function Header({
 		<View className="w-12 h-12" />
 	);
 
-	const rightSlot =
-		showConfig && !back ? (
+	const rightSlot = right ? (
+		right()
+	) : showConfig && !back ? (
 			<Link href="/config" asChild>
 				<TouchableOpacity
 					className="justify-center items-center w-12 h-12 rounded-full"

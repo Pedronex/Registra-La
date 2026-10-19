@@ -3,28 +3,30 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
 	ActivityIndicator,
-	Image,
+	KeyboardAvoidingView,
+	ScrollView,
 	Text,
-	TextInput,
 	TouchableOpacity,
 	View,
 } from "react-native";
 import { SafeAreaView } from "@/components/styled";
 
-import { DateInput } from "@/components/DateInput";
+import { BackButton } from "@/components/BackButton";
 import { Header } from "@/components/Header";
-import { HourInput } from "@/components/HourInput";
+import { RegisterForm } from "@/components/RegisterForm";
 import { RegisterInsert } from "@/db/schema/registers";
 import { useConfig } from "@/hooks/useConfig";
 import { useRegister } from "@/hooks/useRegister";
+import { Alert } from "@/lib/Alert";
 import { useTheme } from "@/providers/ThemeProvider";
 import { colors } from "@/utils/colorThemes";
-import { convertMinutesToTime, convertTimeToMinutes } from "@/utils/convert";
+import { convertTimeToMinutes } from "@/utils/convert";
 import Entypo from "@react-native-vector-icons/entypo";
 
+const TYPES = ["trabalho", "folga", "atestado"];
+
 /**
- * Página de registro de ponto
- * Permite o usuário registrar o seu ponto
+ * Página de edição de registro de ponto
  */
 export default function RegisterEdit() {
 	const router = useRouter();
@@ -50,7 +52,6 @@ export default function RegisterEdit() {
 	useEffect(() => {
 		async function fetchData() {
 			const data = await findById(Number(id));
-			console.log(data);
 			setRegister(data);
 		}
 
@@ -119,33 +120,48 @@ export default function RegisterEdit() {
 		try {
 			const result = await editRegister(Number(id), register);
 			if (result) {
-				alert("Registro atualizado com sucesso!");
 				router.back();
 				return;
 			}
-			console.error(register);
-			alert("Não foi possível atualizar o registro!");
-			return;
+			Alert.error("Não foi possível atualizar o registro.");
 		} catch (error) {
 			console.error(error);
-			alert("Erro ao atualizar registro!");
+			Alert.error("Erro ao atualizar registro.");
 		}
 	}
 
 	async function handleDeleteRegister() {
-		const result = await deleteRegister(Number(id));
-		if (result) {
-			alert("Registro deletado com sucesso!");
-			router.back();
-			return;
+		try {
+			const result = await deleteRegister(Number(id));
+			if (result) {
+				router.back();
+				return;
+			}
+			Alert.error("Não foi possível excluir o registro.");
+		} catch (error) {
+			console.error(error);
+			Alert.error("Erro ao excluir registro.");
 		}
-		alert("Não foi possível deletar o registro!");
 	}
+
+	const confirmDelete = () =>
+		Alert.custom("Excluir registro?", "Essa ação não pode ser desfeita.", [
+			{ text: "Cancelar", style: "cancel" },
+			{
+				text: "Excluir",
+				style: "destructive",
+				onPress: handleDeleteRegister,
+			},
+		]);
 
 	if (loading) {
 		return (
 			<View className="flex-1 justify-center items-center p-6 bg-background">
-				<ActivityIndicator size="large" className="mb-3" color="#000" />
+				<ActivityIndicator
+					size="large"
+					className="mb-3"
+					color={colors[theme].backgroundColor}
+				/>
 				<Text className="text-lg font-medium text-background-content">
 					Processando dados da foto...
 				</Text>
@@ -153,298 +169,49 @@ export default function RegisterEdit() {
 		);
 	}
 
-	function renderRegisterForm() {
-		switch (register.type) {
-			case "trabalho":
-				return (
-					<View className="flex-1 gap-y-5 mt-4 space-y-4 w-full">
-						<View className="w-full">
-							<Text className="mb-1 text-lg font-medium text-background-content">
-								Data
-							</Text>
-							<DateInput
-								mode="date"
-								value={
-									new Date(
-										register.date.split("/").reverse().join("-") + "T00:00:00",
-									)
-								}
-								onChange={(value) =>
-									handleInputChange("date", value.toLocaleDateString("pt-BR"))
-								}
-							/>
-						</View>
-
-						<View className="w-full">
-							<Text className="mb-1 text-lg font-medium text-background-content">
-								Hora
-							</Text>
-							<HourInput
-								onChange={(value) =>
-									handleInputChange(
-										"timeInMinutes",
-										convertTimeToMinutes(value),
-									)
-								}
-								value={convertMinutesToTime(register.timeInMinutes || 0)}
-							/>
-						</View>
-
-						<View className="w-full elevation">
-							<Text className="mb-1 text-lg font-medium text-background-content">
-								Foto do Ponto
-							</Text>
-							{register.photo ? (
-								<TouchableOpacity
-									className="items-center p-3 w-full h-48 rounded-xl"
-									onPress={handleTakePhoto}
-									accessibilityRole="button"
-									accessibilityLabel="Tirar foto do ponto"
-								>
-									<Image
-										source={{ uri: `${register.photo}` }}
-										className="w-full h-full rounded-xl bg-surface"
-										resizeMode="contain"
-									/>
-								</TouchableOpacity>
-							) : (
-								<TouchableOpacity
-									onPress={handleTakePhoto}
-									accessibilityRole="button"
-									accessibilityLabel="Tirar foto do ponto"
-									className="justify-center items-center p-3 w-full h-32 rounded-2xl border bg-surface border-secondary"
-								>
-									<Entypo
-										name="camera"
-										size={36}
-										color={colors[theme].surfaceContent}
-									/>
-								</TouchableOpacity>
-							)}
-						</View>
-
-						<View className="w-full">
-							<Text className="mb-1 text-lg font-medium text-background-content">
-								NSR
-							</Text>
-							<TextInput
-								value={register.nsr || ""}
-								onChangeText={(value) => handleInputChange("nsr", value)}
-								className="p-2 rounded-xl bg-surface text-surface-content"
-								placeholder="Digite o NSR (Opcional)"
-								placeholderTextColor={colors[theme].placeholder}
-							/>
-						</View>
-					</View>
-				);
-			default:
-				return (
-					<View className="flex-1 gap-y-5 mt-4 space-y-4 w-full">
-						<View className="w-full">
-							<Text className="mb-1 text-lg font-medium text-background-content">
-								Data
-							</Text>
-							<DateInput
-								mode="date"
-								value={
-									new Date(
-										register.date.split("/").reverse().join("-") + "T00:00:00",
-									)
-								}
-								onChange={(value) =>
-									handleInputChange("date", value.toLocaleDateString("pt-BR"))
-								}
-							/>
-						</View>
-						<View className="w-full">
-							<Text className="mb-1 text-lg font-medium text-background-content">
-								Tipo de Abono
-							</Text>
-							<View className="flex-row gap-x-2 mb-4">
-								<TouchableOpacity
-									className={`flex-1 items-center p-3 rounded-xl ${
-										register.isFullDay ? "bg-primary" : "bg-surface"
-									}`}
-									onPress={() => {
-										handleInputChange("isFullDay", true);
-										handleInputChange(
-											"timeInMinutes",
-											(config?.workHours || 8) * 60,
-										);
-									}}
-								>
-									<Text
-										className={`text-base font-medium ${
-											register.isFullDay
-												? "text-primary-content"
-												: "text-surface-content"
-										}`}
-									>
-										Dia Todo
-									</Text>
-								</TouchableOpacity>
-								<TouchableOpacity
-									className={`flex-1 items-center p-3 rounded-xl ${
-										!register.isFullDay ? "bg-primary" : "bg-surface"
-									}`}
-									onPress={() => {
-										handleInputChange("isFullDay", false);
-										handleInputChange("timeInMinutes", 0);
-									}}
-								>
-									<Text
-										className={`text-base font-medium ${
-											!register.isFullDay
-												? "text-primary-content"
-												: "text-surface-content"
-										}`}
-									>
-										Horas
-									</Text>
-								</TouchableOpacity>
-							</View>
-							{!register.isFullDay && (
-								<HourInput
-									value={convertMinutesToTime(register.timeInMinutes || 0)}
-									onChange={(value) =>
-										handleInputChange(
-											"timeInMinutes",
-											convertTimeToMinutes(value),
-										)
-									}
-									max={
-										`${String(config?.workHours).padStart(2, "0") || "09"}:00` ||
-										"23:59"
-									}
-								/>
-							)}
-						</View>
-
-						<View className="w-full">
-							<Text className="mb-1 text-lg font-medium text-background-content">
-								Descrição
-							</Text>
-							<TextInput
-								value={register.location || ""}
-								onChangeText={(value) => handleInputChange("location", value)}
-								className="p-2 rounded-xl bg-surface text-surface-content"
-								placeholder="Digite a descrição"
-								placeholderTextColor={colors[theme].placeholder}
-								multiline
-								numberOfLines={3}
-							/>
-						</View>
-
-						<View className="w-full">
-							<Text className="mb-1 text-lg font-medium text-background-content">
-								Foto
-							</Text>
-							{register.photo ? (
-								<TouchableOpacity
-									className="items-center w-full h-40 rounded-xl"
-									onPress={handleTakePhoto}
-									accessibilityRole="button"
-									accessibilityLabel="Tirar foto do ponto"
-								>
-									<Image
-										source={{ uri: `${register.photo}` }}
-										className="w-full h-full rounded-xl bg-surface"
-										resizeMode="contain"
-									/>
-								</TouchableOpacity>
-							) : (
-								<TouchableOpacity
-									onPress={handleTakePhoto}
-									accessibilityRole="button"
-									accessibilityLabel="Tirar foto do ponto"
-									className="justify-center items-center p-3 w-full h-32 rounded-2xl border bg-surface border-secondary"
-								>
-									<Entypo
-										name="camera"
-										size={36}
-										color={colors[theme].surfaceContent}
-									/>
-								</TouchableOpacity>
-							)}
-						</View>
-					</View>
-				);
-		}
-	}
-
-	function renderFooter() {
-		return (
-			<View className="flex-row gap-x-2 w-full">
-				<TouchableOpacity
-					className="flex-1 items-center p-4 mt-4 rounded-2xl border border-accent"
-					onPress={() => router.back()}
+	return (
+		<SafeAreaView className="flex-1 items-center pl-4 pr-4 pb-5 bg-background">
+			<Header
+				title="Editar"
+				showConfig={false}
+				back={() => <BackButton />}
+				right={() => (
+					<TouchableOpacity
+						onPress={confirmDelete}
+						accessibilityRole="button"
+						accessibilityLabel="Excluir registro"
+						className="justify-center items-center w-12 h-12 rounded-full"
+					>
+						<Entypo name="trash" size={26} color={colors[theme].accent} />
+					</TouchableOpacity>
+				)}
+			/>
+			<KeyboardAvoidingView behavior="padding" className="flex-1 w-full">
+				<ScrollView
+					className="flex-1"
+					keyboardShouldPersistTaps="handled"
+					contentContainerStyle={{ paddingBottom: 16 }}
 				>
-					<Text className="text-lg font-semibold text-surface-content">
-						Voltar
-					</Text>
-				</TouchableOpacity>
-
+					<RegisterForm
+						register={register}
+						types={TYPES}
+						onChange={handleInputChange}
+						onTakePhoto={handleTakePhoto}
+						workHours={config?.workHours}
+					/>
+				</ScrollView>
 				<TouchableOpacity
-					className="flex-1 items-center p-4 mt-4 rounded-2xl bg-error"
-					onPress={handleDeleteRegister}
-				>
-					<Text className="text-lg font-bold text-error-content">Deletar</Text>
-				</TouchableOpacity>
-
-				<TouchableOpacity
-					className="flex-1 items-center p-4 mt-4 rounded-2xl bg-primary"
+					className="justify-center items-center h-14 rounded-2xl bg-primary"
 					onPress={handleUpdateRegister}
 					disabled={loading}
+					accessibilityRole="button"
+					accessibilityLabel="Atualizar"
 				>
 					<Text className="text-lg font-bold text-primary-content">
 						{loading ? "Atualizando..." : "Atualizar"}
 					</Text>
 				</TouchableOpacity>
-			</View>
-		);
-	}
-
-	function renderTypesForm() {
-		const types = ["trabalho", "folga", "atestado"];
-
-		return (
-			<View className="w-full">
-				<Text className="mb-1 text-lg font-medium text-background-content">
-					Tipo de Registro
-				</Text>
-				<View className="flex-row gap-x-2">
-					{types.map((type) => (
-						<TouchableOpacity
-							key={type}
-							className={`flex-1 items-center p-3 rounded-xl ${
-								register.type === type ? "bg-primary" : "bg-surface"
-							}`}
-							onPress={() => handleInputChange("type", type)}
-							accessibilityRole="button"
-							accessibilityState={{ selected: register.type === type }}
-						>
-							<Text
-								className={`text-base font-medium ${
-									register.type === type
-										? "text-primary-content"
-										: "text-surface-content"
-								}`}
-							>
-								{type.charAt(0).toUpperCase() + type.slice(1)}
-							</Text>
-						</TouchableOpacity>
-					))}
-				</View>
-			</View>
-		);
-	}
-
-	return (
-		<SafeAreaView className="flex-1 justify-between items-center pl-4 pr-4 pb-5 bg-background">
-			<Header title="Editar" showConfig={false} />
-			{renderTypesForm()}
-			{renderRegisterForm()}
-			{renderFooter()}
+			</KeyboardAvoidingView>
 		</SafeAreaView>
 	);
 }

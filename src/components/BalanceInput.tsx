@@ -1,6 +1,7 @@
 import DateTimePicker from '@react-native-community/datetimepicker'
 import { useTheme } from '@/providers/ThemeProvider'
 import { colors } from '@/utils/colorThemes'
+import { format } from 'date-fns'
 import { useEffect, useRef, useState } from 'react'
 import { Text, TextInput, type TextInputInstance, TouchableOpacity, View } from 'react-native'
 
@@ -26,9 +27,15 @@ export function BalanceInput({ onChange, value }: BalanceInputProps) {
   const hoursRef = useRef<TextInputInstance>(null)
   const minutesRef = useRef<TextInputInstance>(null)
 
+  // O pai recria `onChange` a cada render; guardar em ref evita loop de atualização
+  const onChangeRef = useRef(onChange)
   useEffect(() => {
-    onChange(hours, minutes, date, operation)
-  }, [operation, date, hours, minutes, onChange])
+    onChangeRef.current = onChange
+  })
+
+  useEffect(() => {
+    onChangeRef.current(hours, minutes, date, operation)
+  }, [operation, date, hours, minutes])
 
   const handleDateChange = (_event: any, selectedDate?: Date) => {
     setShowDatePicker(false)
@@ -85,7 +92,7 @@ export function BalanceInput({ onChange, value }: BalanceInputProps) {
           className="px-4 py-2 rounded-xl bg-surface border border-surface-content"
           onPress={() => setShowDatePicker(true)}
         >
-          <Text className="text-base text-surface-content">{date.toLocaleDateString()}</Text>
+          <Text className="text-base text-surface-content">{format(date, 'dd/MM/yyyy')}</Text>
         </TouchableOpacity>
         {showDatePicker && (
           <DateTimePicker value={date} mode="date" display="default" onChange={handleDateChange} />

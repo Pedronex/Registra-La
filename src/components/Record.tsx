@@ -15,12 +15,17 @@ export function Record({ data, isEntry }: RecordProps) {
 	const router = useRouter();
 	const { theme } = useTheme();
 
+	// Entrada e aumento de saldo são positivos; saída e redução, negativos
+	const positive = data.type === "saldo" ? data.isFullDay : isEntry;
+
 	function getIconName() {
 		switch (data.type) {
 			case "trabalho":
 				return isEntry ? "login" : "logout";
 			case "folga":
 				return "beach-access";
+			case "saldo":
+				return "swap-vert";
 			default:
 				return "medical-services";
 		}
@@ -29,6 +34,8 @@ export function Record({ data, isEntry }: RecordProps) {
 		switch (data.type) {
 			case "trabalho":
 				return convertMinutesToTime(data.timeInMinutes || 0);
+			case "saldo":
+				return `${data.isFullDay ? "+" : "-"}${convertMinutesToTime(data.timeInMinutes || 0)}`;
 			case "folga":
 				return data.isFullDay
 					? "Dia completo"
@@ -44,6 +51,8 @@ export function Record({ data, isEntry }: RecordProps) {
 		switch (data.type) {
 			case "trabalho":
 				return data.description || (isEntry ? "Entrada" : "Saída");
+			case "saldo":
+				return data.isFullDay ? "Ajuste de saldo (aumento)" : "Ajuste de saldo (redução)";
 			case "folga":
 				return data.isFullDay
 					? "Folga - dia todo"
@@ -64,13 +73,13 @@ export function Record({ data, isEntry }: RecordProps) {
 			accessibilityLabel={`${getDescriptionText()}, ${getTimeText()}. Toque para editar`}
 		>
 			<View
-				className={`justify-center items-center w-12 h-12 rounded-xl bg-${isEntry ? "success" : "error"} opacity-80`}
+				className={`justify-center items-center w-12 h-12 rounded-xl bg-${positive ? "success" : "error"} opacity-80`}
 			>
 				<MaterialIcons
 					name={getIconName()}
 					size={24}
 					color={
-						isEntry ? colors[theme].successContent : colors[theme].errorContent
+						positive ? colors[theme].successContent : colors[theme].errorContent
 					}
 				/>
 			</View>
